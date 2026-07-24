@@ -1,77 +1,78 @@
-# Jeyrun — Salar Piri landing page
+# Jeyrun — Salar Piri / باشگاه دو و کوهستان جیران
 
-Persian (RTL) landing page for **Salar Piri**, coach of the **Jeyrun** running team in Tehran. Static site, deploys free on GitHub Pages.
+Persian (RTL) site for **جیران Running Club**, built with [Astro](https://astro.build) and deployed automatically to GitHub Pages.
 
-## Deploy (GitHub Pages, ~3 minutes)
+**Live:** https://jeyrunclub.github.io
 
-1. Create a GitHub repo — for the shortest URL, name it `<your-username>.github.io` (then the site lives at `https://<your-username>.github.io/`). Any repo name works; then it'll live at `https://<your-username>.github.io/<repo>/`.
-2. Push this folder:
-   ```bash
-   cd /home/ptc/code/jeyrun
-   git init
-   git add .
-   git commit -m "Initial site"
-   git branch -M main
-   git remote add origin git@github.com:<your-username>/<repo>.git
-   git push -u origin main
-   ```
-3. In the repo on github.com: **Settings → Pages → Source → Deploy from a branch → `main` / `(root)` → Save.**
-4. Wait ~30s, then open the URL Pages gives you.
+## Pages
 
-## What to fill in
+| URL          | What                                                                         |
+| ------------ | ---------------------------------------------------------------------------- |
+| `/`          | Landing — hero, about, services preview, testimonials, media, gallery preview, WhatsApp CTA |
+| `/coach`     | Salar Piri's page — bio, stats, race results                                 |
+| `/services`  | 5 detailed service cards (private / group / online / mountain / race prep)   |
+| `/races`     | Upcoming team events (Istanbul, Mahan, Damavand)                             |
+| `/calendar`  | Weekly training calendar — one edit updates the whole schedule               |
+| `/gallery`   | Full 44-photo gallery with pagination                                        |
+| `/blog`      | 10 articles on training, marathon, ultra, nutrition, gear, tehran routes     |
+| `/blog/<slug>` | Individual article pages, generated from Markdown                          |
 
-Everything below is a placeholder in the code — search the file, replace, commit.
+## Editing content
 
-| What                     | Where                          | Notes                                                                                  |
-| ------------------------ | ------------------------------ | -------------------------------------------------------------------------------------- |
-| WhatsApp number          | `index.html` — `98XXXXXXXXXX`  | Format: country code + number, no `+` or spaces. Example: `989121234567`.              |
-| Strava profile URL       | `index.html`                   | Two links: hero section + footer.                                                      |
-| Instagram handles        | `index.html`                   | `salar.piri` and `jeyrun_club` are placeholders — replace with real handles.           |
-| Strava stats             | `data/stats.json`              | Edit values, commit. Site updates automatically.                                       |
-| Race results / medals    | `data/races.json`              | Add one entry per race. `medal` = `gold` / `silver` / `bronze` / `finish`.             |
-| Hero photo of Salar      | `images/salar-hero.jpg`        | Portrait-oriented (~4:5 ratio) works best. Falls back gracefully if missing.           |
-| Gallery photos           | `images/gallery/1.jpg`, `2.jpg`, … | Add photos, then edit `index.html` gallery-grid to reference them.                 |
-| OG share image           | `images/og-cover.jpg`          | 1200x630px — what appears when the link is shared on WhatsApp/Telegram/Twitter.        |
-| Logo                     | `images/logo.svg`              | Placeholder SVG in project colors — swap for the real Jeyrun logo when available.      |
+- **Blog posts:** `src/content/blog/*.md` — Markdown with frontmatter (`title`, `description`, `tag`, `date`, `isoDate`, `readTime`).
+- **Weekly calendar:** `src/pages/calendar.astro` — edit the `week` array.
+- **Race list:** `src/pages/races.astro` — edit `upcoming` array.
+- **Services:** `src/pages/services.astro` — edit `services` array.
+- **Photo gallery:** `src/data/gallery.json` — add/edit `{file, title, story}` entries.
+- **Salar's stats:** `src/data/stats.json` — record cards.
+- **Race results (medals):** `src/data/races.json`.
+- **Testimonials:** `src/pages/index.astro` — search for `testimonial-card`.
+- **Nav links & branding:** `src/components/Header.astro`, `Footer.astro`.
+- **Global styles / theme colors:** `src/styles/global.css` — `:root` block at the top.
 
-## Adding gallery photos
+## Local dev
 
-Drop images into `images/gallery/`, then in `index.html` replace the `.gal-item.placeholder` blocks with:
-
-```html
-<div class="gal-item"><img src="images/gallery/1.jpg" alt="توضیح عکس" loading="lazy" /></div>
-```
-
-## Strava — how to get real stats in
-
-Static sites can't call the Strava API from the browser (Strava needs OAuth). Two easy options:
-
-**Manual (30 seconds when stats change):** edit `data/stats.json`, commit, done.
-
-**Automatic (one-time 15-min setup):** a scheduled GitHub Action refreshes `data/stats.json` daily using Salar's Strava refresh token. Ping me when you're ready and I'll set this up — you'll need to:
-1. Create a Strava API app at https://www.strava.com/settings/api
-2. Get the refresh token via a one-time authorize URL
-3. Store `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REFRESH_TOKEN` as repo secrets
-
-## Custom domain (optional)
-
-If you buy a domain (e.g. `salarpiri.ir`):
-1. Add a file called `CNAME` (no extension) at repo root, containing just the domain.
-2. In your DNS: create an `A` record pointing to GitHub Pages IPs (185.199.108.153, .109.153, .110.153, .111.153) and a `CNAME` record `www` → `<username>.github.io`.
-3. In repo Settings → Pages, enter the domain and enable HTTPS.
-
-## Local preview
-
-Any static server works:
 ```bash
-cd /home/ptc/code/jeyrun
-python3 -m http.server 8000
-# open http://localhost:8000
+npm install
+npm run dev        # http://localhost:4321
+npm run build      # produces dist/
+npm run preview    # serve dist/ locally
 ```
 
-## SEO
+## Deploy
 
-- `<html lang="fa" dir="rtl">` and Persian meta description are set.
-- JSON-LD `Person` schema in `<head>` — Google uses it for the knowledge panel.
-- `sitemap.xml` + `robots.txt` included; update `sitemap.xml` domain if you use a custom one.
-- After deploying, submit the site to [Google Search Console](https://search.google.com/search-console) to get indexed faster.
+Deploys automatically on push to `main` via `.github/workflows/deploy.yml`.
+
+**One-time setup after first push:** In the GitHub repo → **Settings → Pages → Build and deployment → Source → "GitHub Actions"**. This tells Pages to serve the workflow's artifact instead of the branch root. After that, every push to `main` deploys within ~1 minute.
+
+## Adding a blog post
+
+Create `src/content/blog/my-slug.md`:
+
+```markdown
+---
+title: Persian title
+description: Short description for cards + SEO.
+tag: تگ‌فارسی
+date: ۱ مرداد ۱۴۰۵
+isoDate: 2026-07-23
+readTime: ۶ دقیقه
+---
+
+Markdown body here. Persian works natively.
+```
+
+Commit, push, done. Post appears on `/blog` and gets its own `/blog/my-slug` page.
+
+## Adding photos
+
+1. Drop the image into `public/images/gallery/`.
+2. Add an entry to `src/data/gallery.json`:
+   ```json
+   { "file": "my-photo.jpg", "title": "عنوان", "story": "داستان کوتاه" }
+   ```
+3. Commit, push.
+
+## Strava auto-refresh (planned, not wired yet)
+
+Currently `src/data/stats.json` is hand-edited. To automate: add a GitHub Action that calls the Strava API with a refresh token, updates the JSON, commits. Ping to set this up.

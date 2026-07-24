@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Team upcoming/planned races (Salar-provided)
+const upcoming = [
+  { name: 'ماراتن استانبول', date: '', city: 'استانبول، ترکیه', note: 'یکی از ماراتن‌های محبوب تیم — ثبت‌نام گروهی جیران.' },
+  { name: 'ماهان کرمان', date: '', city: 'کرمان، ایران', note: 'مسابقه‌ی کویری — تجربه‌ی متفاوت دویدن در دل کویر.' },
+  { name: 'صعود دماوند', date: '', city: 'مازندران، ایران', note: 'اردوی سالانه‌ی صعود بلندترین قله‌ی خاورمیانه.' },
+];
+---
+<Base
+  title="مسابقات جیران — ماراتن استانبول، ماهان، صعود دماوند"
+  description="برنامه‌ی مسابقات و اردوهای جیران: ماراتن استانبول، ماهان کرمان، صعود دماوند و برنامه‌های آینده."
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-eyebrow">مسابقات</p>
+      <h1>مسابقات جیران</h1>
+      <p class="lead">
+        جیران فقط یک باشگاه تمرین نیست — یک هم‌سفر است. هر سال چند مسابقه و اردو را به صورت
+        گروهی برنامه‌ریزی و برگزار می‌کنیم.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2>در برنامه‌ی سال</h2>
+      <div class="race-list">
+        {upcoming.map((r) => (
+          <div class="race-card">
+            <div class="race-medal finish">📍</div>
+            <div class="race-info">
+              <h3>{r.name}</h3>
+              <p>{[r.date, r.city].filter(Boolean).join(' · ') || 'تاریخ اعلام خواهد شد'}</p>
+              <p>{r.note}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p class="section-sub" style="margin-top: 40px;">
+        برای اطلاع از تاریخ دقیق و ثبت‌نام هر رویداد، در واتس‌اپ عضو گروه جیران شو.
+      </p>
+      <a class="btn btn-primary" href="https://wa.me/989128889975" target="_blank" rel="noopener">پیوستن به گروه</a>
+    </div>
+  </section>
+</Base>

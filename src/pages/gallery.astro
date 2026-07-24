@@ -1,0 +1,71 @@
+---
+import Base from '../layouts/Base.astro';
+import gallery from '../data/gallery.json';
+
+const photos = gallery.photos;
+const PAGE_SIZE = 24;
+const firstPage = photos.slice(0, PAGE_SIZE);
+---
+<Base
+  title="گالری جیران — عکس‌های تمرین، مسابقه و کوهستان"
+  description="گالری تصاویر باشگاه جیران — لحظات تمرین، مسابقات، اردوهای کوهستان و صعودها."
+  ogImage="/images/gallery/team-group.jpg"
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-eyebrow">گالری</p>
+      <h1>لحظه‌های جیران</h1>
+      <p class="lead">
+        {photos.length} عکس از تمرین، مسابقه، اردوهای کوهستان و لحظات صمیمی تیم.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="gallery-grid" id="gallery-grid" data-page-size={PAGE_SIZE}>
+        {firstPage.map((p) => (
+          <figure class="gal-item">
+            <img src={`/images/gallery/${p.file}`} alt={p.title || ''} loading="lazy" />
+            <figcaption>
+              {p.title && <strong>{p.title}</strong>}
+              {p.story && <span>{p.story}</span>}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+
+      {photos.length > PAGE_SIZE && (
+        <div class="load-more-wrap">
+          <button id="load-more" class="btn btn-ghost" type="button">
+            نمایش عکس‌های بیشتر ({photos.length - PAGE_SIZE} باقی‌مانده)
+          </button>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <script define:vars={{ photos, PAGE_SIZE }}>
+    const btn = document.getElementById('load-more');
+    const grid = document.getElementById('gallery-grid');
+    let shown = PAGE_SIZE;
+    btn?.addEventListener('click', () => {
+      const next = photos.slice(shown, shown + PAGE_SIZE);
+      const html = next.map((p) => `
+        <figure class="gal-item">
+          <img src="/images/gallery/${p.file}" alt="${p.title || ''}" loading="lazy" />
+          <figcaption>
+            ${p.title ? `<strong>${p.title}</strong>` : ''}
+            ${p.story ? `<span>${p.story}</span>` : ''}
+          </figcaption>
+        </figure>`).join('');
+      grid.insertAdjacentHTML('beforeend', html);
+      shown += PAGE_SIZE;
+      if (shown >= photos.length) {
+        btn.remove();
+      } else {
+        btn.textContent = `نمایش عکس‌های بیشتر (${photos.length - shown} باقی‌مانده)`;
+      }
+    });
+  </script>
+</Base>

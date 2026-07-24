@@ -1,0 +1,97 @@
+---
+import Base from '../layouts/Base.astro';
+import stats from '../data/stats.json';
+import races from '../data/races.json';
+---
+<Base
+  title="سالار پیری — مربی دو استقامت و اولترا | جیران"
+  description="سالار پیری، مربی و بنیان‌گذار باشگاه جیران. رکورد ماراتن ۲:۳۴:۵۳، بهترین امتیاز UTMB ۷۳۹، رتبه‌ی نهم ایران در ITRA. مصاحبه‌ها، رکوردها و صعودها."
+>
+  <section class="hero coach-hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="container hero-inner">
+      <div class="hero-text">
+        <p class="eyebrow">مربی و بنیان‌گذار جیران</p>
+        <h1>سالار پیری</h1>
+        <p class="tagline">مربی دو استقامت و اولترا ماراتن — عاشق دویدن، عاشق کوه.</p>
+        <ul class="hero-facts">
+          <li><strong>۲:۳۴:۵۳</strong>رکورد ماراتن</li>
+          <li><strong>UTMB ۷۳۹</strong>بهترین امتیاز</li>
+          <li><strong>رتبه ۹</strong>ITRA ایران</li>
+        </ul>
+      </div>
+      <div class="hero-portrait" aria-hidden="true">
+        <div class="portrait-frame"><img src="/images/salar-hero.jpg" alt="سالار پیری" /></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section about">
+    <div class="container">
+      <p class="section-eyebrow">بیوگرافی</p>
+      <h2>یکی از بهترین مربی‌های دو در ایران</h2>
+      <div class="about-grid">
+        <div class="about-text">
+          <p>
+            سالار پیری با سال‌ها تجربه در دو استقامت و اولترا ماراتن، در کنار کسب مقام‌های ملی و بین‌المللی،
+            بنیان‌گذار و مربی <strong>باشگاه جیران</strong> است. رویکرد او تمرین اصولی، پایدار و متناسب با
+            توانایی هر دونده است — از تازه‌کار تا حرفه‌ای.
+          </p>
+          <p>
+            رکورد شخصی ماراتن او <strong>۲ ساعت و ۳۴ دقیقه</strong>، نیمه‌ماراتن <strong>۱:۱۴:۵۰</strong> و
+            ۱۰ کیلومتر <strong>۳۴:۳۹</strong> است. تا امروز بیش از <strong>۳۳٬۴۵۹ کیلومتر</strong> در استراوا ثبت
+            کرده و در رنکینگ رسمی <strong>ITRA</strong> با ایندکس عملکرد <strong>۷۰۶</strong> در جایگاه <strong>نهم
+            ایران</strong> قرار دارد.
+          </p>
+          <p>
+            در مسابقات جهانی <strong>UTMB</strong> نیز دو بار روی سکو ایستاده — از جمله رتبه‌ی دوم
+            <strong>Uludag Premium Ultra Trail</strong> در ترکیه (۲۰۲۴) با امتیاز UTMB <strong>۷۳۹</strong>.
+          </p>
+          <p>فلسفه‌ی تمرین سالار: <em>«هر دونده یک برنامه‌ی مخصوص خودش دارد.»</em></p>
+        </div>
+        <aside class="about-highlights">
+          {stats.cards.map((c) => (
+            <div class="highlight"><span class="hl-num">{c.value}</span><span class="hl-label">{c.label}</span></div>
+          ))}
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="section races">
+    <div class="container">
+      <p class="section-eyebrow">افتخارات</p>
+      <h2>مسابقات و مدال‌ها</h2>
+      <div class="race-list">
+        {races.races.map((r: any) => {
+          const cls = r.medal === 'gold' ? '' : r.medal === 'silver' ? 'silver' : r.medal === 'bronze' ? 'bronze' : 'finish';
+          const icon = r.medal === 'gold' ? '🥇' : r.medal === 'silver' ? '🥈' : r.medal === 'bronze' ? '🥉' : '✓';
+          return (
+            <div class="race-card">
+              <div class={`race-medal ${cls}`}>{icon}</div>
+              <div class="race-info">
+                <h3>{r.name}</h3>
+                {(r.year || r.location) && <p>{[r.year, r.location].filter(Boolean).join(' · ')}</p>}
+                {r.time && <p class="race-time">{r.time}</p>}
+                {r.note && <p>{r.note}</p>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section class="section join">
+    <div class="container join-inner">
+      <div>
+        <p class="section-eyebrow">می‌خواهی با سالار تمرین کنی؟</p>
+        <h2>شروع کن</h2>
+        <p>یک پیام واتس‌اپ کافی است — سالار برای هدف و شرایط تو برنامه می‌نویسد.</p>
+      </div>
+      <div class="join-actions">
+        <a class="btn btn-whatsapp" href="https://wa.me/989128889975" target="_blank" rel="noopener">پیام در واتس‌اپ</a>
+      </div>
+    </div>
+  </section>
+</Base>

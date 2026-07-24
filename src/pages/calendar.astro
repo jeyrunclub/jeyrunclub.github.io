@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Weekly schedule — edit here each week; single source of truth
+const week = [
+  { day: 'شنبه',    location: 'ورزشگاه کشوری',    focus: 'اینتروال / سرعت',     time: '۶:۰۰ صبح' },
+  { day: 'یکشنبه',  location: 'پارک یاس فاطمی',    focus: 'دوی سبک / ریکاوری',   time: '۶:۰۰ صبح' },
+  { day: 'دوشنبه',  location: 'بوستان ولایت',      focus: 'تِمپو',                time: '۶:۰۰ صبح' },
+  { day: 'سه‌شنبه', location: 'درکه',              focus: 'تریل / صعود سبک',      time: '۶:۰۰ صبح' },
+  { day: 'چهارشنبه', location: 'لواسان',           focus: 'اینتروال کوهستان',     time: '۶:۰۰ صبح' },
+  { day: 'پنج‌شنبه', location: 'گردنه‌ی قوچک',      focus: 'دوی طولانی کوهستان',   time: '۵:۳۰ صبح' },
+  { day: 'جمعه',    location: 'لواسان / دماوند',   focus: 'لانگ‌ران هفتگی',        time: '۵:۳۰ صبح' },
+];
+---
+<Base
+  title="تقویم تمرینات جیران — برنامه‌ی هفتگی"
+  description="برنامه‌ی هفتگی تمرینات باشگاه جیران — شنبه تا جمعه، هر روز ۶ صبح در نقاط مختلف تهران و اطراف."
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-eyebrow">تقویم تمرینات</p>
+      <h1>برنامه‌ی این هفته</h1>
+      <p class="lead">
+        هر هفته اینجا به‌روز می‌شود. اگر عضو تیم هستی، محل دقیق و لینک مکان را در گروه واتس‌اپ خواهی داشت.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="calendar-grid">
+        {week.map((d) => (
+          <article class="cal-card">
+            <h3 class="cal-day">{d.day}</h3>
+            <p class="cal-time">{d.time}</p>
+            <p class="cal-location"><strong>محل:</strong> {d.location}</p>
+            <p class="cal-focus"><strong>تمرکز:</strong> {d.focus}</p>
+          </article>
+        ))}
+      </div>
+
+      <div class="calendar-note">
+        <p><strong>یادداشت:</strong> برنامه ممکن است بر اساس شرایط جوی یا اردوی خاص تغییر کند. برای اطلاع دقیق‌تر و اطلاع‌رسانی به‌موقع، عضو گروه واتس‌اپ باش.</p>
+        <a href="https://wa.me/989128889975" class="btn btn-primary" target="_blank" rel="noopener">پیوستن به گروه واتس‌اپ</a>
+      </div>
+    </div>
+  </section>
+</Base>

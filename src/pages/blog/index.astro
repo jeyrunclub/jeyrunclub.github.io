@@ -1,0 +1,40 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.isoDate.valueOf() - a.data.isoDate.valueOf()
+);
+---
+<Base
+  title="بلاگ جیران — آموزش دویدن، ماراتن، اولترا و کوهستان"
+  description="مقاله‌های آموزشی سالار پیری درباره‌ی دویدن، ماراتن، اولترا، تغذیه، پیشگیری از آسیب و مسیرهای دویدن در تهران."
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-eyebrow">بلاگ جیران</p>
+      <h1>آموزش دویدن با سالار</h1>
+      <p class="lead">
+        مقاله‌هایی درباره‌ی تمرین اصولی، ماراتن، اولترا، تغذیه و همه‌چیزهایی که یک دونده باید بداند.
+      </p>
+    </div>
+  </section>
+
+  <section class="section blog-listing">
+    <div class="container">
+      <div class="post-grid">
+        {posts.map((post) => (
+          <a class="post-card" href={`/blog/${post.id}`}>
+            <span class="post-tag">{post.data.tag}</span>
+            <h3>{post.data.title}</h3>
+            <p>{post.data.description}</p>
+            <div class="post-meta">
+              <span>{post.data.date}</span>
+              {post.data.readTime && <span>{post.data.readTime}</span>}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>

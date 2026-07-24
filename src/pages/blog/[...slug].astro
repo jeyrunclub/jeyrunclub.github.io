@@ -1,0 +1,33 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+import { render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+<Base title={`${post.data.title} — بلاگ جیران`} description={post.data.description}>
+  <main class="article-main">
+    <div class="container article-container">
+      <a href="/blog" class="back-link">← بازگشت به بلاگ</a>
+      <article>
+        <span class="article-tag">{post.data.tag}</span>
+        <h1 class="article-title">{post.data.title}</h1>
+        <p class="article-meta">{post.data.date}{post.data.readTime && ` · ${post.data.readTime}`}</p>
+        <div class="article-content">
+          <Content />
+        </div>
+        <footer class="article-footer">
+          <p>می‌خواهی با سالار تمرین کنی؟</p>
+          <a href="https://wa.me/989128889975" target="_blank" rel="noopener" class="btn btn-primary">پیام در واتس‌اپ</a>
+        </footer>
+      </article>
+    </div>
+  </main>
+</Base>

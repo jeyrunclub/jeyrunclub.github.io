@@ -575,6 +575,122 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .article-footer .btn { margin-top: 10px; }
 
+/* ---------- Page-hero (subpages) ---------- */
+.page-hero {
+  padding: 60px 0 30px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--surface) 0%, transparent 100%);
+}
+.page-hero h1 { margin-bottom: 12px; }
+.page-hero .lead { color: var(--text-dim); max-width: 60ch; margin: 0 auto; font-size: 1.05rem; }
+
+/* ---------- Services (homepage preview grid) ---------- */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+.service-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  transition: border-color 0.2s, transform 0.2s;
+  display: block;
+  color: inherit;
+}
+.service-card:hover { border-color: var(--accent); transform: translateY(-2px); color: inherit; }
+.service-emoji { font-size: 2rem; display: inline-block; margin-bottom: 10px; }
+.service-card h3 { margin: 0 0 8px; font-size: 1.1rem; }
+.service-card p { margin: 0; color: var(--text-dim); font-size: 0.9rem; }
+
+/* ---------- Services detail (services page) ---------- */
+.service-detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.service-detail {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 30px 28px;
+  align-items: flex-start;
+}
+.sd-icon { font-size: 2.8rem; line-height: 1; }
+.sd-body h2 { margin: 0 0 12px; font-size: 1.4rem; }
+.sd-body p  { color: var(--text-dim); margin: 0 0 16px; }
+.sd-body ul { margin: 0 0 20px; padding-right: 1.4em; color: var(--text-dim); }
+.sd-body li { margin-bottom: 6px; }
+
+@media (max-width: 640px) {
+  .service-detail { grid-template-columns: 1fr; gap: 16px; }
+  .sd-icon { font-size: 2rem; }
+}
+
+/* ---------- Calendar ---------- */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.cal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  transition: border-color 0.2s;
+}
+.cal-card:hover { border-color: var(--accent); }
+.cal-day { color: var(--accent); margin: 0 0 4px; font-size: 1.1rem; }
+.cal-time { color: var(--muted); font-size: 0.85rem; margin: 0 0 12px; }
+.cal-location, .cal-focus { margin: 0 0 8px; color: var(--text-dim); font-size: 0.95rem; }
+.cal-location strong, .cal-focus strong { color: var(--text); font-weight: 600; }
+.calendar-note {
+  background: var(--surface);
+  border-right: 3px solid var(--accent);
+  padding: 20px 22px;
+  border-radius: var(--radius-sm);
+}
+.calendar-note p { color: var(--text-dim); margin: 0 0 16px; }
+.calendar-note strong { color: var(--text); }
+
+/* ---------- Load-more (gallery page) ---------- */
+.load-more-wrap {
+  text-align: center;
+  margin-top: 32px;
+}
+
+/* ---------- Misc utility ---------- */
+blockquote.values {
+  background: var(--surface);
+  border-right: 3px solid var(--accent);
+  padding: 14px 20px;
+  margin: 20px 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text);
+}
+.learn-more { color: var(--accent); font-weight: 600; }
+.learn-more:hover { color: var(--accent-hover); }
+
+/* Site nav active state */
+.site-nav a.active { color: var(--text); position: relative; }
+.site-nav a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
 /* ---------- Footer ---------- */
 .site-footer {
   padding: 40px 0 30px;
