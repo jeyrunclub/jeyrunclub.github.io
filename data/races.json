@@ -1,0 +1,73 @@
+{
+  "updated": "2026-07-24",
+  "races": [
+    {
+      "name": "Uludag Premium Ultra Trail (UTMB)",
+      "year": "۲۰۲۴",
+      "location": "بورسا، ترکیه · ۲۹.۷ km · ۱۶۹۰ m+",
+      "time": "۳:۰۵:۳۳",
+      "note": "رتبه‌ی ۲ کل — بهترین امتیاز UTMB: ۷۳۹",
+      "medal": "silver"
+    },
+    {
+      "name": "Geoparktrail 40K (UTMB)",
+      "year": "۲۰۲۲",
+      "location": "۴۰ km · ۷۰۰ m+",
+      "time": "۲:۵۸:۲۸",
+      "note": "رتبه‌ی ۲ کل — امتیاز UTMB: ۶۸۸",
+      "medal": "silver"
+    },
+    {
+      "name": "Geoparktrail 30K (UTMB)",
+      "year": "۲۰۲۰",
+      "location": "۲۶.۵ km · ۳۸۰ m+",
+      "time": "۱:۵۶:۵۳",
+      "note": "امتیاز UTMB: ۶۳۰",
+      "medal": "finish"
+    },
+    {
+      "name": "ماراتن — رکورد شخصی",
+      "year": "",
+      "location": "",
+      "time": "۲:۳۴:۵۳",
+      "medal": "gold"
+    },
+    {
+      "name": "نیمه‌ماراتن — رکورد شخصی",
+      "year": "",
+      "location": "",
+      "time": "۱:۱۴:۵۰",
+      "medal": "gold"
+    },
+    {
+      "name": "۵۰ کیلومتر — رکورد شخصی",
+      "year": "",
+      "location": "اولترا",
+      "time": "۳:۵۳:۲۱",
+      "medal": "gold"
+    },
+    {
+      "name": "رنکینگ ITRA",
+      "year": "۱۴۰۵",
+      "location": "بین‌المللی",
+      "note": "رتبه‌ی نهم ایران — Performance Index ۷۰۶ (Advanced 1)",
+      "medal": "finish"
+    },
+    {
+      "name": "Kalugan → Fasham",
+      "year": "۱۴۰۵",
+      "location": "لواسان",
+      "time": "۳۴:۰۷",
+      "note": "دومین رکورد کل مسیر (استراوا)",
+      "medal": "silver"
+    },
+    {
+      "name": "آهار تا پل",
+      "year": "۱۴۰۵",
+      "location": "لواسان",
+      "time": "۱۵:۴۰",
+      "note": "دومین رکورد کل مسیر (استراوا)",
+      "medal": "silver"
+    }
+  ]
+}
