@@ -38,6 +38,28 @@ fetch('data/stats.json', { cache: 'no-cache' })
   })
   .catch(() => {});
 
+// Populate gallery
+fetch('data/gallery.json', { cache: 'no-cache' })
+  .then((r) => (r.ok ? r.json() : null))
+  .then((data) => {
+    if (!data || !Array.isArray(data.photos)) return;
+    const grid = document.getElementById('gallery-grid');
+    if (!grid) return;
+    grid.innerHTML = data.photos
+      .map(
+        (p) => `
+        <figure class="gal-item">
+          <img src="images/gallery/${p.file}" alt="${p.title || ''}" loading="lazy" />
+          <figcaption>
+            ${p.title ? `<strong>${p.title}</strong>` : ''}
+            ${p.story ? `<span>${p.story}</span>` : ''}
+          </figcaption>
+        </figure>`
+      )
+      .join('');
+  })
+  .catch(() => {});
+
 // Populate races list
 fetch('data/races.json', { cache: 'no-cache' })
   .then((r) => (r.ok ? r.json() : null))

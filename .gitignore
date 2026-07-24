@@ -3,3 +3,11 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+
+# Raw / source photos — processed versions live in images/
+*.HEIC
+*.heic
+*.MOV
+*.mov
+*.mp4
+/team/
