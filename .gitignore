@@ -28,6 +28,11 @@ pnpm-debug.log*
 *.heic
 *.MOV
 *.mov
+*.MP4
 *.mp4
+/IMG_*.JPG
+/IMG_*.jpg
+/IMG_*.PNG
+/IMG_*.png
 /team/
 
