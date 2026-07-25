@@ -1,72 +1,114 @@
 {
-  "updated": "2026-07-24",
+  "updated": "2026-07-26",
+  "note": "name/location/year/note are Persian. *_en fields are English.",
   "races": [
     {
       "name": "Uludag Premium Ultra Trail (UTMB)",
+      "name_en": "Uludağ Premium Ultra Trail (UTMB)",
       "year": "۲۰۲۴",
+      "year_en": "2024",
       "location": "بورسا، ترکیه · ۲۹.۷ km · ۱۶۹۰ m+",
+      "location_en": "Bursa, Türkiye · 29.7 km · 1,690 m+",
       "time": "۳:۰۵:۳۳",
+      "time_en": "3:05:33",
       "note": "رتبه‌ی ۲ کل — بهترین امتیاز UTMB: ۷۳۹",
+      "note_en": "2nd overall — best UTMB score: 739",
       "medal": "silver"
     },
     {
       "name": "Geoparktrail 40K (UTMB)",
+      "name_en": "Geoparktrail 40K (UTMB)",
       "year": "۲۰۲۲",
+      "year_en": "2022",
       "location": "۴۰ km · ۷۰۰ m+",
+      "location_en": "40 km · 700 m+",
       "time": "۲:۵۸:۲۸",
+      "time_en": "2:58:28",
       "note": "رتبه‌ی ۲ کل — امتیاز UTMB: ۶۸۸",
+      "note_en": "2nd overall — UTMB score: 688",
       "medal": "silver"
     },
     {
       "name": "Geoparktrail 30K (UTMB)",
+      "name_en": "Geoparktrail 30K (UTMB)",
       "year": "۲۰۲۰",
+      "year_en": "2020",
       "location": "۲۶.۵ km · ۳۸۰ m+",
+      "location_en": "26.5 km · 380 m+",
       "time": "۱:۵۶:۵۳",
+      "time_en": "1:56:53",
       "note": "امتیاز UTMB: ۶۳۰",
+      "note_en": "UTMB score: 630",
       "medal": "finish"
     },
     {
       "name": "ماراتن — رکورد شخصی",
+      "name_en": "Marathon — personal best",
       "year": "",
+      "year_en": "",
       "location": "",
+      "location_en": "",
       "time": "۲:۳۴:۵۳",
+      "time_en": "2:34:53",
       "medal": "gold"
     },
     {
       "name": "نیمه‌ماراتن — رکورد شخصی",
+      "name_en": "Half-marathon — personal best",
       "year": "",
+      "year_en": "",
       "location": "",
+      "location_en": "",
       "time": "۱:۱۴:۵۰",
+      "time_en": "1:14:50",
       "medal": "gold"
     },
     {
       "name": "۵۰ کیلومتر — رکورد شخصی",
+      "name_en": "50 km — personal best",
       "year": "",
+      "year_en": "",
       "location": "اولترا",
+      "location_en": "Ultra",
       "time": "۳:۵۳:۲۱",
+      "time_en": "3:53:21",
       "medal": "gold"
     },
     {
       "name": "رنکینگ ITRA",
+      "name_en": "ITRA ranking",
       "year": "۱۴۰۵",
+      "year_en": "2026",
       "location": "بین‌المللی",
+      "location_en": "International",
       "note": "رتبه‌ی نهم ایران — Performance Index ۷۰۶ (Advanced 1)",
+      "note_en": "9th in Iran — Performance Index 706 (Advanced 1)",
       "medal": "finish"
     },
     {
       "name": "Kalugan → Fasham",
+      "name_en": "Kalugan → Fasham",
       "year": "۱۴۰۵",
+      "year_en": "2026",
       "location": "لواسان",
+      "location_en": "Lavasan",
       "time": "۳۴:۰۷",
+      "time_en": "34:07",
       "note": "دومین رکورد کل مسیر (استراوا)",
+      "note_en": "2nd all-time on the segment (Strava)",
       "medal": "silver"
     },
     {
       "name": "آهار تا پل",
+      "name_en": "Ahar to Pol",
       "year": "۱۴۰۵",
+      "year_en": "2026",
       "location": "لواسان",
+      "location_en": "Lavasan",
       "time": "۱۵:۴۰",
+      "time_en": "15:40",
       "note": "دومین رکورد کل مسیر (استراوا)",
+      "note_en": "2nd all-time on the segment (Strava)",
       "medal": "silver"
     }
   ]

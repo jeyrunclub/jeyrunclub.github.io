@@ -90,14 +90,19 @@ const raceLabels: Record<string, string> = {
         {races.races.map((r: any) => {
           const cls = r.medal === 'gold' ? '' : r.medal === 'silver' ? 'silver' : r.medal === 'bronze' ? 'bronze' : 'finish';
           const icon = r.medal === 'gold' ? '🥇' : r.medal === 'silver' ? '🥈' : r.medal === 'bronze' ? '🥉' : '✓';
+          const name = r.name_en || r.name;
+          const year = r.year_en ?? r.year;
+          const loc = r.location_en ?? r.location;
+          const time = r.time_en || r.time;
+          const note = r.note_en || r.note;
           return (
             <div class="race-card">
               <div class={`race-medal ${cls}`}>{icon}</div>
               <div class="race-info">
-                <h3>{r.name}</h3>
-                {(r.year || r.location) && <p>{[r.year, r.location].filter(Boolean).join(' · ')}</p>}
-                {r.time && <p class="race-time">{r.time}</p>}
-                {r.note && <p>{r.note}</p>}
+                <h3>{name}</h3>
+                {(year || loc) && <p>{[year, loc].filter(Boolean).join(' · ')}</p>}
+                {time && <p class="race-time">{time}</p>}
+                {note && <p>{note}</p>}
               </div>
             </div>
           );

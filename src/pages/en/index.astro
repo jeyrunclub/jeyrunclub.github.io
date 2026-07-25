@@ -2,7 +2,12 @@
 import Base from '../../layouts/Base.astro';
 import gallery from '../../data/gallery.json';
 
-const featured = gallery.photos.slice(0, 8).map((p, i) => ({ ...p, id: i + 1 }));
+const featured = gallery.photos.slice(0, 8).map((p, i) => ({
+  ...p,
+  id: i + 1,
+  title: p.title_en || p.title,
+  story: p.story_en || p.story,
+}));
 ---
 <Base
   lang="en"
@@ -50,7 +55,7 @@ const featured = gallery.photos.slice(0, 8).map((p, i) => ({ ...p, id: i + 1 }))
       </div>
       <div class="hero-portrait" aria-hidden="true">
         <div class="portrait-frame">
-          <img src="/images/gallery/1.jpg" alt="Salar Piri at the champions wall" />
+          <img src="/images/gallery/new-img_0169.jpg" alt="Salar Piri at the champions wall" />
         </div>
       </div>
     </div>

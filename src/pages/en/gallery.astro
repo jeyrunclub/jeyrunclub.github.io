@@ -2,7 +2,12 @@
 import Base from '../../layouts/Base.astro';
 import gallery from '../../data/gallery.json';
 
-const photos = gallery.photos.map((p, i) => ({ ...p, id: i + 1 }));
+const photos = gallery.photos.map((p, i) => ({
+  ...p,
+  id: i + 1,
+  title: p.title_en || p.title,
+  story: p.story_en || p.story,
+}));
 const PAGE_SIZE = 24;
 const firstPage = photos.slice(0, PAGE_SIZE);
 ---

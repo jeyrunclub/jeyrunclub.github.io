@@ -1,371 +1,81 @@
 {
-  "updated": "2026-07-25",
-  "note": "Ordered by category: mountain → Salar → group.",
+  "updated": "2026-07-26",
+  "note": "Ordered by category: mountain → Salar → group. title/story are Persian; title_en/story_en are English.",
   "photos": [
-    {
-      "file": "new-img_3475.jpg",
-      "title": "تیم جیران و قله دماوند",
-      "story": "اردوی گروهی — دماوند در پس‌زمینه."
-    },
-    {
-      "file": "new-img_3918.jpg",
-      "title": "دماوند بالای سر تیم",
-      "story": "لحظه‌ی گروهی زیر آسمان دشت‌های اطراف دماوند."
-    },
-    {
-      "file": "new-img_6699.jpg",
-      "title": "تیم جیران — کوهستان",
-      "story": "اردوی گروهی، صبح یک روز کوهستانی."
-    },
-    {
-      "file": "damavand-purple.jpg",
-      "title": "دماوند در بهار",
-      "story": "گل‌های اُرس؛ همان مسیری که برای اردوی ارتفاع می‌رویم."
-    },
-    {
-      "file": "new-img_5522.jpg",
-      "title": "بالای ابرها",
-      "story": "ارتفاعات لواسان — آن‌جا که ابرها پایین‌ترند."
-    },
-    {
-      "file": "6.jpg",
-      "title": "بالای ابرها",
-      "story": "ارتفاعات لواسان — دویدن آن‌جا که ابرها پایین‌ترند."
-    },
-    {
-      "file": "new-img_6742.jpg",
-      "title": "دامنه‌ی دماوند",
-      "story": "چهار نفر، صعود آغاز شده — دماوند در پشت سر."
-    },
-    {
-      "file": "new-img_6956.jpg",
-      "title": "در راه دماوند",
-      "story": "درون ماشین ۴×۴ به سمت پایگاه، تیم فشرده و آماده."
-    },
-    {
-      "file": "new-img_6975.jpg",
-      "title": "بالاتر از ابرها روی برف",
-      "story": "شش نفر با تجهیزات کامل، در ارتفاع دماوند."
-    },
-    {
-      "file": "new-img_6986.jpg",
-      "title": "قله‌ی دماوند — ۵٬۶۱۰ متر",
-      "story": "آغوش تیمی زیر تابلوی قله. لحظه‌ای که تلاش هفته‌ها تمام می‌شود."
-    },
-    {
-      "file": "new-img_2988.jpg",
-      "title": "بعد از تمرین کوهستان",
-      "story": "برش‌های هندوانه، وانت به عنوان میز، دماوند در پس‌زمینه."
-    },
-    {
-      "file": "team-nomad.jpg",
-      "title": "میهمان چادر عشایر",
-      "story": "لحظه‌ای که فقط با دویدن به آن می‌رسی."
-    },
-    {
-      "file": "new-img_5306.jpg",
-      "title": "زیر آبشار",
-      "story": "پایان مسیر کوه، آبشار خنک، نفس دوباره."
-    },
-    {
-      "file": "team-lake.jpg",
-      "title": "کنار دریاچه، بعد از تمرین",
-      "story": "یک‌شنبه‌ی سبک، همراه دوست چهارپا."
-    },
-    {
-      "file": "new-img_2865.jpg",
-      "title": "دریاچه‌ی لواسان",
-      "story": "پس از تمرین گروهی، منظره‌ای که ارزش زود بیدار شدن را دارد."
-    },
-    {
-      "file": "group-b.jpg",
-      "title": "روز اردو، دماوند پشت سر",
-      "story": "تیم کامل، آسمان صاف، قله در انتظار."
-    },
-    {
-      "file": "new-img_5813.jpg",
-      "title": "تمرین زمستانی روی برف",
-      "story": "برف تازه‌ی توچال، تیم دور هم."
-    },
-    {
-      "file": "new-img_0388.jpg",
-      "title": "برف و آفتاب صبح",
-      "story": "زمستان لواسان، پس از دو روی برف."
-    },
-    {
-      "file": "5.jpg",
-      "title": "دویدن روی برف",
-      "story": "زمستان توچال — دویدن حتی وقتی همه‌چیز سفید است."
-    },
-    {
-      "file": "new-img_9452_2.jpg",
-      "title": "تریل در جنگل کاج",
-      "story": "قاب سیاه و سفید — رد پا در خاک، صف تیم پشت سر."
-    },
-    {
-      "file": "new-img_5274.jpg",
-      "title": "تریل درکه، سلفی مسیر",
-      "story": "صعود سبک صبحگاهی، تیم پشت سر، تهران دور دست."
-    },
-    {
-      "file": "new-img_5318.jpg",
-      "title": "آماده‌ی تریل",
-      "story": "چک‌آپ آخرین دقایق پیش از شروع مسیر — درکه."
-    },
-    {
-      "file": "new-img_0400.jpg",
-      "title": "صبح سرد کوهستان",
-      "story": "تیم بسته‌بندی‌شده، دم دم‌های صبح، پیش از یک لانگ‌ران."
-    },
-    {
-      "file": "new-img_0641.jpg",
-      "title": "سرمای زودهنگام صبح",
-      "story": "کاپشن‌ها، آسمان آبی، جاده‌ی کوهستان."
-    },
-    {
-      "file": "moment-b.jpg",
-      "title": "سلفی روی خط‌الرأس",
-      "story": "بلندی و آفتاب — جاده‌ی پیچ‌درپیچ پایین می‌رود."
-    },
-    {
-      "file": "new-img_3599.jpg",
-      "title": "سکوی اولترای اولوداغ",
-      "story": "سالار روی سکوی اولترا ترِیل اولوداغ ترکیه (۲۰۲۴) — رتبه‌ی دوم UP40."
-    },
-    {
-      "file": "new-img_3571.jpg",
-      "title": "پس از سکوی اولوداغ",
-      "story": "دسته گل، خرس عروسکی و پلاک — لحظه‌ی مراسم اهدای مدال."
-    },
-    {
-      "file": "new-img_3513.jpg",
-      "title": "فینیشر — ۲ در ۴۰km",
-      "story": "صفحه‌ی زمان‌بندی رسمی اولوداغ: رتبه‌ی ۲ کلی، ۱٬۷۹۰ متر صعود."
-    },
-    {
-      "file": "new-img_3499.jpg",
-      "title": "ورودی روستای UPUT",
-      "story": "پیش از استارت اولترا ترِیل اولوداغ."
-    },
-    {
-      "file": "new-img_5440.jpg",
-      "title": "پس از اولترای اولوداغ",
-      "story": "خط پایان — کنار یار مسیر."
-    },
-    {
-      "file": "salar-100k-pr.jpg",
-      "title": "۱۰۱ کیلومتر در ۷:۳۹:۵۹",
-      "story": "رکورد ۱۰۰ کیلومتر — و در همین دو، رکورد لایف‌تایم ۵۰ کیلومتر هم شکسته شد. ۹ فوریه ۲۰۲۴، تهران، میانگین ۴:۳۳ به ازای هر کیلومتر."
-    },
-    {
-      "file": "new-img_8128.jpg",
-      "title": "خط پایان ماراتن استانبول",
-      "story": "دیوار N Kolay، مدال روی گردن."
-    },
-    {
-      "file": "new-img_0099.jpg",
-      "title": "پایان ماراتن دبی",
-      "story": "مدال روی گردن، کنار همراه مسیر."
-    },
-    {
-      "file": "new-img_0302.jpg",
-      "title": "گواهی ماراتن دبی ۲۰۲۵",
-      "story": "۰۲:۳۵:۴۳ — یکی از سریع‌ترین ماراتن‌های زندگی."
-    },
-    {
-      "file": "stockholm-bib.jpg",
-      "title": "ماراتن استکهلم ۲۰۲۶",
-      "story": "شماره‌ی ۳۴۴۴۵ — گروه استارت D."
-    },
-    {
-      "file": "new-img_9987.jpg",
-      "title": "زیر دماوند",
-      "story": "سلفی مسیر — دماوند پشت سر."
-    },
-    {
-      "file": "new-img_0897.jpg",
-      "title": "دیوار مدال‌ها",
-      "story": "مدال‌های سال‌ها مسابقه، همراه شماره‌های قابی."
-    },
-    {
-      "file": "new-img_0169.jpg",
-      "title": "دیوار قهرمانان",
-      "story": "نام «سالار پیری» روی دیوار قهرمانان مسابقه."
-    },
-    {
-      "file": "1.jpg",
-      "title": "روز ایونت",
-      "story": "در دیوار قهرمانان مسابقه."
-    },
-    {
-      "file": "new-img_7072.jpg",
-      "title": "اسپرینت روی پیست",
-      "story": "لحظه‌ی سرعت روی پیست کشوری — ست‌های ۴۰۰ متر."
-    },
-    {
-      "file": "new-img_1019.jpg",
-      "title": "دم‌نوش پس از تمرین",
-      "story": "لیوان چای در دست، دره‌ی برفی پشت سر."
-    },
-    {
-      "file": "new-img_8174.jpg",
-      "title": "بالای قله، پس از تمرین",
-      "story": "یک قاب ساده — قله، ابر، برف."
-    },
-    {
-      "file": "new-img_2575.jpg",
-      "title": "شمشک — پیش از تمرین",
-      "story": "روز اردوی کوهستان، آماده‌ی صعود."
-    },
-    {
-      "file": "new-img_3441.jpg",
-      "title": "تغذیه‌ی بعد از دو",
-      "story": "کاسه‌ی سالاد و آب گازدار — سوخت‌گیری اولترا."
-    },
-    {
-      "file": "new-img_5501.jpg",
-      "title": "یک بستنی خنک",
-      "story": "یک لحظه‌ی سبک بعد از کوهنوردی — بستنی و لبخند."
-    },
-    {
-      "file": "salar-portrait.jpg",
-      "title": "استراحت بین تمرین",
-      "story": ""
-    },
-    {
-      "file": "team-group.jpg",
-      "title": "کلاس گروهی جیران",
-      "story": "یکی از تمرین‌های صبحگاهی — تیم کامل با هم."
-    },
-    {
-      "file": "team-trees.jpg",
-      "title": "هر روز ۶ صبح",
-      "story": "قبل از شروع تمرین، زیر سایه‌ی درخت‌های تهران."
-    },
-    {
-      "file": "new-img_2334.jpg",
-      "title": "کلاس گروهی — پارک",
-      "story": "تیم کامل، یک صبح آفتابی."
-    },
-    {
-      "file": "3.jpg",
-      "title": "پیست کشوری",
-      "story": "تمرین‌های اینتروال — پایه‌ی همه‌ی رکوردها."
-    },
-    {
-      "file": "2.jpg",
-      "title": "قبل از تمرین، کشوری",
-      "story": "ورزشگاه کشوری، صبح زود، هوای تازه."
-    },
-    {
-      "file": "4.jpg",
-      "title": "زیر برج میلاد",
-      "story": "تمرین صبحگاهی در تهران — با نور آفتاب اول صبح."
-    },
-    {
-      "file": "new-img_2412.jpg",
-      "title": "جلسه‌ی سرعت با مخروط",
-      "story": "مخروط‌های رنگی، هایکنی‌ها، سالار در جلو."
-    },
-    {
-      "file": "moment-a.jpg",
-      "title": "لانج‌های گرم‌کردنی",
-      "story": "صف تیم روی خیابان، حرکت‌های آماده‌سازی صبحگاهی."
-    },
-    {
-      "file": "group-a.jpg",
-      "title": "سلفی در حال دویدن",
-      "story": ""
-    },
-    {
-      "file": "group-c.jpg",
-      "title": "زیر درختان چنار",
-      "story": "پس از دویدن — سایه، دیوار سنگی، تیم کامل."
-    },
-    {
-      "file": "new-img_2982.jpg",
-      "title": "تمرین در خیابان",
-      "story": "لحظه‌ای از یک صبح تیمی."
-    },
-    {
-      "file": "new-img_2914.jpg",
-      "title": "کنار تیم و دوچرخه",
-      "story": "یکی از اعضا سرعت‌گیر تیم روی دوچرخه."
-    },
-    {
-      "file": "new-img_3354.jpg",
-      "title": "دوچرخه‌سواری گروهی",
-      "story": "روز کراس ترینینگ — تیم روی دوچرخه در خیابان‌های شمال تهران."
-    },
-    {
-      "file": "new-img_7752.jpg",
-      "title": "غروب، پس از تمرین",
-      "story": "بزرگ‌ترین قاب تیمی — پارکینگ محل ملاقات."
-    },
-    {
-      "file": "new-img_3294.jpg",
-      "title": "پارکینگ محل تجمع",
-      "story": "جمع شدن پیش از استارت روزانه."
-    },
-    {
-      "file": "new-img_8227.jpg",
-      "title": "پای دروازه‌ی آجری",
-      "story": "قاب تیمی مقابل یک بنای قدیمی تهران."
-    },
-    {
-      "file": "new-img_8363.jpg",
-      "title": "روی صخره‌ها",
-      "story": "استراحت روی سنگ‌های کنار جاده، آسمان صاف."
-    },
-    {
-      "file": "new-img_8760.jpg",
-      "title": "دیوار آجرقرمز",
-      "story": "قاب تیمی، نور صبحگاهی، دیوار قدیمی."
-    },
-    {
-      "file": "new-img_8840.jpg",
-      "title": "کوچه‌های تهران",
-      "story": "خیابان مسکونی، اول صبح، پیش از استارت."
-    },
-    {
-      "file": "new-img_9128.jpg",
-      "title": "کنار وانت، در راه اردو",
-      "story": "لجستیک ساده، تیم آماده، جنگل در پس‌زمینه."
-    },
-    {
-      "file": "new-img_9223.jpg",
-      "title": "روی چمن استادیوم",
-      "story": "استراحت پس از دور دور استادیوم — چمن، پرچم‌داران نور."
-    },
-    {
-      "file": "new-img_9688.jpg",
-      "title": "زیر بید مجنون",
-      "story": "پاییز، برگ‌های زرد، تیم کامل."
-    },
-    {
-      "file": "new-img_3232.jpg",
-      "title": "زیر چنارها",
-      "story": "نور غربال‌شده از میان برگ‌ها — یک تمرین صبحگاهی."
-    },
-    {
-      "file": "new-img_4122.jpg",
-      "title": "زیر بید بزرگ",
-      "story": "تیم کامل، بید سبز، پیش از دویدن."
-    },
-    {
-      "file": "new-img_4348.jpg",
-      "title": "خیابان محله، صبح زود",
-      "story": "چهره‌های تیم پیش از یک تمرین دیگر."
-    },
-    {
-      "file": "new-img_5841.jpg",
-      "title": "جنگل چیتگر",
-      "story": "قاب تیمی روی سکو، درختان پیرامون."
-    },
-    {
-      "file": "new-img_8052.jpg",
-      "title": "پاییز، پیش از استانبول",
-      "story": "بید طلایی، پیراهن ماراتن استانبول، تیم آماده‌ی مسابقه."
-    }
+    { "file": "new-img_3475.jpg",     "title": "اولترا ترِیل اولوداغ — ورودی مسابقه", "title_en": "Uludağ Ultra Trail — race entrance",              "story": "پیش از استارت اولترا ترِیل اولوداغ ترکیه، جلوی دروازه‌ی UPUT Village. سالار با بیب ۷۲۵ — همان مسابقه‌ای که رتبه‌ی دوم UP40 را گرفت.", "story_en": "Before the start of Uludağ Ultra Trail in Türkiye, at the UPUT Village gate. Salar with bib 725 — the same race where he took 2nd place in UP40." },
+    { "file": "new-img_3918.jpg",     "title": "دماوند بالای سر تیم",                "title_en": "Damavand above the team",                          "story": "لحظه‌ی گروهی زیر آسمان دشت‌های اطراف دماوند.",                                                                                              "story_en": "The team on the meadows around Damavand, sky wide open." },
+    { "file": "new-img_6699.jpg",     "title": "تیم جیران — کوهستان",               "title_en": "Team Jeyrun — in the mountains",                   "story": "اردوی گروهی، صبح یک روز کوهستانی.",                                                                                                        "story_en": "Group camp, one mountain morning." },
+    { "file": "damavand-purple.jpg",  "title": "دماوند در بهار",                     "title_en": "Damavand in spring",                               "story": "گل‌های اُرس؛ همان مسیری که برای اردوی ارتفاع می‌رویم.",                                                                                    "story_en": "Purple mountain thyme in bloom — the same route we take for altitude camps." },
+    { "file": "new-img_5522.jpg",     "title": "بالای ابرها",                        "title_en": "Above the clouds",                                 "story": "ارتفاعات لواسان — آن‌جا که ابرها پایین‌ترند.",                                                                                             "story_en": "The heights above Lavasan — where the clouds sit below you." },
+    { "file": "6.jpg",                "title": "بالای ابرها",                        "title_en": "Running above the clouds",                         "story": "ارتفاعات لواسان — دویدن آن‌جا که ابرها پایین‌ترند.",                                                                                       "story_en": "The Lavasan heights — running above the cloud line." },
+    { "file": "new-img_6742.jpg",     "title": "دامنه‌ی دماوند",                     "title_en": "Damavand foothills",                               "story": "چهار نفر، صعود آغاز شده — دماوند در پشت سر.",                                                                                              "story_en": "Four of us, ascent underway — Damavand rising behind." },
+    { "file": "new-img_6956.jpg",     "title": "در راه دماوند",                      "title_en": "On the way to Damavand",                           "story": "درون ماشین ۴×۴ به سمت پایگاه، تیم فشرده و آماده.",                                                                                          "story_en": "Packed into the 4×4 heading up to base camp, ready to move." },
+    { "file": "new-img_6975.jpg",     "title": "بالاتر از ابرها روی برف",           "title_en": "Above the clouds, on the snow",                    "story": "شش نفر با تجهیزات کامل، در ارتفاع دماوند.",                                                                                                "story_en": "Six of us, full alpine kit, high on Damavand." },
+    { "file": "new-img_6986.jpg",     "title": "قله‌ی دماوند — ۵٬۶۱۰ متر",          "title_en": "Summit of Damavand — 5,610 m",                     "story": "آغوش تیمی زیر تابلوی قله. لحظه‌ای که تلاش هفته‌ها تمام می‌شود.",                                                                            "story_en": "A team hug under the summit sign. The moment weeks of work end." },
+    { "file": "new-img_2988.jpg",     "title": "بعد از تمرین کوهستان",              "title_en": "After the mountain session",                        "story": "برش‌های هندوانه، وانت به عنوان میز، دماوند در پس‌زمینه.",                                                                                  "story_en": "Slices of watermelon, a pickup truck for a table, Damavand behind." },
+    { "file": "team-nomad.jpg",       "title": "میهمان چادر عشایر",                 "title_en": "Guests of the nomads",                              "story": "لحظه‌ای که فقط با دویدن به آن می‌رسی.",                                                                                                    "story_en": "The kind of moment you only find on your feet." },
+    { "file": "new-img_5306.jpg",     "title": "زیر آبشار",                         "title_en": "Under the waterfall",                               "story": "پایان مسیر کوه، آبشار خنک، نفس دوباره.",                                                                                                   "story_en": "End of the mountain route — cool waterfall, catching our breath." },
+    { "file": "team-lake.jpg",        "title": "کنار دریاچه، بعد از تمرین",         "title_en": "By the lake, after training",                      "story": "یک‌شنبه‌ی سبک، همراه دوست چهارپا.",                                                                                                        "story_en": "An easy Sunday, joined by our four-legged friend." },
+    { "file": "new-img_2865.jpg",     "title": "دریاچه‌ی لواسان",                    "title_en": "Lavasan lake",                                     "story": "پس از تمرین گروهی، منظره‌ای که ارزش زود بیدار شدن را دارد.",                                                                              "story_en": "After the group session — a view worth the early wake-up." },
+    { "file": "group-b.jpg",          "title": "روز اردو، دماوند پشت سر",            "title_en": "Camp day, Damavand behind",                        "story": "تیم کامل، آسمان صاف، قله در انتظار.",                                                                                                     "story_en": "Full team, clear sky, summit waiting." },
+    { "file": "new-img_5813.jpg",     "title": "تمرین زمستانی روی برف",             "title_en": "Winter training on snow",                          "story": "برف تازه‌ی توچال، تیم دور هم.",                                                                                                            "story_en": "Fresh Tochal snow, the whole team together." },
+    { "file": "new-img_0388.jpg",     "title": "برف و آفتاب صبح",                    "title_en": "Snow and morning sun",                             "story": "زمستان لواسان، پس از دو روی برف.",                                                                                                         "story_en": "Winter in Lavasan, after a run on the snow." },
+    { "file": "5.jpg",                "title": "دویدن روی برف",                      "title_en": "Running on snow",                                  "story": "زمستان توچال — دویدن حتی وقتی همه‌چیز سفید است.",                                                                                          "story_en": "Winter Tochal — running even when everything is white." },
+    { "file": "new-img_9452_2.jpg",   "title": "تریل در جنگل کاج",                  "title_en": "Trail through the pines",                          "story": "قاب سیاه و سفید — رد پا در خاک، صف تیم پشت سر.",                                                                                          "story_en": "A black-and-white frame — footprints in the dirt, the team single-file behind." },
+    { "file": "new-img_5274.jpg",     "title": "تریل درکه، سلفی مسیر",              "title_en": "Darakeh trail — selfie on the way up",              "story": "صعود سبک صبحگاهی، تیم پشت سر، تهران دور دست.",                                                                                            "story_en": "Easy morning ascent, team just behind, Tehran in the distance." },
+    { "file": "new-img_5318.jpg",     "title": "آماده‌ی تریل",                      "title_en": "Ready for the trail",                              "story": "چک‌آپ آخرین دقایق پیش از شروع مسیر — درکه.",                                                                                              "story_en": "Final checks before we push off — Darakeh." },
+    { "file": "new-img_0400.jpg",     "title": "صبح سرد کوهستان",                    "title_en": "Cold mountain morning",                            "story": "تیم بسته‌بندی‌شده، دم دم‌های صبح، پیش از یک لانگ‌ران.",                                                                                    "story_en": "Team bundled up in the pre-dawn cold, before a long run." },
+    { "file": "new-img_0641.jpg",     "title": "سرمای زودهنگام صبح",                 "title_en": "Early-morning chill",                              "story": "کاپشن‌ها، آسمان آبی، جاده‌ی کوهستان.",                                                                                                     "story_en": "Puffer jackets, blue sky, mountain road." },
+    { "file": "moment-b.jpg",         "title": "سلفی روی خط‌الرأس",                 "title_en": "Ridge-line selfie",                                "story": "بلندی و آفتاب — جاده‌ی پیچ‌درپیچ پایین می‌رود.",                                                                                           "story_en": "Height and sunlight — the switchback road drops away below." },
+
+    { "file": "new-img_3599.jpg",     "title": "سکوی اولترای اولوداغ",               "title_en": "Uludağ Ultra Trail podium",                        "story": "سالار روی سکوی اولترا ترِیل اولوداغ ترکیه (۲۰۲۴) — رتبه‌ی دوم UP40.",                                                                    "story_en": "Salar on the podium at Uludağ Premium Ultra Trail, Türkiye (2024) — 2nd place, UP40." },
+    { "file": "new-img_3571.jpg",     "title": "پس از سکوی اولوداغ",                "title_en": "After the Uludağ podium",                          "story": "دسته گل، خرس عروسکی و پلاک — لحظه‌ی مراسم اهدای مدال.",                                                                                    "story_en": "Bouquet, teddy bear, and plaque — the medal ceremony." },
+    { "file": "new-img_3513.jpg",     "title": "فینیشر — ۲ در ۴۰km",                "title_en": "Finisher — 2nd in the 40 km",                      "story": "صفحه‌ی زمان‌بندی رسمی اولوداغ: رتبه‌ی ۲ کلی، ۱٬۷۹۰ متر صعود.",                                                                          "story_en": "Official Uludağ timing screen: 2nd overall, 1,790 m of climbing." },
+    { "file": "new-img_3499.jpg",     "title": "ورودی روستای UPUT",                  "title_en": "UPUT Village entrance",                            "story": "پیش از استارت اولترا ترِیل اولوداغ.",                                                                                                      "story_en": "Before the start of Uludağ Ultra Trail." },
+    { "file": "new-img_5440.jpg",     "title": "پس از اولترای اولوداغ",             "title_en": "After the Uludağ ultra",                           "story": "خط پایان — کنار یار مسیر.",                                                                                                                 "story_en": "At the finish — with a friend from the course." },
+    { "file": "salar-100k-pr.jpg",    "title": "۱۰۱ کیلومتر در ۷:۳۹:۵۹",             "title_en": "101 km in 7:39:59",                                "story": "رکورد ۱۰۰ کیلومتر — و در همین دو، رکورد لایف‌تایم ۵۰ کیلومتر هم شکسته شد. ۹ فوریه ۲۰۲۴، تهران، میانگین ۴:۳۳ به ازای هر کیلومتر.",       "story_en": "100 km PR — and the 50 km lifetime PR fell inside the same run. February 9, 2024, Tehran, average 4:33 per km." },
+    { "file": "new-img_8128.jpg",     "title": "خط پایان ماراتن استانبول",           "title_en": "Istanbul Marathon finish",                         "story": "دیوار N Kolay، مدال روی گردن.",                                                                                                            "story_en": "N Kolay finish wall, medal around the neck." },
+    { "file": "new-img_0099.jpg",     "title": "پایان ماراتن دبی",                  "title_en": "Finishing the Dubai Marathon",                     "story": "مدال روی گردن، کنار همراه مسیر.",                                                                                                          "story_en": "Medal on, next to a running partner from the course." },
+    { "file": "new-img_0302.jpg",     "title": "گواهی ماراتن دبی ۲۰۲۵",              "title_en": "Dubai Marathon 2025 certificate",                  "story": "۰۲:۳۵:۴۳ — یکی از سریع‌ترین ماراتن‌های زندگی.",                                                                                          "story_en": "02:35:43 — one of the fastest marathons of his life." },
+    { "file": "stockholm-bib.jpg",    "title": "ماراتن استکهلم ۲۰۲۶",                "title_en": "Stockholm Marathon 2026",                          "story": "شماره‌ی ۳۴۴۴۵ — گروه استارت D.",                                                                                                            "story_en": "Bib 34445 — start group D." },
+    { "file": "new-img_9987.jpg",     "title": "زیر دماوند",                         "title_en": "Under Damavand",                                    "story": "سلفی مسیر — دماوند پشت سر.",                                                                                                                "story_en": "Trail selfie — Damavand behind us." },
+    { "file": "new-img_0897.jpg",     "title": "دیوار مدال‌ها",                     "title_en": "The medal wall",                                    "story": "مدال‌های سال‌ها مسابقه، همراه شماره‌های قابی.",                                                                                              "story_en": "Years of race medals, framed bibs alongside." },
+    { "file": "new-img_0169.jpg",     "title": "دیوار قهرمانان",                    "title_en": "The wall of champions",                            "story": "نام «سالار پیری» روی دیوار قهرمانان مسابقه.",                                                                                              "story_en": "\"SALAR PIRI\" printed on the race's wall of finishers." },
+    { "file": "new-img_7072.jpg",     "title": "اسپرینت روی پیست",                  "title_en": "Sprint on the track",                              "story": "لحظه‌ی سرعت روی پیست کشوری — ست‌های ۴۰۰ متر.",                                                                                            "story_en": "Speed work on the Keshvari track — 400 m sets." },
+    { "file": "new-img_1019.jpg",     "title": "دم‌نوش پس از تمرین",                "title_en": "A hot drink after training",                       "story": "لیوان چای در دست، دره‌ی برفی پشت سر.",                                                                                                    "story_en": "Cup of tea in hand, snowy valley behind." },
+    { "file": "new-img_8174.jpg",     "title": "بالای قله، پس از تمرین",             "title_en": "On top, after the run",                            "story": "یک قاب ساده — قله، ابر، برف.",                                                                                                             "story_en": "A simple frame — summit, cloud, snow." },
+    { "file": "new-img_2575.jpg",     "title": "شمشک — پیش از تمرین",                "title_en": "Shemshak, before the session",                     "story": "روز اردوی کوهستان، آماده‌ی صعود.",                                                                                                        "story_en": "Mountain camp day, ready to go up." },
+    { "file": "new-img_3441.jpg",     "title": "تغذیه‌ی بعد از دو",                 "title_en": "Post-run fueling",                                 "story": "کاسه‌ی سالاد و آب گازدار — سوخت‌گیری اولترا.",                                                                                            "story_en": "A bowl of salad and sparkling water — ultra-runner refueling." },
+    { "file": "new-img_5501.jpg",     "title": "یک بستنی خنک",                       "title_en": "One cold ice cream",                               "story": "یک لحظه‌ی سبک بعد از کوهنوردی — بستنی و لبخند.",                                                                                          "story_en": "A light moment after a mountain day — ice cream and a grin." },
+    { "file": "salar-portrait.jpg",   "title": "استراحت بین تمرین",                 "title_en": "Between sets",                                     "story": "",                                                                                                                                          "story_en": "" },
+
+    { "file": "team-group.jpg",       "title": "کلاس گروهی جیران",                  "title_en": "Jeyrun group class",                               "story": "یکی از تمرین‌های صبحگاهی — تیم کامل با هم.",                                                                                              "story_en": "One of the morning sessions — the whole team together." },
+    { "file": "team-trees.jpg",       "title": "هر روز ۶ صبح",                       "title_en": "Every day, 6 AM",                                  "story": "قبل از شروع تمرین، زیر سایه‌ی درخت‌های تهران.",                                                                                            "story_en": "Before the session begins, in the shade of Tehran's trees." },
+    { "file": "new-img_2334.jpg",     "title": "کلاس گروهی — پارک",                 "title_en": "Group class — in the park",                        "story": "تیم کامل، یک صبح آفتابی.",                                                                                                                 "story_en": "Full team, one sunny morning." },
+    { "file": "3.jpg",                "title": "پیست کشوری",                        "title_en": "Keshvari track",                                    "story": "تمرین‌های اینتروال — پایه‌ی همه‌ی رکوردها.",                                                                                              "story_en": "Interval work — the foundation of every PR." },
+    { "file": "2.jpg",                "title": "قبل از تمرین، کشوری",                "title_en": "Before training, Keshvari",                        "story": "ورزشگاه کشوری، صبح زود، هوای تازه.",                                                                                                       "story_en": "Keshvari Stadium, early morning, fresh air." },
+    { "file": "4.jpg",                "title": "زیر برج میلاد",                      "title_en": "Under Milad Tower",                                 "story": "تمرین صبحگاهی در تهران — با نور آفتاب اول صبح.",                                                                                          "story_en": "Morning training in Tehran — with the first light of day." },
+    { "file": "new-img_2412.jpg",     "title": "جلسه‌ی سرعت با مخروط",              "title_en": "Speed session with cones",                          "story": "مخروط‌های رنگی، هایکنی‌ها، سالار در جلو.",                                                                                                "story_en": "Colored cones, high knees, Salar leading from the front." },
+    { "file": "moment-a.jpg",         "title": "لانج‌های گرم‌کردنی",                 "title_en": "Warm-up lunges",                                   "story": "صف تیم روی خیابان، حرکت‌های آماده‌سازی صبحگاهی.",                                                                                          "story_en": "The team in a line on the street, pre-run activation." },
+    { "file": "group-a.jpg",          "title": "سلفی در حال دویدن",                  "title_en": "Selfie on the run",                                 "story": "",                                                                                                                                          "story_en": "" },
+    { "file": "group-c.jpg",          "title": "زیر درختان چنار",                    "title_en": "Under the plane trees",                            "story": "پس از دویدن — سایه، دیوار سنگی، تیم کامل.",                                                                                                "story_en": "After the run — shade, stone wall, whole team." },
+    { "file": "new-img_2982.jpg",     "title": "تمرین در خیابان",                    "title_en": "Training in the street",                            "story": "لحظه‌ای از یک صبح تیمی.",                                                                                                                   "story_en": "A snapshot from a team morning." },
+    { "file": "new-img_2914.jpg",     "title": "کنار تیم و دوچرخه",                 "title_en": "Team plus pace-cyclist",                            "story": "یکی از اعضا سرعت‌گیر تیم روی دوچرخه.",                                                                                                      "story_en": "One member setting pace for the group on a bike." },
+    { "file": "new-img_3354.jpg",     "title": "دوچرخه‌سواری گروهی",                 "title_en": "Group cycling day",                                 "story": "روز کراس ترینینگ — تیم روی دوچرخه در خیابان‌های شمال تهران.",                                                                              "story_en": "Cross-training day — the team on bikes through northern Tehran." },
+    { "file": "new-img_7752.jpg",     "title": "غروب، پس از تمرین",                  "title_en": "Dusk, after training",                              "story": "بزرگ‌ترین قاب تیمی — پارکینگ محل ملاقات.",                                                                                                "story_en": "Biggest team frame — the meeting-point parking lot." },
+    { "file": "new-img_3294.jpg",     "title": "پارکینگ محل تجمع",                   "title_en": "The gathering-point parking",                       "story": "جمع شدن پیش از استارت روزانه.",                                                                                                             "story_en": "Everyone gathering before the daily start." },
+    { "file": "new-img_3259.jpg",     "title": "ملاقات غروب",                        "title_en": "Evening meet-up",                                   "story": "نور نارنجی آخر روز، تیم کامل.",                                                                                                             "story_en": "Late-day orange light, full team." },
+    { "file": "new-img_8227.jpg",     "title": "پای دروازه‌ی آجری",                  "title_en": "By the brick gate",                                 "story": "قاب تیمی مقابل یک بنای قدیمی تهران.",                                                                                                       "story_en": "Team framed against an old Tehran building." },
+    { "file": "new-img_8363.jpg",     "title": "روی صخره‌ها",                        "title_en": "On the rocks",                                      "story": "استراحت روی سنگ‌های کنار جاده، آسمان صاف.",                                                                                                "story_en": "Rest stop on the roadside rocks, clear sky." },
+    { "file": "new-img_8760.jpg",     "title": "دیوار آجرقرمز",                      "title_en": "The red-brick wall",                                "story": "قاب تیمی، نور صبحگاهی، دیوار قدیمی.",                                                                                                       "story_en": "Team frame, morning light, old wall." },
+    { "file": "new-img_8840.jpg",     "title": "کوچه‌های تهران",                     "title_en": "Streets of Tehran",                                 "story": "خیابان مسکونی، اول صبح، پیش از استارت.",                                                                                                    "story_en": "A residential lane, early morning, before we start." },
+    { "file": "new-img_9128.jpg",     "title": "کنار وانت، در راه اردو",             "title_en": "Beside the pickup, en route",                       "story": "لجستیک ساده، تیم آماده، جنگل در پس‌زمینه.",                                                                                                 "story_en": "Simple logistics, team ready, forest behind." },
+    { "file": "new-img_9223.jpg",     "title": "روی چمن استادیوم",                  "title_en": "On the stadium grass",                              "story": "استراحت پس از دور دور استادیوم — چمن، پرچم‌داران نور.",                                                                                     "story_en": "Rest after laps around the stadium — grass, floodlight masts." },
+    { "file": "new-img_9688.jpg",     "title": "زیر بید مجنون",                     "title_en": "Under the weeping willow",                          "story": "پاییز، برگ‌های زرد، تیم کامل.",                                                                                                             "story_en": "Autumn, yellow leaves, full team." },
+    { "file": "new-img_3232.jpg",     "title": "زیر چنارها",                         "title_en": "Under the plane trees",                             "story": "نور غربال‌شده از میان برگ‌ها — یک تمرین صبحگاهی.",                                                                                          "story_en": "Sunlight filtered through leaves — one morning session." },
+    { "file": "new-img_4122.jpg",     "title": "زیر بید بزرگ",                      "title_en": "Under the big willow",                              "story": "تیم کامل، بید سبز، پیش از دویدن.",                                                                                                          "story_en": "Full team, green willow, before we start running." },
+    { "file": "new-img_4348.jpg",     "title": "خیابان محله، صبح زود",              "title_en": "Neighborhood street, early morning",                "story": "چهره‌های تیم پیش از یک تمرین دیگر.",                                                                                                       "story_en": "The team's faces before another session." },
+    { "file": "new-img_5841.jpg",     "title": "جنگل چیتگر",                         "title_en": "Chitgar forest",                                    "story": "قاب تیمی روی سکو، درختان پیرامون.",                                                                                                          "story_en": "Team framed on a platform, trees all around." },
+    { "file": "new-img_8052.jpg",     "title": "پاییز، پیش از استانبول",             "title_en": "Autumn, before Istanbul",                           "story": "بید طلایی، پیراهن ماراتن استانبول، تیم آماده‌ی مسابقه.",                                                                                    "story_en": "Golden willow, Istanbul Marathon shirt, team ready to race." }
   ]
 }

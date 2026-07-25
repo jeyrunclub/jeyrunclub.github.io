@@ -6,7 +6,11 @@ export function getStaticPaths() {
   return gallery.photos.map((photo, i) => ({
     params: { id: String(i + 1) },
     props: {
-      photo,
+      photo: {
+        ...photo,
+        title: photo.title_en || photo.title,
+        story: photo.story_en || photo.story,
+      },
       number: i + 1,
       prev: i > 0 ? i : null,
       next: i < gallery.photos.length - 1 ? i + 2 : null,
