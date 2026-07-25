@@ -32,7 +32,10 @@ pnpm-debug.log*
 *.mp4
 /IMG_*.JPG
 /IMG_*.jpg
+/IMG_*.JPEG
+/IMG_*.jpeg
 /IMG_*.PNG
 /IMG_*.png
+/*.jpeg
 /team/
 

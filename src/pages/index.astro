@@ -3,8 +3,9 @@ import Base from '../layouts/Base.astro';
 import gallery from '../data/gallery.json';
 import stats from '../data/stats.json';
 
-const featured = gallery.photos.slice(0, 8);
+const featured = gallery.photos.slice(0, 8).map((p, i) => ({ ...p, id: i + 1 }));
 const heroFacts = stats.cards.slice(0, 3);
+const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
 ---
 <Base
   title="جیران — باشگاه دویدن، تریل و کوهستان | سالار پیری"
@@ -160,16 +161,17 @@ const heroFacts = stats.cards.slice(0, 3);
       <h2>لحظه‌های جیران</h2>
       <div class="gallery-grid">
         {featured.map((p) => (
-          <figure class="gal-item">
-            <img src={`/images/gallery/${p.file}`} alt={p.title} loading="lazy" />
-            <figcaption>
+          <a href={`/photo/${p.id}`} class="gal-item">
+            <span class="gal-badge">#{fa(p.id)}</span>
+            <img src={`/images/gallery/${p.file}`} alt={p.title || `عکس شماره ${p.id}`} loading="lazy" />
+            <span class="gal-caption">
               {p.title && <strong>{p.title}</strong>}
               {p.story && <span>{p.story}</span>}
-            </figcaption>
-          </figure>
+            </span>
+          </a>
         ))}
       </div>
-      <p class="ig-follow"><a href="/gallery">دیدن همه‌ی عکس‌ها ({gallery.photos.length}) ←</a></p>
+      <p class="ig-follow"><a href="/gallery">دیدن همه‌ی عکس‌ها ({fa(gallery.photos.length)}) ←</a></p>
     </div>
   </section>
 

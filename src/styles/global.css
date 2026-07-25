@@ -424,6 +424,8 @@ ul { margin: 0; padding: 0; list-style: none; }
   position: relative;
   display: flex;
   flex-direction: column;
+  text-decoration: none;
+  color: inherit;
   transition: border-color 0.2s, transform 0.2s;
 }
 .gal-item:hover { border-color: var(--accent); transform: translateY(-2px); }
@@ -435,21 +437,114 @@ ul { margin: 0; padding: 0; list-style: none; }
   transition: transform 0.4s;
 }
 .gal-item:hover img { transform: scale(1.03); }
+.gal-badge {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 10px;
+  z-index: 2;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+.gal-caption {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.gal-caption strong {
+  font-size: 0.98rem;
+  color: var(--text);
+  font-weight: 700;
+}
+.gal-caption span {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+/* legacy — kept in case any figcaption remains */
 .gal-item figcaption {
   padding: 14px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-.gal-item figcaption strong {
-  font-size: 0.98rem;
-  color: var(--text);
-  font-weight: 700;
+.gal-item figcaption strong { font-size: 0.98rem; color: var(--text); font-weight: 700; }
+.gal-item figcaption span { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+
+/* ---------- Photo detail page ---------- */
+.photo-page { padding: 30px 0 60px; }
+.photo-inner { max-width: 900px; }
+.photo-crumb {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 20px;
+  font-size: 0.9rem;
 }
-.gal-item figcaption span {
-  font-size: 0.85rem;
+.photo-crumb a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.photo-crumb a:hover { text-decoration: underline; }
+.photo-num {
+  background: var(--surface);
+  border: 1px solid var(--border);
   color: var(--text-dim);
-  line-height: 1.6;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.photo-hero {
+  margin: 0 0 24px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.photo-hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+  object-fit: contain;
+  background: #000;
+}
+.photo-meta h1 {
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  margin: 0 0 12px;
+}
+.photo-story {
+  font-size: 1.05rem;
+  line-height: 1.9;
+  color: var(--text);
+  margin: 0 0 28px;
+}
+.photo-story-empty {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+}
+.photo-story-empty em { color: var(--accent-2); font-style: normal; }
+.photo-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.photo-nav .btn { padding: 8px 16px; font-size: 0.9rem; }
+@media (max-width: 520px) {
+  .photo-nav { flex-wrap: wrap; }
+  .photo-nav .btn { flex: 1 1 auto; text-align: center; }
 }
 .gal-item.placeholder {
   aspect-ratio: 4 / 3;

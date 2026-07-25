@@ -1,0 +1,61 @@
+---
+import Base from '../../layouts/Base.astro';
+import gallery from '../../data/gallery.json';
+
+export function getStaticPaths() {
+  return gallery.photos.map((photo, i) => ({
+    params: { id: String(i + 1) },
+    props: {
+      photo,
+      number: i + 1,
+      prev: i > 0 ? i : null,
+      next: i < gallery.photos.length - 1 ? i + 2 : null,
+      total: gallery.photos.length,
+    },
+  }));
+}
+
+const { photo, number, prev, next, total } = Astro.props;
+const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+---
+<Base
+  title={`عکس #${fa(number)} — ${photo.title || 'گالری جیران'}`}
+  description={photo.story || photo.title || `عکس شماره ${fa(number)} از گالری جیران`}
+  ogImage={`/images/gallery/${photo.file}`}
+>
+  <section class="photo-page">
+    <div class="container photo-inner">
+      <p class="photo-crumb">
+        <a href="/gallery">← بازگشت به گالری</a>
+        <span class="photo-num">عکس #{fa(number)} از {fa(total)}</span>
+      </p>
+
+      <figure class="photo-hero">
+        <img src={`/images/gallery/${photo.file}`} alt={photo.title || `عکس شماره ${number}`} />
+      </figure>
+
+      <div class="photo-meta">
+        {photo.title && <h1>{photo.title}</h1>}
+        {photo.story ? (
+          <p class="photo-story">{photo.story}</p>
+        ) : (
+          <p class="photo-story photo-story-empty">
+            هنوز داستانی برای این عکس نوشته نشده.
+            <br />
+            <em>اگر می‌خواهی داستان این لحظه را ثبت کنی، به سالار بگو: «داستان عکس #{fa(number)} …»</em>
+          </p>
+        )}
+      </div>
+
+      <nav class="photo-nav">
+        {prev ? (
+          <a href={`/photo/${prev}`} class="btn btn-ghost">→ قبلی (#{fa(prev)})</a>
+        ) : <span></span>}
+        <a href="/gallery" class="btn btn-ghost">همه‌ی عکس‌ها</a>
+        {next ? (
+          <a href={`/photo/${next}`} class="btn btn-ghost">بعدی (#{fa(next)}) ←</a>
+        ) : <span></span>}
+      </nav>
+    </div>
+  </section>
+</Base>
