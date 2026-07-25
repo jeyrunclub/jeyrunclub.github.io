@@ -1,0 +1,61 @@
+---
+import Base from '../../../layouts/Base.astro';
+import gallery from '../../../data/gallery.json';
+
+export function getStaticPaths() {
+  return gallery.photos.map((photo, i) => ({
+    params: { id: String(i + 1) },
+    props: {
+      photo,
+      number: i + 1,
+      prev: i > 0 ? i : null,
+      next: i < gallery.photos.length - 1 ? i + 2 : null,
+      total: gallery.photos.length,
+    },
+  }));
+}
+
+const { photo, number, prev, next, total } = Astro.props;
+---
+<Base
+  lang="en"
+  title={`Photo #${number} — ${photo.title || 'Jeyrun gallery'}`}
+  description={photo.story || photo.title || `Photo ${number} from the Jeyrun gallery`}
+  ogImage={`/images/gallery/${photo.file}`}
+>
+  <section class="photo-page">
+    <div class="container photo-inner">
+      <p class="photo-crumb">
+        <a href="/en/gallery">← Back to gallery</a>
+        <span class="photo-num">Photo #{number} of {total}</span>
+      </p>
+
+      <figure class="photo-hero">
+        <img src={`/images/gallery/${photo.file}`} alt={photo.title || `Photo ${number}`} />
+      </figure>
+
+      <div class="photo-meta">
+        {photo.title && <h1>{photo.title}</h1>}
+        {photo.story ? (
+          <p class="photo-story">{photo.story}</p>
+        ) : (
+          <p class="photo-story photo-story-empty">
+            No story yet for this photo.
+            <br />
+            <em>Want to add one? Tell Salar: "story for photo #{number} …"</em>
+          </p>
+        )}
+      </div>
+
+      <nav class="photo-nav">
+        {prev ? (
+          <a href={`/en/photo/${prev}`} class="btn btn-ghost">← Prev (#{prev})</a>
+        ) : <span></span>}
+        <a href="/en/gallery" class="btn btn-ghost">All photos</a>
+        {next ? (
+          <a href={`/en/photo/${next}`} class="btn btn-ghost">Next (#{next}) →</a>
+        ) : <span></span>}
+      </nav>
+    </div>
+  </section>
+</Base>

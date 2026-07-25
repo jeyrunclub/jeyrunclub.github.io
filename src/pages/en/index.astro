@@ -1,0 +1,180 @@
+---
+import Base from '../../layouts/Base.astro';
+import gallery from '../../data/gallery.json';
+
+const featured = gallery.photos.slice(0, 8).map((p, i) => ({ ...p, id: i + 1 }));
+---
+<Base
+  lang="en"
+  title="Jeyrun — Running, Trail & Mountain Club | Salar Piri"
+  description="Jeyrun Running & Mountain Club. From your first step to the marathon finish line and the summit of Damavand, we run with you. Daily 6 AM sessions in Tehran, custom plans, mountain camps."
+>
+
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'SportsClub',
+    name: 'Jeyrun Running & Mountain Club',
+    alternateName: 'جیران',
+    url: 'https://jeyrunclub.github.io/en',
+    logo: 'https://jeyrunclub.github.io/images/logo.png',
+    coach: {
+      '@type': 'Person',
+      name: 'Salar Piri',
+      alternateName: 'سالار پیری',
+      sameAs: [
+        'https://www.strava.com/athletes/33620923',
+        'https://www.instagram.com/salar.piri',
+      ],
+    },
+    sameAs: ['https://www.instagram.com/jeyrun_club'],
+    address: { '@type': 'PostalAddress', addressLocality: 'Tehran', addressCountry: 'IR' },
+  })} />
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="container hero-inner">
+      <div class="hero-text">
+        <p class="eyebrow">Running, Trail & Mountain Club · Tehran</p>
+        <h1>Jeyrun</h1>
+        <p class="tagline">From your first step to the marathon finish line and the summit of Damavand — we run with you.</p>
+        <ul class="hero-facts">
+          <li><strong>2:34:53</strong>Marathon PR</li>
+          <li><strong>1:14:50</strong>Half PR</li>
+          <li><strong>34:39</strong>10K PR</li>
+        </ul>
+        <div class="hero-ctas">
+          <a href="/en#join" class="btn btn-primary">Join the team</a>
+          <a href="/en/services" class="btn btn-ghost">Our services</a>
+        </div>
+      </div>
+      <div class="hero-portrait" aria-hidden="true">
+        <div class="portrait-frame">
+          <img src="/images/gallery/1.jpg" alt="Salar Piri at the champions wall" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="section about">
+    <div class="container">
+      <p class="section-eyebrow">About Jeyrun</p>
+      <h2>One club, one family</h2>
+      <div class="about-grid">
+        <div class="about-text">
+          <p>
+            Jeyrun is an endurance running, trail and mountain club, founded by
+            <a href="/en/coach"><strong>Salar Piri</strong></a> — one of Iran's leading ultra runners.
+            Our approach: consistent, structured training tailored to each runner, from first-timer to elite.
+          </p>
+          <p>
+            Every day at 6 AM we meet across different points of Tehran and the surrounding mountains,
+            and every member gets a training plan written for them.
+          </p>
+          <blockquote class="values">
+            Our values: <strong>Friendship · Discipline · Respect · Progress</strong>
+          </blockquote>
+          <p><a href="/en/coach" class="learn-more">Meet the coach →</a></p>
+        </div>
+        <aside class="about-highlights">
+          <div class="highlight"><span class="hl-num">2:34:53</span><span class="hl-label">Salar's marathon PR</span></div>
+          <div class="highlight"><span class="hl-num">7:39:59</span><span class="hl-label">100 km PR (4:33 pace)</span></div>
+          <div class="highlight"><span class="hl-num">UTMB 739</span><span class="hl-label">2 int'l podiums</span></div>
+          <div class="highlight"><span class="hl-num">#9</span><span class="hl-label">ITRA Iran ranking</span></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES preview -->
+  <section id="services" class="section services">
+    <div class="container">
+      <p class="section-eyebrow">Services</p>
+      <h2>What you get from Jeyrun</h2>
+      <div class="service-grid">
+        <a href="/en/services#private" class="service-card">
+          <span class="service-emoji">🦌</span><h3>Private coaching</h3>
+          <p>One-to-one training, instant feedback — the fastest path to progress.</p>
+        </a>
+        <a href="/en/services#group" class="service-card">
+          <span class="service-emoji">🏃</span><h3>Group class</h3>
+          <p>Every day 6 AM — Keshvari, Lavasan, Darakeh, Qouchak, Velayat, Yas.</p>
+        </a>
+        <a href="/en/services#online" class="service-card">
+          <span class="service-emoji">💻</span><h3>Online program</h3>
+          <p>Personalized weekly plans for runners outside Tehran, worldwide.</p>
+        </a>
+        <a href="/en/services#mountain" class="service-card">
+          <span class="service-emoji">🏔️</span><h3>Mountain camp</h3>
+          <p>Trail and summit programs — from Tochal to Damavand.</p>
+        </a>
+        <a href="/en/services#race-prep" class="service-card">
+          <span class="service-emoji">🏅</span><h3>Race prep</h3>
+          <p>5K, 10K, half, marathon — with a bespoke plan to the finish line.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEDIA -->
+  <section id="media" class="section media">
+    <div class="container">
+      <p class="section-eyebrow">Media</p>
+      <h2>Conversation with Salar</h2>
+      <p class="section-sub">Salar on running, structured training, and the path to becoming an ultra runner (Persian audio).</p>
+      <div class="video-wrap">
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/9IzexbAlqrQ"
+          title="Salar Piri interview"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+          loading="lazy"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY preview -->
+  <section id="gallery-preview" class="section gallery">
+    <div class="container">
+      <p class="section-eyebrow">Gallery</p>
+      <h2>Moments from Jeyrun</h2>
+      <div class="gallery-grid">
+        {featured.map((p) => (
+          <a href={`/en/photo/${p.id}`} class="gal-item">
+            <span class="gal-badge">#{p.id}</span>
+            <img src={`/images/gallery/${p.file}`} alt={p.title || `Photo ${p.id}`} loading="lazy" />
+            <span class="gal-caption">
+              {p.title && <strong>{p.title}</strong>}
+              {p.story && <span>{p.story}</span>}
+            </span>
+          </a>
+        ))}
+      </div>
+      <p class="ig-follow"><a href="/en/gallery">See all {gallery.photos.length} photos →</a></p>
+    </div>
+  </section>
+
+  <!-- JOIN -->
+  <section id="join" class="section join">
+    <div class="container join-inner">
+      <div>
+        <p class="section-eyebrow">Join</p>
+        <h2>Join Jeyrun</h2>
+        <p>
+          Whether you're just starting out, chasing your first marathon, or planning a Damavand summit
+          — one WhatsApp message gets you started. Salar writes each plan for the runner in front of him.
+        </p>
+      </div>
+      <div class="join-actions">
+        <a class="btn btn-whatsapp" href="https://wa.me/989128889975?text=Hi%20Salar%2C%20I%27d%20like%20to%20join%20Jeyrun." target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.198.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.05 21.785h-.004a9.87 9.87 0 01-5.03-1.378l-.36-.214-3.741.982.999-3.648-.235-.374a9.86 9.86 0 01-1.511-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.892 6.994c-.003 5.45-4.437 9.884-9.885 9.884zm8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          <span>Message on WhatsApp</span>
+        </a>
+        <p class="join-note">Usually a reply within 24 hours.<br /><span dir="ltr">+98 912 888 9975</span></p>
+      </div>
+    </div>
+  </section>
+
+</Base>

@@ -1,24 +1,38 @@
 ---
+import { nav, altLangUrl, type Lang } from '../i18n/nav';
+
+export interface Props {
+  lang?: Lang;
+}
+const { lang = 'fa' } = Astro.props;
+const t = nav[lang];
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const isActive = (p: string) => path === p;
+const alt = altLangUrl(lang, path);
+
+// Build paths per lang
+const p = lang === 'fa'
+  ? { home: '/', coach: '/coach', services: '/services', races: '/races', calendar: '/calendar', gallery: '/gallery', blog: '/blog', join: '/#join' }
+  : { home: '/en', coach: '/en/coach', services: '/en/services', races: '/en/races', calendar: '/en/calendar', gallery: '/en/gallery', blog: '/blog', join: '/en#join' };
 ---
 <header class="site-header">
   <div class="container header-inner">
-    <a class="brand" href="/" aria-label="جیران">
-      <img src="/images/logo.png" alt="لوگوی تیم جیران" class="brand-logo" />
-      <span class="brand-name">جیران</span>
+    <a class="brand" href={p.home} aria-label={t.brandAria}>
+      <img src="/images/logo.png" alt={t.logoAlt} class="brand-logo" />
+      <span class="brand-name">{t.brandName}</span>
     </a>
-    <nav class="site-nav" aria-label="فهرست اصلی">
-      <a href="/" class:list={[isActive('/') && 'active']}>خانه</a>
-      <a href="/coach" class:list={[isActive('/coach') && 'active']}>مربی</a>
-      <a href="/services" class:list={[isActive('/services') && 'active']}>خدمات</a>
-      <a href="/races" class:list={[isActive('/races') && 'active']}>مسابقات</a>
-      <a href="/calendar" class:list={[isActive('/calendar') && 'active']}>تقویم</a>
-      <a href="/gallery" class:list={[isActive('/gallery') && 'active']}>گالری</a>
-      <a href="/blog" class:list={[path.startsWith('/blog') && 'active']}>بلاگ</a>
-      <a href="/#join" class="nav-cta">عضویت</a>
+    <nav class="site-nav" aria-label={t.menuLabel}>
+      <a href={p.home} class:list={[isActive(p.home) && 'active']}>{t.home}</a>
+      <a href={p.coach} class:list={[isActive(p.coach) && 'active']}>{t.coach}</a>
+      <a href={p.services} class:list={[isActive(p.services) && 'active']}>{t.services}</a>
+      <a href={p.races} class:list={[isActive(p.races) && 'active']}>{t.races}</a>
+      <a href={p.calendar} class:list={[isActive(p.calendar) && 'active']}>{t.calendar}</a>
+      <a href={p.gallery} class:list={[isActive(p.gallery) && 'active']}>{t.gallery}</a>
+      {lang === 'fa' && <a href={p.blog} class:list={[path.startsWith('/blog') && 'active']}>{t.blog}</a>}
+      <a href={p.join} class="nav-cta">{t.join}</a>
+      <a href={alt} class="nav-lang" title={t.langToggleLabel} aria-label={t.langToggleLabel}>{t.langToggleTo}</a>
     </nav>
-    <button class="nav-toggle" aria-label="باز کردن فهرست" aria-expanded="false">
+    <button class="nav-toggle" aria-label={t.openMenu} aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
   </div>

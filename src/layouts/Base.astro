@@ -7,46 +7,66 @@ export interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  lang?: 'fa' | 'en';
 }
 
 const {
   title,
-  description = 'باشگاه دویدن، تریل و کوهستان جیران — از اولین قدم تا خط پایان ماراتن و قله دماوند، کنار تو هستیم.',
-  ogImage = '/images/gallery/team-group.jpg',
+  description,
+  ogImage = '/images/gallery/new-img_3475.jpg',
+  lang = 'fa',
 } = Astro.props;
 
+const defaultDesc = {
+  fa: 'باشگاه دویدن، تریل و کوهستان جیران — از اولین قدم تا خط پایان ماراتن و قله دماوند، کنار تو هستیم.',
+  en: 'Jeyrun Running & Mountain Club — from your first step to the marathon finish line and the summit of Damavand, we run with you.',
+} as const;
+
+const desc = description ?? defaultDesc[lang];
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const dir = lang === 'fa' ? 'rtl' : 'ltr';
+const ogLocale = lang === 'fa' ? 'fa_IR' : 'en_US';
+
+// Compute alt-language URL for hreflang
+const clean = Astro.url.pathname.replace(/\/$/, '') || '/';
+const altPath = lang === 'fa'
+  ? (clean === '/' ? '/en' : '/en' + clean)
+  : (clean === '/en' ? '/' : clean.replace(/^\/en/, ''));
+const altUrl = new URL(altPath, Astro.site).toString();
 ---
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang={lang} dir={dir}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={desc} />
     <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={lang === 'fa' ? 'en' : 'fa'} href={altUrl} />
+    <link rel="alternate" hreflang={lang} href={canonical} />
+    <link rel="alternate" hreflang="x-default" href={new URL('/', Astro.site).toString()} />
     <meta name="robots" content="index, follow" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:locale" content="fa_IR" />
+    <meta property="og:locale" content={ogLocale} />
     <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={desc} />
     <meta property="og:image" content={new URL(ogImage, Astro.site).toString()} />
     <meta name="twitter:card" content="summary_large_image" />
 
     <link rel="icon" type="image/png" href="/images/favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" />
 
     <slot name="head" />
   </head>
-  <body>
-    <Header />
+  <body class:list={[`lang-${lang}`]}>
+    <Header lang={lang} />
     <main id="top">
       <slot />
     </main>
-    <Footer />
+    <Footer lang={lang} />
     <script>
       const toggle = document.querySelector('.nav-toggle');
       const nav = document.querySelector('.site-nav');

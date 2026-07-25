@@ -1,0 +1,48 @@
+---
+import Base from '../../layouts/Base.astro';
+
+const week = [
+  { day: 'Saturday',   location: 'Keshvari Stadium',       focus: 'Intervals / speed',        time: '6:00 AM' },
+  { day: 'Sunday',     location: 'Yas Fatemi Park',        focus: 'Easy / recovery run',       time: '6:00 AM' },
+  { day: 'Monday',     location: 'Velayat Park',           focus: 'Tempo',                     time: '6:00 AM' },
+  { day: 'Tuesday',    location: 'Darakeh',                focus: 'Trail / light ascent',      time: '6:00 AM' },
+  { day: 'Wednesday',  location: 'Lavasan',                focus: 'Mountain intervals',        time: '6:00 AM' },
+  { day: 'Thursday',   location: 'Qouchak pass',           focus: 'Long mountain run',         time: '5:30 AM' },
+  { day: 'Friday',     location: 'Lavasan / Damavand',     focus: 'Weekly long run',           time: '5:30 AM' },
+];
+---
+<Base
+  lang="en"
+  title="Training Calendar — Jeyrun | Weekly Schedule"
+  description="Jeyrun's weekly training schedule — Saturday through Friday, 6 AM daily, at points across Tehran and the surrounding mountains."
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-eyebrow">Training calendar</p>
+      <h1>This week's schedule</h1>
+      <p class="lead">
+        Updated weekly. If you're a member, exact meeting points and map links come through the WhatsApp group.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="calendar-grid">
+        {week.map((d) => (
+          <article class="cal-card">
+            <h3 class="cal-day">{d.day}</h3>
+            <p class="cal-time">{d.time}</p>
+            <p class="cal-location"><strong>Location:</strong> {d.location}</p>
+            <p class="cal-focus"><strong>Focus:</strong> {d.focus}</p>
+          </article>
+        ))}
+      </div>
+
+      <div class="calendar-note">
+        <p><strong>Note:</strong> Sessions may shift for weather or special camps. Join the WhatsApp group for accurate, timely updates.</p>
+        <a href="https://wa.me/989128889975" class="btn btn-primary" target="_blank" rel="noopener">Join the WhatsApp group</a>
+      </div>
+    </div>
+  </section>
+</Base>

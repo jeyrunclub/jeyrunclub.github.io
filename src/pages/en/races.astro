@@ -1,0 +1,48 @@
+---
+import Base from '../../layouts/Base.astro';
+
+const upcoming = [
+  { name: 'Istanbul Marathon', date: '', city: 'Istanbul, Türkiye', note: "One of the team's favorite marathons — Jeyrun group registration." },
+  { name: 'Mahan (Kerman)', date: '', city: 'Kerman, Iran', note: 'A desert race — a completely different running experience across the Kerman desert.' },
+  { name: 'Damavand ascent', date: '', city: 'Mazandaran, Iran', note: "Our annual summit of the Middle East's tallest peak." },
+];
+---
+<Base
+  lang="en"
+  title="Races — Jeyrun | Istanbul Marathon, Mahan, Damavand Ascent"
+  description="Jeyrun's race and camp schedule: Istanbul Marathon, Mahan (Kerman), the Damavand ascent, and upcoming programs."
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-eyebrow">Races</p>
+      <h1>Jeyrun races</h1>
+      <p class="lead">
+        Jeyrun isn't just a training club — it's a traveling one. Each year we plan and run several
+        races and camps together as a team.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2>On the calendar</h2>
+      <div class="race-list">
+        {upcoming.map((r) => (
+          <div class="race-card">
+            <div class="race-medal finish">📍</div>
+            <div class="race-info">
+              <h3>{r.name}</h3>
+              <p>{[r.date, r.city].filter(Boolean).join(' · ') || 'Date TBA'}</p>
+              <p>{r.note}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p class="section-sub" style="margin-top: 40px;">
+        For exact dates and registration for each event, join the Jeyrun WhatsApp group.
+      </p>
+      <a class="btn btn-primary" href="https://wa.me/989128889975" target="_blank" rel="noopener">Join the group</a>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,121 @@
+---
+import Base from '../../layouts/Base.astro';
+import races from '../../data/races.json';
+
+// English-only stats (mirrors src/data/stats.json intent)
+const cards = [
+  { label: 'Marathon PR', value: '2:34:53' },
+  { label: 'Half-Marathon PR', value: '1:14:50' },
+  { label: '10 km PR', value: '34:39' },
+  { label: '5 km PR', value: '16:26' },
+  { label: '50 km PR', value: '3:53:21' },
+  { label: '100 km PR', value: '7:39:59' },
+  { label: 'Avg weekly (last 4 wks)', value: '77.5 km' },
+  { label: 'Lifetime distance', value: '33,459 km' },
+  { label: 'Total activities', value: '2,483' },
+  { label: 'Lifetime elevation (m)', value: '598,303' },
+  { label: 'ITRA Iran rank', value: '#9 (706)' },
+  { label: 'Best UTMB score', value: '739' },
+  { label: 'International UTMB podiums', value: '2×' },
+  { label: 'Weekly sessions', value: '7 days · 6 AM' },
+];
+
+const raceLabels: Record<string, string> = {
+  // Persian → English rough mapping for race notes
+};
+---
+<Base
+  lang="en"
+  title="Salar Piri — Endurance & Ultra Coach | Jeyrun"
+  description="Salar Piri, founder and head coach of Jeyrun. 2:34:53 marathon PR, 7:39:59 100km PR, UTMB best score 739, ITRA rank #9 in Iran."
+>
+  <section class="hero coach-hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="container hero-inner">
+      <div class="hero-text">
+        <p class="eyebrow">Coach & founder of Jeyrun</p>
+        <h1>Salar Piri</h1>
+        <p class="tagline">Endurance and ultra-marathon coach. In love with running, in love with mountains.</p>
+        <ul class="hero-facts">
+          <li><strong>2:34:53</strong>Marathon PR</li>
+          <li><strong>UTMB 739</strong>Best score</li>
+          <li><strong>#9</strong>ITRA Iran</li>
+        </ul>
+      </div>
+      <div class="hero-portrait" aria-hidden="true">
+        <div class="portrait-frame"><img src="/images/salar-hero.jpg" alt="Salar Piri" /></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section about">
+    <div class="container">
+      <p class="section-eyebrow">Biography</p>
+      <h2>One of Iran's leading endurance coaches</h2>
+      <div class="about-grid">
+        <div class="about-text">
+          <p>
+            Salar Piri is the founder and head coach of <strong>Jeyrun</strong>, with years of national
+            and international results across endurance and ultra-marathon events. His method is structured,
+            sustainable training built around the individual runner — from complete beginners to elites.
+          </p>
+          <p>
+            His marathon PR is <strong>2:34:53</strong>, half-marathon <strong>1:14:50</strong>, and 10 km
+            <strong>34:39</strong>. Over longer distances, he ran <strong>101 km in 7:39:59</strong>
+            (average 4:33/km). To date, he has logged more than <strong>33,459 km</strong> on Strava and
+            currently ranks <strong>#9 in Iran</strong> on the official <strong>ITRA</strong> index with
+            a performance score of <strong>706</strong>.
+          </p>
+          <p>
+            He has taken the podium twice at <strong>UTMB</strong> world-series races — including
+            <strong>2nd place at Uludağ Premium Ultra Trail</strong> in Türkiye (2024) with a UTMB score
+            of <strong>739</strong>.
+          </p>
+          <p>Salar's coaching philosophy: <em>"Every runner deserves a plan built for them alone."</em></p>
+        </div>
+        <aside class="about-highlights">
+          {cards.map((c) => (
+            <div class="highlight"><span class="hl-num">{c.value}</span><span class="hl-label">{c.label}</span></div>
+          ))}
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="section races">
+    <div class="container">
+      <p class="section-eyebrow">Achievements</p>
+      <h2>Races & medals</h2>
+      <div class="race-list">
+        {races.races.map((r: any) => {
+          const cls = r.medal === 'gold' ? '' : r.medal === 'silver' ? 'silver' : r.medal === 'bronze' ? 'bronze' : 'finish';
+          const icon = r.medal === 'gold' ? '🥇' : r.medal === 'silver' ? '🥈' : r.medal === 'bronze' ? '🥉' : '✓';
+          return (
+            <div class="race-card">
+              <div class={`race-medal ${cls}`}>{icon}</div>
+              <div class="race-info">
+                <h3>{r.name}</h3>
+                {(r.year || r.location) && <p>{[r.year, r.location].filter(Boolean).join(' · ')}</p>}
+                {r.time && <p class="race-time">{r.time}</p>}
+                {r.note && <p>{r.note}</p>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section class="section join">
+    <div class="container join-inner">
+      <div>
+        <p class="section-eyebrow">Want to train with Salar?</p>
+        <h2>Get started</h2>
+        <p>One WhatsApp message is enough — Salar builds each plan around your goals and current shape.</p>
+      </div>
+      <div class="join-actions">
+        <a class="btn btn-whatsapp" href="https://wa.me/989128889975" target="_blank" rel="noopener">Message on WhatsApp</a>
+      </div>
+    </div>
+  </section>
+</Base>

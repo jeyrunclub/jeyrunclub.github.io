@@ -1,0 +1,74 @@
+---
+import Base from '../../layouts/Base.astro';
+import gallery from '../../data/gallery.json';
+
+const photos = gallery.photos.map((p, i) => ({ ...p, id: i + 1 }));
+const PAGE_SIZE = 24;
+const firstPage = photos.slice(0, PAGE_SIZE);
+---
+<Base
+  lang="en"
+  title="Gallery — Jeyrun | Training, Racing, Mountains"
+  description="The Jeyrun photo gallery — moments from training, races, mountain camps and summits."
+  ogImage="/images/gallery/new-img_3475.jpg"
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-eyebrow">Gallery</p>
+      <h1>Moments from Jeyrun</h1>
+      <p class="lead">
+        {photos.length} photos from training, races, mountain camps and everyday team moments. Tap a photo to see its story.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="gallery-grid" id="gallery-grid" data-page-size={PAGE_SIZE}>
+        {firstPage.map((p) => (
+          <a href={`/en/photo/${p.id}`} class="gal-item">
+            <span class="gal-badge">#{p.id}</span>
+            <img src={`/images/gallery/${p.file}`} alt={p.title || `Photo ${p.id}`} loading="lazy" />
+            <span class="gal-caption">
+              {p.title && <strong>{p.title}</strong>}
+              {p.story && <span>{p.story}</span>}
+            </span>
+          </a>
+        ))}
+      </div>
+
+      {photos.length > PAGE_SIZE && (
+        <div class="load-more-wrap">
+          <button id="load-more" class="btn btn-ghost" type="button">
+            Show more photos ({photos.length - PAGE_SIZE} remaining)
+          </button>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <script define:vars={{ photos, PAGE_SIZE }}>
+    const btn = document.getElementById('load-more');
+    const grid = document.getElementById('gallery-grid');
+    let shown = PAGE_SIZE;
+    btn?.addEventListener('click', () => {
+      const next = photos.slice(shown, shown + PAGE_SIZE);
+      const html = next.map((p) => `
+        <a href="/en/photo/${p.id}" class="gal-item">
+          <span class="gal-badge">#${p.id}</span>
+          <img src="/images/gallery/${p.file}" alt="${p.title || 'Photo ' + p.id}" loading="lazy" />
+          <span class="gal-caption">
+            ${p.title ? `<strong>${p.title}</strong>` : ''}
+            ${p.story ? `<span>${p.story}</span>` : ''}
+          </span>
+        </a>`).join('');
+      grid.insertAdjacentHTML('beforeend', html);
+      shown += PAGE_SIZE;
+      if (shown >= photos.length) {
+        btn.remove();
+      } else {
+        btn.textContent = `Show more photos (${photos.length - shown} remaining)`;
+      }
+    });
+  </script>
+</Base>

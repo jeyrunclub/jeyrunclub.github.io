@@ -1,0 +1,55 @@
+---
+import Base from '../../layouts/Base.astro';
+
+const services = [
+  { id: 'private', emoji: '🦌', title: 'Private coaching',
+    desc: 'One-to-one sessions with Salar. Best for runners who want the fastest progress or are targeting a specific race.',
+    bullets: ['Custom weekly plan', 'Real-time technique feedback', 'Watch & Strava data analysis'] },
+  { id: 'group', emoji: '🏃', title: 'Group class',
+    desc: 'Every day at 6 AM across different points of Tehran and the surrounding mountains. Train in a group, stay motivated, lower cost.',
+    bullets: ['Keshvari, Lavasan, Darakeh, Qouchak, Velayat, Yas Fatemi', 'All levels welcome', 'Grouped by pace'] },
+  { id: 'online', emoji: '💻', title: 'Online program',
+    desc: 'Outside Tehran or outside Iran? Get a personalized weekly training plan delivered remotely.',
+    bullets: ['Weekly updates', 'WhatsApp support', 'Built around your target race'] },
+  { id: 'mountain', emoji: '🏔️', title: 'Mountain & Damavand camps',
+    desc: 'Trail and summit programs — from Lavasan and Qouchak trails to a full Damavand ascent.',
+    bullets: ['Altitude camps', 'High-altitude training', 'Different routes year-round'] },
+  { id: 'race-prep', emoji: '🏅', title: 'Race preparation',
+    desc: 'Focused programs for your target race — from a first 5K to a first marathon or a new PB.',
+    bullets: ['5K, 10K, half & marathon', '8–16 week programs', 'Race-day strategy'] },
+];
+---
+<Base
+  lang="en"
+  title="Services — Jeyrun | Private, Group, Online, Mountain Camps"
+  description="Jeyrun services: private and group classes in Tehran, personalized online programs, trail and Damavand summit camps, and race preparation for 5K to marathon."
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-eyebrow">Services</p>
+      <h1>What you get from Jeyrun</h1>
+      <p class="lead">
+        Every runner has a different goal — so we offer five different ways in, from one-to-one coaching
+        to a full Damavand summit camp.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="service-detail-grid">
+        {services.map((s) => (
+          <article id={s.id} class="service-detail">
+            <div class="sd-icon">{s.emoji}</div>
+            <div class="sd-body">
+              <h2>{s.title}</h2>
+              <p>{s.desc}</p>
+              <ul>{s.bullets.map((b) => <li>{b}</li>)}</ul>
+              <a href="https://wa.me/989128889975" target="_blank" rel="noopener" class="btn btn-ghost">Request this service</a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>
