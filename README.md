@@ -2,7 +2,7 @@
 
 Persian (RTL) site for **جیران Running Club**, built with [Astro](https://astro.build) and deployed automatically to GitHub Pages.
 
-**Live:** https://jeyrunclub.github.io
+**Live:** https://jeyrun.com
 
 ## Pages
 

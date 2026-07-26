@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://jeyrunclub.github.io',
+  site: 'https://jeyrun.com',
   integrations: [sitemap()],
   trailingSlash: 'never',
 });
