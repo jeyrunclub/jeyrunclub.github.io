@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://jeyrunclub.github.io/sitemap.xml
+Sitemap: https://jeyrun.com/sitemap-index.xml
