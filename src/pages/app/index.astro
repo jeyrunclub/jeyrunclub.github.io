@@ -113,6 +113,24 @@ import AppShell from '../../layouts/AppShell.astro';
       document.getElementById('loading').textContent = 'خطا در بارگذاری پروفایل.';
       return;
     }
+
+    // Backfill full_name from the login form (Supabase only writes metadata
+    // on user creation, so returning users need a client-side update).
+    if (!profile.full_name) {
+      let pending = null;
+      try { pending = localStorage.getItem('jeyrun.pending_full_name'); } catch {}
+      if (pending) {
+        await supabase.from('profiles').update({ full_name: pending }).eq('id', session.user.id);
+        try { localStorage.removeItem('jeyrun.pending_full_name'); } catch {}
+        profile.full_name = pending;
+      }
+    }
+
+    // Coaches go to the coach panel — they don't have a student plan.
+    if (profile.role === 'coach') {
+      window.location.replace('/app/coach');
+      return;
+    }
     if (profile.status !== 'approved') {
       window.location.replace('/app/pending');
       return;

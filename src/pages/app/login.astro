@@ -9,6 +9,9 @@ import AppShell from '../../layouts/AppShell.astro';
     </p>
 
     <form id="login-form">
+      <label class="app-label" for="full-name">نام و نام خانوادگی</label>
+      <input class="app-input" type="text" id="full-name" name="full-name" required
+             autocomplete="name" placeholder="مثلاً: علی رضایی" style="margin-bottom:14px;" />
       <label class="app-label" for="email">ایمیل</label>
       <input class="app-input" type="email" id="email" name="email" required
              autocomplete="email" placeholder="you@example.com" dir="ltr" />
@@ -28,6 +31,7 @@ import AppShell from '../../layouts/AppShell.astro';
 
     const form = document.getElementById('login-form');
     const emailInput = document.getElementById('email');
+    const nameInput = document.getElementById('full-name');
     const btn = document.getElementById('submit-btn');
     const msg = document.getElementById('msg');
 
@@ -44,12 +48,21 @@ import AppShell from '../../layouts/AppShell.astro';
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = emailInput.value.trim();
-      if (!email) return;
+      const fullName = nameInput.value.trim();
+      if (!email || !fullName) return;
       btn.disabled = true;
       show('در حال ارسال...', 'info');
+
+      // Remember the name for /app to write to profile even if this is
+      // a returning user (Supabase only stores metadata on user creation).
+      try { localStorage.setItem('jeyrun.pending_full_name', fullName); } catch {}
+
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: `${window.location.origin}/app` },
+        options: {
+          emailRedirectTo: `${window.location.origin}/app`,
+          data: { full_name: fullName },
+        },
       });
       btn.disabled = false;
       if (error) {

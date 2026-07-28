@@ -176,6 +176,34 @@ grant  insert, delete, update on public.plans to authenticated;
 -- ^ Together with column grants and RLS: only coach effectively gets full update
 --   (RLS "plans: student edit" applies to students, whose grants are limited to `sessions`).
 
+-- ---------- coach-only view of all users (joins auth.users for email) ----------
+create or replace function public.list_all_users()
+returns table (
+  id         uuid,
+  full_name  text,
+  email      text,
+  phone      text,
+  role       text,
+  status     text,
+  created_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select p.id, p.full_name, u.email::text, p.phone, p.role, p.status, p.created_at
+    from public.profiles p
+    join auth.users u on u.id = p.id
+   where public.is_coach()
+   order by
+     case p.status when 'pending' then 0 when 'approved' then 1 else 2 end,
+     p.full_name nulls last;
+$$;
+
+revoke execute on function public.list_all_users() from public;
+grant  execute on function public.list_all_users() to authenticated;
+
 -- ---------- promote any existing accounts on the bootstrap list ----------
 -- (idempotent; runs every time this file is executed)
 update public.profiles p

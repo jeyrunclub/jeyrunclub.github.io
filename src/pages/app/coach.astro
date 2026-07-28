@@ -137,21 +137,29 @@ import AppShell from '../../layouts/AppShell.astro';
       });
     }
 
-    async function loadPending() {
-      const { data: rows } = await supabase
-        .from('profiles').select('*')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: true });
+    let allUsers = [];
 
+    async function fetchAllUsers() {
+      const { data, error } = await supabase.rpc('list_all_users');
+      if (error) {
+        console.error(error);
+        allUsers = [];
+        return;
+      }
+      allUsers = data || [];
+    }
+
+    function renderPending() {
+      const rows = allUsers.filter((u) => u.status === 'pending');
       const block = document.getElementById('pending-block');
-      const list = document.getElementById('pending-list');
-      if (!rows?.length) { block.hidden = true; return; }
+      const list  = document.getElementById('pending-list');
+      if (!rows.length) { block.hidden = true; return; }
       block.hidden = false;
       list.innerHTML = rows.map((r) => `
         <div class="student-row">
           <div>
             <div class="name">${escapeHtml(r.full_name || '(بدون نام)')}</div>
-            <div class="meta" dir="ltr">${escapeHtml(r.id)}</div>
+            <div class="meta" dir="ltr">${escapeHtml(r.email || '')}</div>
           </div>
           <button class="app-btn" data-id="${r.id}" data-act="approve" style="padding:6px 14px;font-size:0.85rem;">تأیید</button>
           <button class="app-btn ghost" data-id="${r.id}" data-act="reject" style="padding:6px 14px;font-size:0.85rem;">رد</button>
@@ -166,20 +174,15 @@ import AppShell from '../../layouts/AppShell.astro';
             target: id, new_status: status, new_role: null,
           });
           if (error) { alert(error.message); return; }
-          await loadPending();
-          await loadStudents();
+          await refresh();
         });
       });
     }
 
-    async function loadStudents() {
-      const { data: rows } = await supabase
-        .from('profiles').select('*')
-        .in('status', ['approved','rejected'])
-        .order('full_name', { ascending: true });
-
+    function renderStudents() {
+      const rows = allUsers.filter((u) => u.status !== 'pending');
       const list = document.getElementById('student-list');
-      if (!rows?.length) {
+      if (!rows.length) {
         list.innerHTML = '<p class="app-empty" style="padding:20px 0;">هنوز شاگردی تأیید نشده.</p>';
         return;
       }
@@ -191,11 +194,13 @@ import AppShell from '../../layouts/AppShell.astro';
               ${r.role === 'coach' ? '<span class="badge coach" style="margin-inline-start:6px;">مربی</span>' : ''}
               ${r.status === 'rejected' ? '<span class="badge rejected" style="margin-inline-start:6px;">رد شده</span>' : ''}
             </div>
-            <div class="meta" dir="ltr">${escapeHtml(r.id)}</div>
+            <div class="meta" dir="ltr">${escapeHtml(r.email || '')}</div>
           </div>
-          <button class="app-btn" data-id="${r.id}" data-name="${escapeHtml(r.full_name || '')}" data-act="edit" style="padding:6px 14px;font-size:0.85rem;">
-            ویرایش برنامه
-          </button>
+          ${r.role === 'coach' ? '<div></div>' : `
+            <button class="app-btn" data-id="${r.id}" data-name="${escapeHtml(r.full_name || r.email || '')}" data-act="edit" style="padding:6px 14px;font-size:0.85rem;">
+              ویرایش برنامه
+            </button>
+          `}
           <div></div>
         </div>
       `).join('');
@@ -203,6 +208,12 @@ import AppShell from '../../layouts/AppShell.astro';
       list.querySelectorAll('button[data-act="edit"]').forEach((b) => {
         b.addEventListener('click', () => openEditor(b.dataset.id, b.dataset.name));
       });
+    }
+
+    async function refresh() {
+      await fetchAllUsers();
+      renderPending();
+      renderStudents();
     }
 
     // ---------- Plan editor ----------
@@ -333,11 +344,21 @@ import AppShell from '../../layouts/AppShell.astro';
         return;
       }
       coachId = profile.id;
+
+      // Backfill coach's own name if they signed in without setting it
+      if (!profile.full_name) {
+        let pending = null;
+        try { pending = localStorage.getItem('jeyrun.pending_full_name'); } catch {}
+        if (pending) {
+          await supabase.from('profiles').update({ full_name: pending }).eq('id', profile.id);
+          try { localStorage.removeItem('jeyrun.pending_full_name'); } catch {}
+        }
+      }
+
       setupHeader();
       document.getElementById('loading').hidden = true;
       document.getElementById('content').hidden = false;
-      await loadPending();
-      await loadStudents();
+      await refresh();
     })();
   </script>
 </AppShell>
