@@ -32,6 +32,21 @@ create table if not exists public.plans (
 create index if not exists plans_student_week_idx
   on public.plans(student_id, week_start desc);
 
+-- ---------- bootstrap coach emails ----------
+-- Any account created with one of these emails is auto-approved as coach.
+-- Edit this list and re-run this file to grant coach access to a new email
+-- (existing accounts are updated by the UPDATE at the bottom).
+create or replace function public._is_bootstrap_coach(em text)
+returns boolean
+language sql
+immutable
+as $$
+  select lower(em) = any(array[
+    'pjsofts@gmail.com'
+    -- , 'salar@example.com'  -- add Salar's real email here
+  ]);
+$$;
+
 -- ---------- auto-create profile on signup ----------
 create or replace function public.handle_new_user()
 returns trigger
@@ -39,9 +54,16 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  bootstrap boolean := public._is_bootstrap_coach(new.email);
 begin
-  insert into public.profiles (id, full_name)
-  values (new.id, coalesce(new.raw_user_meta_data->>'full_name', ''))
+  insert into public.profiles (id, full_name, role, status)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'full_name', ''),
+    case when bootstrap then 'coach'    else 'student' end,
+    case when bootstrap then 'approved' else 'pending' end
+  )
   on conflict (id) do nothing;
   return new;
 end;
@@ -154,8 +176,17 @@ grant  insert, delete, update on public.plans to authenticated;
 -- ^ Together with column grants and RLS: only coach effectively gets full update
 --   (RLS "plans: student edit" applies to students, whose grants are limited to `sessions`).
 
+-- ---------- promote any existing accounts on the bootstrap list ----------
+-- (idempotent; runs every time this file is executed)
+update public.profiles p
+   set role = 'coach', status = 'approved'
+  from auth.users u
+ where p.id = u.id
+   and public._is_bootstrap_coach(u.email)
+   and (p.role <> 'coach' or p.status <> 'approved');
+
 -- ============================================================
--- ONE-TIME manual step after Salar's first login:
--- Copy his auth.users.id and run:
---   update public.profiles set role = 'coach', status = 'approved' where id = '<uuid>';
+-- To grant coach access to ANY OTHER email later:
+--   1. Add the email to _is_bootstrap_coach() above
+--   2. Re-run this whole file (safe — everything is idempotent)
 -- ============================================================

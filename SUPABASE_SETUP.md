@@ -38,20 +38,22 @@ Safe to re-run; it's idempotent.
 Free tier limit: 4 auth-emails / hour from Supabase's built-in SMTP. If
 that becomes a problem, wire in Resend / SendGrid under **Auth → SMTP**.
 
-## 4. Promote Salar to coach
+## 4. Coach accounts
 
-- Have Salar sign in once at `https://jeyrun.com/app/login`.
-- Dashboard → **SQL Editor** → run:
+`pjsofts@gmail.com` is already on the auto-coach list — the first time
+that email signs in at `/app/login`, it's created as an approved coach
+automatically.
 
-  ```sql
-  update public.profiles
-     set role = 'coach', status = 'approved'
-   where id = (select id from auth.users where email = 'salar@example.com');
-  ```
+**To add Salar (or anyone else) as coach:**
 
-  (replace with Salar's actual email)
+1. Open `supabase/schema.sql` and edit `_is_bootstrap_coach()` — add the
+   email to the array (uncomment / duplicate the example line).
+2. Re-run the whole `schema.sql` in the Supabase SQL editor. It's idempotent;
+   existing coach accounts stay coach, and any account already created with
+   the new email gets promoted immediately.
 
-From that point on, Salar sees `/app/coach` and can approve new signups.
+Coaches see `/app/coach` and can approve/reject pending signups and edit
+weekly plans.
 
 ## 5. Done
 
