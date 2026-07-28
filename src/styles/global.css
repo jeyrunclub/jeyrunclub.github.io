@@ -590,6 +590,22 @@ ul { margin: 0; padding: 0; list-style: none; }
 .join-actions { text-align: center; }
 .join-note { color: var(--muted); font-size: 0.85rem; margin-top: 12px; }
 
+/* ---------- Sponsor ---------- */
+.sponsor-inner {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+.sponsor-inner p { color: var(--text-dim); max-width: 58ch; }
+.sponsor-list {
+  margin-top: 16px;
+  padding-inline-start: 20px;
+  color: var(--text-dim);
+  line-height: 1.9;
+}
+.sponsor-list li { margin-bottom: 4px; }
+
 /* ---------- Blog listing ---------- */
 .blog-hero {
   padding: 60px 0 24px;
@@ -834,6 +850,8 @@ blockquote.values {
   .hero-inner { grid-template-columns: 1fr; gap: 40px; }
   .about-grid { grid-template-columns: 1fr; }
   .join-inner { grid-template-columns: 1fr; text-align: center; }
+  .sponsor-inner { grid-template-columns: 1fr; text-align: center; }
+  .sponsor-list { display: inline-block; text-align: start; }
   .footer-inner { grid-template-columns: 1fr; text-align: center; }
   .section { padding: 60px 0; }
   .hero { padding: 50px 0 60px; }
