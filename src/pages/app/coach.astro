@@ -95,6 +95,27 @@ import AppShell from '../../layouts/AppShell.astro';
         <textarea id="editor-notes" class="app-textarea" placeholder="نکته‌های اضافی…"></textarea>
       </div>
 
+      <div id="submitted-panel" class="submitted-panel" hidden>
+        <div class="submitted-head">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span>شاگرد این جلسه را انجام‌شده اعلام کرده</span>
+        </div>
+        <div id="submitted-note-wrap" hidden style="margin-top:10px;">
+          <div class="app-label">یادداشت شاگرد</div>
+          <div id="submitted-note" class="app-msg info" style="margin-top:4px;"></div>
+        </div>
+        <div id="submitted-photo-wrap" hidden style="margin-top:10px;">
+          <div class="app-label">عکس شاگرد</div>
+          <a id="submitted-photo-link" target="_blank" rel="noopener">
+            <img id="submitted-photo" alt="عکس تمرین" />
+          </a>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+          <button type="button" id="submitted-approve" class="app-btn sm">تأیید انجام</button>
+          <button type="button" id="submitted-reject" class="app-btn ghost sm">رد</button>
+        </div>
+      </div>
+
       <div id="editor-msg"></div>
 
       <div class="modal-actions">
@@ -274,6 +295,24 @@ import AppShell from '../../layouts/AppShell.astro';
       .cal-cell .num { font-size: 0.78rem; margin-bottom: 2px; }
       .cal-pill { font-size: 0.6rem; padding: 1px 4px; }
     }
+
+    /* Submitted-claim panel */
+    .submitted-panel {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(230,162,60,0.08);
+      border: 1px solid rgba(230,162,60,0.28);
+    }
+    .submitted-panel .submitted-head {
+      display: flex; align-items: center; gap: 8px;
+      color: #c8963e; font-weight: 700; font-size: 0.95rem;
+    }
+    .submitted-panel img {
+      max-width: 100%; max-height: 260px; border-radius: 10px;
+      border: 1px solid var(--border); display: block; margin-top: 4px;
+      cursor: zoom-in;
+    }
   </style>
 
   <script>
@@ -283,6 +322,7 @@ import AppShell from '../../layouts/AppShell.astro';
       isoDate, addDays, weekSaturdayOf, today, faNum, faDateLong, faDateShort,
       monthGrid, fetchSessionsForRange, loadOrInitPlan, savePlan,
       summariseSession, newSession, newBlock,
+      signedPhotoUrl,
     } from '../../lib/plan.js';
 
     let coachId = null;
@@ -548,7 +588,7 @@ import AppShell from '../../layouts/AppShell.astro';
       });
     }
 
-    function openEditor(dateIso, existing) {
+    async function openEditor(dateIso, existing) {
       if (!currentStudentId) { alert('اول یک شاگرد را از بالای صفحه انتخاب کن.'); return; }
       const session = existing ? JSON.parse(JSON.stringify(existing)) : newSession(dateIso);
       editing = { studentId: currentStudentId, dateIso, session, isNew: !existing };
@@ -562,7 +602,38 @@ import AppShell from '../../layouts/AppShell.astro';
 
       renderTypeChips(session.type);
       renderBlocks();
+
+      // Submitted panel: show note + photo, wire approve/reject
+      const panel = document.getElementById('submitted-panel');
+      const noteWrap = document.getElementById('submitted-note-wrap');
+      const photoWrap = document.getElementById('submitted-photo-wrap');
+      if (session.status === 'submitted') {
+        panel.hidden = false;
+        if (session.student_note) {
+          document.getElementById('submitted-note').textContent = session.student_note;
+          noteWrap.hidden = false;
+        } else noteWrap.hidden = true;
+        if (session.student_photo_path) {
+          const url = await signedPhotoUrl(supabase, session.student_photo_path);
+          if (url) {
+            document.getElementById('submitted-photo').src = url;
+            document.getElementById('submitted-photo-link').href = url;
+            photoWrap.hidden = false;
+          } else photoWrap.hidden = true;
+        } else photoWrap.hidden = true;
+      } else {
+        panel.hidden = true;
+      }
+
       document.getElementById('editor').hidden = false;
+    }
+
+    async function decideSubmission(newStatus) {
+      // newStatus: 'done' (approve) or 'planned' (reject / clear submission)
+      editing.session.status = newStatus;
+      editing.session.done_at = newStatus === 'done' ? new Date().toISOString() : null;
+      // save (uses full session state, so any UI edits persist too)
+      await saveSession();
     }
 
     function closeEditor() {
@@ -610,6 +681,8 @@ import AppShell from '../../layouts/AppShell.astro';
     document.getElementById('editor-cancel').addEventListener('click', closeEditor);
     document.getElementById('editor-save').addEventListener('click', saveSession);
     document.getElementById('editor-delete').addEventListener('click', deleteSession);
+    document.getElementById('submitted-approve').addEventListener('click', () => decideSubmission('done'));
+    document.getElementById('submitted-reject').addEventListener('click', () => decideSubmission('planned'));
     document.querySelectorAll('.add-blk').forEach((b) => {
       b.addEventListener('click', () => {
         if (!editing) return;

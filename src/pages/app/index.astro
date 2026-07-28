@@ -64,6 +64,22 @@ import AppShell from '../../layouts/AppShell.astro';
       <div id="mark-done-form" hidden style="margin-top:16px;">
         <label class="app-label" for="student-note">یادداشت برای مربی (اختیاری)</label>
         <textarea id="student-note" class="app-textarea" placeholder="مثلاً: احساس خوبی داشتم، ریتم ۵:۱۰"></textarea>
+
+        <label class="app-label" for="student-photo" style="margin-top:14px;">
+          عکس (اختیاری) — عکس اسکرین‌شات ساعت یا از تمرین
+        </label>
+        <div id="photo-picker">
+          <input type="file" id="student-photo" accept="image/*" capture="environment" hidden />
+          <label for="student-photo" class="photo-drop">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            <span>انتخاب یا گرفتن عکس</span>
+          </label>
+          <div id="photo-preview" hidden>
+            <img id="photo-thumb" alt="پیش‌نمایش" />
+            <button type="button" id="photo-clear" class="app-btn ghost sm">حذف عکس</button>
+          </div>
+        </div>
+        <div id="upload-progress" hidden style="margin-top:8px;color:var(--muted);font-size:0.85rem;">در حال آپلود عکس…</div>
       </div>
 
       <div id="viewer-msg"></div>
@@ -216,6 +232,39 @@ import AppShell from '../../layouts/AppShell.astro';
       .cal-cell .num { font-size: 0.78rem; margin-bottom: 2px; }
       .cal-pill { font-size: 0.6rem; padding: 1px 4px; }
     }
+
+    /* Photo picker */
+    .photo-drop {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px;
+      padding: 20px;
+      border: 1.5px dashed var(--border-strong);
+      border-radius: var(--app-radius);
+      color: var(--text-dim);
+      background: var(--surface);
+      cursor: pointer;
+      transition: all .15s;
+      font-weight: 500;
+      font-size: 0.92rem;
+    }
+    .photo-drop:hover { border-color: var(--accent); color: var(--accent); background: var(--app-accent-soft); }
+    #photo-preview {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+    }
+    #photo-thumb {
+      max-width: 240px; max-height: 180px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .done-photo-box {
+      margin-top: 12px;
+    }
+    .done-photo-box img {
+      max-width: 100%;
+      max-height: 400px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
   </style>
 
   <script>
@@ -225,6 +274,7 @@ import AppShell from '../../layouts/AppShell.astro';
       isoDate, addDays, weekSaturdayOf, today, faNum, faDateLong,
       monthGrid, fetchSessionsForRange, loadOrInitPlan, savePlan,
       summariseSession, formatBlock, ensureSessionDate,
+      uploadSessionPhoto, signedPhotoUrl, deleteSessionPhoto,
     } from '../../lib/plan.js';
 
     let studentId = null;
@@ -423,14 +473,23 @@ import AppShell from '../../layouts/AppShell.astro';
     }
 
     // ---------- Viewer / mark-done ----------
-    function openViewer(dateIso, session) {
+    let pendingPhotoFile = null; // File chosen but not yet uploaded
+
+    async function openViewer(dateIso, session) {
       viewing = { dateIso, session: JSON.parse(JSON.stringify(session)) };
+      pendingPhotoFile = null;
       const t = TYPE_BY_ID[session.type] || TYPE_BY_ID.easy;
       document.getElementById('viewer-title').textContent = session.title || t.label;
       document.getElementById('viewer-sub').textContent = faDateLong(dateIso) + ' · ' + t.label;
       document.getElementById('viewer-body').innerHTML = renderViewerBody(session);
       document.getElementById('viewer-msg').innerHTML = '';
       document.getElementById('student-note').value = session.student_note || '';
+
+      // Reset photo picker UI
+      const fileInput = document.getElementById('student-photo');
+      fileInput.value = '';
+      document.getElementById('photo-preview').hidden = true;
+      document.getElementById('upload-progress').hidden = true;
 
       const actions = document.getElementById('viewer-actions');
       const isPastOrToday = dateIso <= today();
@@ -461,6 +520,20 @@ import AppShell from '../../layouts/AppShell.astro';
       if (subBtn) subBtn.addEventListener('click', () => markDone('submitted'));
       const unsubBtn = document.getElementById('v-unsubmit');
       if (unsubBtn) unsubBtn.addEventListener('click', () => markDone('planned'));
+
+      // Load existing photo if present
+      if (session.student_photo_path) {
+        const url = await signedPhotoUrl(supabase, session.student_photo_path);
+        if (url) {
+          const box = document.getElementById('viewer-body');
+          box.insertAdjacentHTML('beforeend', `
+            <div class="done-photo-box">
+              <div class="app-label" style="margin-bottom:6px;">عکس ثبت‌شده</div>
+              <img src="${url}" alt="عکس تمرین" />
+            </div>
+          `);
+        }
+      }
     }
 
     function renderViewerBody(s) {
@@ -477,6 +550,22 @@ import AppShell from '../../layouts/AppShell.astro';
       return `${blocks || '<p style="color:var(--muted);margin:0;">بدون مرحله‌ی تمرینی</p>'}${notes}`;
     }
 
+    // Wire photo picker (fires once, on module load)
+    document.getElementById('student-photo').addEventListener('change', (e) => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      pendingPhotoFile = f;
+      const url = URL.createObjectURL(f);
+      const thumb = document.getElementById('photo-thumb');
+      thumb.src = url;
+      document.getElementById('photo-preview').hidden = false;
+    });
+    document.getElementById('photo-clear').addEventListener('click', () => {
+      pendingPhotoFile = null;
+      document.getElementById('student-photo').value = '';
+      document.getElementById('photo-preview').hidden = true;
+    });
+
     function closeViewer() {
       document.getElementById('viewer').hidden = true;
       viewing = null;
@@ -484,24 +573,47 @@ import AppShell from '../../layouts/AppShell.astro';
 
     async function markDone(newStatus) {
       const s = viewing.session;
+      const msg = document.getElementById('viewer-msg');
+      msg.innerHTML = '';
+
       s.status = newStatus;
       s.student_note = document.getElementById('student-note').value.trim();
       s.submitted_at = newStatus === 'submitted' ? new Date().toISOString() : null;
+
+      // Upload photo if a new one was picked
+      if (pendingPhotoFile) {
+        document.getElementById('upload-progress').hidden = false;
+        try {
+          // Delete old photo if replacing
+          if (s.student_photo_path) {
+            await deleteSessionPhoto(supabase, s.student_photo_path);
+          }
+          const path = await uploadSessionPhoto(supabase, studentId, s.id, pendingPhotoFile);
+          s.student_photo_path = path;
+        } catch (e) {
+          msg.className = 'app-msg error';
+          msg.textContent = 'آپلود عکس با خطا مواجه شد: ' + (e.message || e);
+          document.getElementById('upload-progress').hidden = true;
+          return;
+        }
+        document.getElementById('upload-progress').hidden = true;
+      }
+      // If un-submitting (planned) and there was a photo, keep it for now — student can re-submit.
 
       // load plan for this week and update
       const weekStart = weekSaturdayOf(viewing.dateIso);
       const plan = await loadOrInitPlan(supabase, studentId, weekStart);
       const sessions = (plan.sessions || []).map((x) => ensureSessionDate(x, weekStart));
       const idx = sessions.findIndex((x) => x.date === viewing.dateIso);
-      if (idx === -1) { alert('جلسه پیدا نشد'); return; }
+      if (idx === -1) { msg.className='app-msg error'; msg.textContent='جلسه پیدا نشد'; return; }
       sessions[idx] = { ...sessions[idx], ...s };
       plan.sessions = sessions;
       const { error } = await savePlan(supabase, plan, null);
       if (error) {
-        const m = document.getElementById('viewer-msg');
-        m.className = 'app-msg error'; m.textContent = 'خطا: ' + error.message;
+        msg.className = 'app-msg error'; msg.textContent = 'خطا: ' + error.message;
         return;
       }
+      pendingPhotoFile = null;
       closeViewer();
       await refreshCalendar();
     }

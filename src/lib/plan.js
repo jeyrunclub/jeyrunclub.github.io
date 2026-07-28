@@ -215,6 +215,63 @@ export function newBlock(kind) {
   return b;
 }
 
+// ---------- Storage / photos ----------
+export const PHOTO_BUCKET = 'session-photos';
+
+// Load a File into an <img>
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+    img.src = url;
+  });
+}
+
+// Resize / re-encode to JPEG (max side maxDim, quality 0..1). Returns Blob.
+export async function compressImage(file, maxDim = 1600, quality = 0.85) {
+  if (!file.type.startsWith('image/')) throw new Error('not an image');
+  const img = await loadImage(file);
+  const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+  const w = Math.round(img.width * scale);
+  const h = Math.round(img.height * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, w, h);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('encode failed'))),
+      'image/jpeg', quality,
+    );
+  });
+}
+
+// Upload a photo for a session and return the storage path.
+export async function uploadSessionPhoto(supabase, studentId, sessionId, file) {
+  const blob = await compressImage(file);
+  const path = `${studentId}/${sessionId}-${new Date().toISOString().replace(/[:.]/g, '')}.jpg`;
+  const { error } = await supabase.storage.from(PHOTO_BUCKET).upload(path, blob, {
+    contentType: 'image/jpeg', upsert: false,
+  });
+  if (error) throw error;
+  return path;
+}
+
+// Get a temporary signed URL for viewing a private photo.
+export async function signedPhotoUrl(supabase, path, secs = 3600) {
+  if (!path) return null;
+  const { data } = await supabase.storage.from(PHOTO_BUCKET).createSignedUrl(path, secs);
+  return data?.signedUrl || null;
+}
+
+// Delete a photo (student deletes their own; coach deletes anyone's).
+export async function deleteSessionPhoto(supabase, path) {
+  if (!path) return;
+  await supabase.storage.from(PHOTO_BUCKET).remove([path]);
+}
+
 // Render one block as a compact human line (for display in read-only card)
 export function formatBlock(b) {
   const kind = BLOCK_KIND_BY_ID[b.kind]?.label ?? b.kind;

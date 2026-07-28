@@ -214,6 +214,32 @@ update public.profiles p
    and public._is_bootstrap_coach(u.email)
    and (p.role <> 'coach' or p.status <> 'approved');
 
+-- ---------- Storage bucket for session photos ----------
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('session-photos', 'session-photos', false, 10485760,
+        array['image/jpeg','image/png','image/webp'])
+on conflict (id) do update set
+  public             = excluded.public,
+  file_size_limit    = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+-- Students CRUD only files under their own user-id folder
+drop policy if exists "session-photos: student own" on storage.objects;
+create policy "session-photos: student own"
+  on storage.objects for all
+  to authenticated
+  using  (bucket_id = 'session-photos'
+      and auth.uid()::text = (storage.foldername(name))[1])
+  with check (bucket_id = 'session-photos'
+      and auth.uid()::text = (storage.foldername(name))[1]);
+
+-- Coaches can read everyone's photos
+drop policy if exists "session-photos: coach read" on storage.objects;
+create policy "session-photos: coach read"
+  on storage.objects for select
+  to authenticated
+  using (bucket_id = 'session-photos' and public.is_coach());
+
 -- ============================================================
 -- To grant coach access to ANY OTHER email later:
 --   1. Add the email to _is_bootstrap_coach() above
