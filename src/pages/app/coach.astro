@@ -372,8 +372,15 @@ import AppShell from '../../layouts/AppShell.astro';
     .cal-cell.out { opacity: 0.35; cursor: default; }
     .cal-cell.out:hover { background: var(--surface-2); border-color: transparent; }
     .cal-cell.today {
-      background: var(--app-accent-soft);
-      border-color: var(--accent);
+      background: linear-gradient(135deg, var(--app-accent-soft) 0%, var(--surface-2) 100%);
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 0 3px var(--app-accent-soft), 0 4px 12px var(--app-accent-glow);
+    }
+    .cal-cell.today .num { color: var(--accent); }
+    .cal-cell.today .num-sec {
+      background: var(--app-gradient); color: #fff;
+      padding: 1px 6px; border-radius: 999px; margin-inline-start: 4px;
+      font-size: 0.62rem; font-weight: 700;
     }
     .cal-cell .num { font-weight: 700; font-size: 0.88rem; text-align: start; margin-bottom: 4px; }
     .cal-cell .num-sec { color: var(--muted); font-size: 0.68rem; font-weight: 400; }
@@ -418,17 +425,20 @@ import AppShell from '../../layouts/AppShell.astro';
   <script>
     import { supabase } from '../../lib/supabase.js';
     import {
-      TYPES, TYPE_BY_ID, BLOCK_KIND_BY_ID, MONTHS_FA_GREG,
+      TYPES, TYPE_BY_ID, BLOCK_KIND_BY_ID,
       isoDate, addDays, weekSaturdayOf, today, faNum, faDateLong, faDateShort,
       monthGrid, fetchSessionsForRange, loadOrInitPlan, savePlan,
       summariseSession, newSession, newBlock,
       signedPhotoUrl,
     } from '../../lib/plan.js';
+    import {
+      JALALI_MONTHS, gregDateToJalali, jalaliPrevMonth, jalaliNextMonth,
+    } from '../../lib/jalali.js';
 
     let coachId = null;
     let allUsers = [];
     let currentStudentId = null;
-    let calYear, calMonth;             // Gregorian
+    let calJy, calJm;                  // Jalali year + month
     let sessionsByStudent = {};        // sid -> { date -> [session] }
     let editing = null;                // { studentId, dateIso, session, isNew }
 
@@ -542,26 +552,24 @@ import AppShell from '../../layouts/AppShell.astro';
 
     // ---------- Calendar ----------
     function initCalendar() {
-      const now = new Date();
-      calYear = now.getFullYear();
-      calMonth = now.getMonth();
+      const jNow = gregDateToJalali(new Date());
+      calJy = jNow.jy; calJm = jNow.jm;
       document.getElementById('cal-prev').addEventListener('click', () => {
-        calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+        ({ jy: calJy, jm: calJm } = jalaliPrevMonth(calJy, calJm));
         refreshCalendar();
       });
       document.getElementById('cal-next').addEventListener('click', () => {
-        calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+        ({ jy: calJy, jm: calJm } = jalaliNextMonth(calJy, calJm));
         refreshCalendar();
       });
     }
 
     async function refreshCalendar() {
-      const cells = monthGrid(calYear, calMonth);
+      const cells = monthGrid(calJy, calJm);
       const from = cells[0].date, to = cells[cells.length - 1].date;
       const sids = allUsers.filter((u) => u.status === 'approved' && u.role !== 'coach').map((u) => u.id);
       sessionsByStudent = await fetchSessionsForRange(supabase, sids, from, to);
       renderCalendar(cells);
-      // stats
       const sessCount = Object.values(sessionsByStudent).reduce(
         (n, per) => n + Object.values(per).reduce((m, arr) => m + arr.length, 0), 0);
       document.getElementById('stat-sessions').textContent = faNum(sessCount);
@@ -572,9 +580,9 @@ import AppShell from '../../layouts/AppShell.astro';
     }
 
     function renderCalendar(cellsInput) {
-      const cells = cellsInput || monthGrid(calYear, calMonth);
-      document.getElementById('cal-month').textContent = MONTHS_FA_GREG[calMonth];
-      document.getElementById('cal-year').textContent = calYear;
+      const cells = cellsInput || monthGrid(calJy, calJm);
+      document.getElementById('cal-month').textContent = JALALI_MONTHS[calJm - 1];
+      document.getElementById('cal-year').textContent = faNum(calJy);
       const grid = document.getElementById('cal-grid');
       const per = currentStudentId ? (sessionsByStudent[currentStudentId] || {}) : {};
 

@@ -80,29 +80,45 @@ export function faDateLong(iso) {
   });
 }
 
-// ---------- Month calendar generation ----------
+// ---------- Month calendar generation (Jalali) ----------
 
-// Given year, monthIndex (0-based Gregorian), return a 6x7 grid of
-// { date: 'YYYY-MM-DD', inMonth, isToday, dow }.  Rows start on Saturday.
-export function monthGrid(year, monthIdx) {
-  const first = new Date(year, monthIdx, 1);
-  const firstDow = (first.getDay() + 1) % 7; // 0=Sat
-  const gridStart = new Date(year, monthIdx, 1 - firstDow);
+import {
+  jalaliToDate, gregDateToJalali, jalaliMonthLength,
+} from './jalali.js';
+
+// Build a 6x7 grid for a Jalali month. Rows start on Saturday.
+// Cells:
+//   { date: 'YYYY-MM-DD' Gregorian ISO (used for DB queries),
+//     jy, jm, jd, day, inMonth, isToday, dow (0=Sat) }
+export function monthGrid(jy, jm) {
+  const first = jalaliToDate(jy, jm, 1);
+  const firstDow = (first.getDay() + 1) % 7;
+  const gridStart = new Date(first);
+  gridStart.setDate(first.getDate() - firstDow);
   const todayIso = today();
   const cells = [];
   for (let i = 0; i < 42; i++) {
     const d = new Date(gridStart);
     d.setDate(gridStart.getDate() + i);
     const iso = isoDate(d);
+    const jal = gregDateToJalali(d);
     cells.push({
       date: iso,
-      inMonth: d.getMonth() === monthIdx,
+      jy: jal.jy, jm: jal.jm, jd: jal.jd,
+      day: jal.jd,
+      inMonth: jal.jy === jy && jal.jm === jm,
       isToday: iso === todayIso,
       dow: (d.getDay() + 1) % 7,
-      day: d.getDate(),
     });
   }
   return cells;
+}
+
+// Gregorian ISO range for a Jalali month — for DB queries (leaderboard, plans).
+export function jalaliMonthRange(jy, jm) {
+  const first = jalaliToDate(jy, jm, 1);
+  const last  = jalaliToDate(jy, jm, jalaliMonthLength(jy, jm));
+  return { from: isoDate(first), to: isoDate(last) };
 }
 
 // ---------- Plan / sessions helpers ----------

@@ -16,6 +16,9 @@ import AppShell from '../../layouts/AppShell.astro';
       </div>
     </div>
 
+    <!-- TODAY hero (coach's plan for today, prominent) -->
+    <div id="today-hero"></div>
+
     <!-- Progress -->
     <div class="progress">
       <div class="progress-label">
@@ -160,7 +163,17 @@ import AppShell from '../../layouts/AppShell.astro';
     .cal-cell:hover { background: var(--app-accent-soft); border-color: var(--accent); }
     .cal-cell.out { opacity: 0.35; cursor: default; }
     .cal-cell.out:hover { background: var(--surface-2); border-color: transparent; }
-    .cal-cell.today { background: var(--app-accent-soft); border-color: var(--accent); }
+    .cal-cell.today {
+      background: linear-gradient(135deg, var(--app-accent-soft) 0%, var(--surface-2) 100%);
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 0 3px var(--app-accent-soft), 0 4px 12px var(--app-accent-glow);
+    }
+    .cal-cell.today .num { color: var(--accent); }
+    .cal-cell.today .num-sec {
+      background: var(--app-gradient); color: #fff;
+      padding: 1px 6px; border-radius: 999px; margin-inline-start: 4px;
+      font-size: 0.62rem; font-weight: 700;
+    }
     .cal-cell .num { font-weight: 700; font-size: 0.88rem; text-align: start; margin-bottom: 4px; }
     .cal-cell .num-sec { color: var(--muted); font-size: 0.68rem; font-weight: 400; }
     .cal-cell .pills { display: flex; flex-direction: column; gap: 2px; }
@@ -228,10 +241,39 @@ import AppShell from '../../layouts/AppShell.astro';
     .block-title { font-weight: 600; font-size: 0.95rem; }
     .block-sub { color: var(--text-dim); font-size: 0.88rem; margin-top: 2px; }
     @media (max-width: 560px) {
-      .cal-cell { min-height: 58px; padding: 4px; }
+      .cal-cell { min-height: 62px; padding: 4px; }
       .cal-cell .num { font-size: 0.78rem; margin-bottom: 2px; }
       .cal-pill { font-size: 0.6rem; padding: 1px 4px; }
     }
+
+    /* Today hero card */
+    #today-hero { margin-bottom: 20px; }
+    .today-card {
+      background: var(--surface);
+      border: 2px solid;
+      border-radius: 24px;
+      padding: 22px 24px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      box-shadow: var(--app-shadow);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .today-card:hover { transform: translateY(-2px); box-shadow: var(--app-shadow-lg); }
+    .today-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .today-eyebrow { font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.02em; }
+    .today-title { margin: 0 0 12px; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.01em; }
+    .hero-blocks {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .hero-block {
+      display: inline-block;
+      background: var(--bg-alt);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+    .hero-block strong { color: var(--text); margin-inline-end: 4px; }
 
     /* Photo picker */
     .photo-drop {
@@ -270,17 +312,20 @@ import AppShell from '../../layouts/AppShell.astro';
   <script>
     import { supabase } from '../../lib/supabase.js';
     import {
-      TYPES, TYPE_BY_ID, BLOCK_KIND_BY_ID, MONTHS_FA_GREG,
+      TYPES, TYPE_BY_ID, BLOCK_KIND_BY_ID,
       isoDate, addDays, weekSaturdayOf, today, faNum, faDateLong,
       monthGrid, fetchSessionsForRange, loadOrInitPlan, savePlan,
       summariseSession, formatBlock, ensureSessionDate,
       uploadSessionPhoto, signedPhotoUrl, deleteSessionPhoto,
     } from '../../lib/plan.js';
+    import {
+      JALALI_MONTHS, gregDateToJalali, jalaliPrevMonth, jalaliNextMonth,
+    } from '../../lib/jalali.js';
 
     let studentId = null;
-    let calYear, calMonth;
-    let sessionsByDate = {};   // dateIso -> [session]
-    let viewing = null;        // { dateIso, session }
+    let calJy, calJm;
+    let sessionsByDate = {};
+    let viewing = null;
 
     function setupHeader(profile) {
       const nav = document.getElementById('app-nav');
@@ -312,31 +357,28 @@ import AppShell from '../../layouts/AppShell.astro';
 
     // ---------- Calendar ----------
     function initCalendar() {
-      const now = new Date();
-      calYear = now.getFullYear();
-      calMonth = now.getMonth();
+      const j = gregDateToJalali(new Date());
+      calJy = j.jy; calJm = j.jm;
       document.getElementById('cal-prev').addEventListener('click', () => {
-        calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+        ({ jy: calJy, jm: calJm } = jalaliPrevMonth(calJy, calJm));
         refreshCalendar();
       });
       document.getElementById('cal-next').addEventListener('click', () => {
-        calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+        ({ jy: calJy, jm: calJm } = jalaliNextMonth(calJy, calJm));
         refreshCalendar();
       });
     }
 
     async function refreshCalendar() {
-      const cells = monthGrid(calYear, calMonth);
+      const cells = monthGrid(calJy, calJm);
       const from = cells[0].date, to = cells[cells.length - 1].date;
       const byStudent = await fetchSessionsForRange(supabase, [studentId], from, to);
       sessionsByDate = byStudent[studentId] || {};
 
-      // Stats: this month (only in-month dates)
       const monthSessions = cells.filter((c) => c.inMonth).flatMap((c) => sessionsByDate[c.date] || []);
       document.getElementById('stat-total').textContent = faNum(monthSessions.length);
       document.getElementById('stat-done').textContent = faNum(monthSessions.filter((s) => s.status === 'done').length);
 
-      // Week progress
       const todayIso = today();
       const wkStart = weekSaturdayOf(todayIso);
       const wkDates = Array.from({length: 7}, (_, i) => addDays(wkStart, i));
@@ -347,13 +389,14 @@ import AppShell from '../../layouts/AppShell.astro';
       document.getElementById('progress-fill').style.width =
         wkSessions.length ? `${Math.round((wkDone / wkSessions.length) * 100)}%` : '0%';
 
+      renderTodayHero();
       renderCalendar(cells);
       renderDayView(todayIso);
     }
 
     function renderCalendar(cells) {
-      document.getElementById('cal-month').textContent = MONTHS_FA_GREG[calMonth];
-      document.getElementById('cal-year').textContent = calYear;
+      document.getElementById('cal-month').textContent = JALALI_MONTHS[calJm - 1];
+      document.getElementById('cal-year').textContent = faNum(calJy);
       const grid = document.getElementById('cal-grid');
       grid.innerHTML = cells.map((c) => {
         const sessions = sessionsByDate[c.date] || [];
@@ -373,6 +416,47 @@ import AppShell from '../../layouts/AppShell.astro';
       grid.querySelectorAll('.cal-cell').forEach((el) => {
         if (el.classList.contains('out')) return;
         el.addEventListener('click', () => renderDayView(el.dataset.date));
+      });
+    }
+
+    // Prominent card at the top of the page for today's coach-assigned plan
+    function renderTodayHero() {
+      const box = document.getElementById('today-hero');
+      const todaySessions = sessionsByDate[today()] || [];
+      if (!todaySessions.length) { box.innerHTML = ''; return; }
+      box.innerHTML = todaySessions.map((s) => {
+        const t = TYPE_BY_ID[s.type] || TYPE_BY_ID.easy;
+        const blocksSummary = (s.blocks || []).map((b) => {
+          const kind = BLOCK_KIND_BY_ID[b.kind]?.label ?? b.kind;
+          const parts = [];
+          if (b.kind === 'interval') {
+            const r = b.repeat || 1;
+            if (b.distance_m)       parts.push(`${faNum(r)}×${faNum(b.distance_m)}m`);
+            else if (b.distance_km) parts.push(`${faNum(r)}×${faNum(b.distance_km)}km`);
+            if (b.rest_sec)         parts.push(`استراحت ${faNum(b.rest_sec)}s`);
+          } else {
+            if (b.distance_km) parts.push(`${faNum(b.distance_km)}km`);
+            if (b.minutes)     parts.push(`${faNum(b.minutes)}′`);
+            if (b.pace)        parts.push(`ریتم ${b.pace}`);
+          }
+          return `<span class="hero-block"><strong>${esc(kind)}</strong>${parts.length ? ' — ' + esc(parts.join(' · ')) : ''}</span>`;
+        }).join('');
+        const statusLabel = s.status === 'done' ? '✓ انجام شد'
+                          : s.status === 'submitted' ? 'منتظر تأیید سالار' : 'برنامه‌ی امروز شما';
+        return `
+          <div class="today-card" data-date="${s.date}" data-open="1" style="border-color:${t.color}55; background: linear-gradient(135deg, ${t.color}18 0%, transparent 70%);">
+            <div class="today-head">
+              <span class="today-eyebrow" style="color:${t.color}">${esc(statusLabel)}</span>
+              <span class="type-tag" style="background:${t.color}">${esc(t.label)}</span>
+            </div>
+            <h2 class="today-title">${esc(s.title || t.label)}</h2>
+            ${blocksSummary ? `<div class="hero-blocks">${blocksSummary}</div>` : ''}
+            <button type="button" class="app-btn" style="margin-top:14px;">مشاهده و ثبت انجام</button>
+          </div>
+        `;
+      }).join('');
+      box.querySelectorAll('.today-card').forEach((el, i) => {
+        el.addEventListener('click', () => openViewer(today(), todaySessions[i]));
       });
     }
 

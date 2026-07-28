@@ -100,12 +100,12 @@ import AppShell from '../../layouts/AppShell.astro';
 
   <script>
     import { supabase } from '../../lib/supabase.js';
-    import { MONTHS_FA_GREG, isoDate, faNum } from '../../lib/plan.js';
+    import { faNum, jalaliMonthRange } from '../../lib/plan.js';
+    import {
+      JALALI_MONTHS, gregDateToJalali, jalaliPrevMonth, jalaliNextMonth,
+    } from '../../lib/jalali.js';
 
-    let year, monthIdx, meId;
-
-    function firstOfMonth(y, m) { return isoDate(new Date(y, m, 1)); }
-    function lastOfMonth(y, m)  { return isoDate(new Date(y, m + 1, 0)); }
+    let jy, jm, meId;
 
     function esc(s) {
       return String(s ?? '').replace(/[&<>"']/g, (c) => ({
@@ -127,10 +127,9 @@ import AppShell from '../../layouts/AppShell.astro';
     }
 
     async function refresh() {
-      document.getElementById('mo-label').textContent = MONTHS_FA_GREG[monthIdx];
-      document.getElementById('mo-year').textContent = year;
-      const from = firstOfMonth(year, monthIdx);
-      const to = lastOfMonth(year, monthIdx);
+      document.getElementById('mo-label').textContent = JALALI_MONTHS[jm - 1];
+      document.getElementById('mo-year').textContent = faNum(jy);
+      const { from, to } = jalaliMonthRange(jy, jm);
       const { data, error } = await supabase.rpc('leaderboard', { from_date: from, to_date: to });
       if (error) {
         document.getElementById('rank-list').innerHTML =
@@ -191,11 +190,11 @@ import AppShell from '../../layouts/AppShell.astro';
     }
 
     document.getElementById('mo-prev').addEventListener('click', () => {
-      monthIdx--; if (monthIdx < 0) { monthIdx = 11; year--; }
+      ({ jy, jm } = jalaliPrevMonth(jy, jm));
       refresh();
     });
     document.getElementById('mo-next').addEventListener('click', () => {
-      monthIdx++; if (monthIdx > 11) { monthIdx = 0; year++; }
+      ({ jy, jm } = jalaliNextMonth(jy, jm));
       refresh();
     });
 
@@ -209,9 +208,8 @@ import AppShell from '../../layouts/AppShell.astro';
       meId = profile.id;
       setupHeader(profile);
 
-      const now = new Date();
-      year = now.getFullYear();
-      monthIdx = now.getMonth();
+      const j = gregDateToJalali(new Date());
+      jy = j.jy; jm = j.jm;
 
       document.getElementById('loading').hidden = true;
       document.getElementById('content').hidden = false;
