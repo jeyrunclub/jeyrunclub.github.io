@@ -12,90 +12,179 @@ import AppShell from '../../layouts/AppShell.astro';
       </div>
     </div>
 
-    <div class="cal-card" style="padding: 14px 18px;">
-      <div class="cal-header" style="margin: 0;">
-        <button class="arrow" id="mo-prev" aria-label="ماه قبل">‹</button>
-        <div>
-          <div class="cal-month" id="mo-label"></div>
-          <div class="cal-year" id="mo-year"></div>
-        </div>
-        <button class="arrow" id="mo-next" aria-label="ماه بعد">›</button>
+    <div class="month-nav">
+      <button class="arrow" id="mo-prev" aria-label="ماه قبل">‹</button>
+      <div class="month-label">
+        <span id="mo-label" class="month-name"></span>
+        <span id="mo-year" class="month-year"></span>
       </div>
+      <button class="arrow" id="mo-next" aria-label="ماه بعد">›</button>
     </div>
 
-    <div id="podium-wrap"></div>
-    <div id="rank-list" class="list-card" style="padding: 6px 18px;"></div>
+    <div class="lb-wrap">
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th class="col-rank">رتبه</th>
+            <th class="col-name">نام</th>
+            <th class="col-num">تأییدشده</th>
+            <th class="col-num hide-mobile">منتظر تأیید</th>
+            <th class="col-num hide-mobile">کل</th>
+          </tr>
+        </thead>
+        <tbody id="lb-body"></tbody>
+      </table>
+    </div>
+
     <div id="empty" class="app-empty" hidden>
       <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2M4 22h16M10 22V4h4v18"/></svg>
-      <h3>هنوز جلسه‌ای ثبت نشده</h3>
-      <p>وقتی سالار جلسات را تأیید کند، اینجا نمایش داده می‌شود.</p>
+      <h3>هنوز جلسه‌ای تأیید نشده</h3>
+      <p>وقتی سالار جلسات این ماه را تأیید کند، اینجا نمایش داده می‌شود.</p>
     </div>
   </section>
 
   <style is:global>
-    .podium {
-      display: grid;
-      grid-template-columns: 1fr 1.2fr 1fr;
-      gap: 10px;
-      align-items: end;
-      margin: 20px 0 18px;
-    }
-    .podium-card {
+    /* Month navigator (compact) */
+    .month-nav {
+      display: flex; align-items: center; justify-content: space-between;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--app-radius-lg);
-      padding: 18px 12px 14px;
-      text-align: center;
+      border-radius: 16px;
+      padding: 8px 10px;
+      margin-bottom: 18px;
       box-shadow: var(--app-shadow-sm);
-      position: relative;
     }
-    .podium-card .medal {
-      position: absolute; top: -14px; inset-inline-start: 50%; transform: translateX(-50%);
-      background: var(--surface); border: 2px solid;
-      width: 30px; height: 30px; border-radius: 50%;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.85rem;
+    .month-nav .arrow {
+      width: 40px; height: 40px; background: transparent; border: none;
+      color: var(--text-dim); font-size: 1.4rem; cursor: pointer;
+      border-radius: 999px; transition: all .15s; font-family: inherit;
     }
-    .podium-card.p1 { padding-top: 26px; }
-    .podium-card.p1 .medal { border-color: #f0b429; color: #f0b429; background: linear-gradient(180deg, #fff8e1, #fbe6a2); }
-    .podium-card.p2 .medal { border-color: #b0b7c0; color: #7b8390; }
-    .podium-card.p3 .medal { border-color: #cd7f32; color: #cd7f32; }
-    .podium-card.p1 { transform: translateY(-4px); border-color: rgba(240,180,41,0.5); box-shadow: 0 0 0 2px rgba(240,180,41,0.15), var(--app-shadow); }
-    .podium-avatar {
-      width: 64px; height: 64px; border-radius: 50%;
-      background: var(--app-gradient); color: #fff;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 1.35rem;
-      margin-bottom: 10px;
-      text-transform: uppercase;
-    }
-    .podium-name { font-weight: 700; font-size: 0.95rem; margin: 4px 0; }
-    .podium-score { color: var(--accent); font-weight: 800; font-size: 1.3rem; line-height: 1; }
-    .podium-score small { color: var(--muted); font-size: 0.72rem; font-weight: 500; display: block; margin-top: 4px; }
+    .month-nav .arrow:hover { background: var(--app-accent-soft); color: var(--accent); }
+    .month-label { display: flex; flex-direction: column; align-items: center; }
+    .month-name { font-size: 1.1rem; font-weight: 700; line-height: 1.2; }
+    .month-year { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
 
-    .rank-row {
-      display: grid;
-      grid-template-columns: 36px 42px 1fr auto;
-      gap: 12px;
-      align-items: center;
-      padding: 12px 4px;
+    /* Table */
+    .lb-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--app-shadow-sm);
+      margin-bottom: 18px;
+    }
+    .lb-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-family: inherit;
+    }
+    .lb-table thead th {
+      text-align: start;
+      font-weight: 600;
+      font-size: 0.78rem;
+      color: var(--muted);
+      padding: 14px 16px;
+      background: var(--surface-2);
       border-bottom: 1px solid var(--border);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
     }
-    .rank-row:last-child { border-bottom: none; }
-    .rank-row.me { background: var(--app-accent-soft); border-radius: 12px; padding-inline: 10px; }
-    .rank-num {
-      font-weight: 800; font-size: 0.95rem;
-      color: var(--muted); text-align: center;
+    .lb-table thead th.col-num { text-align: end; }
+    .lb-table tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      background: var(--surface);
+      transition: background .12s;
     }
-    .rank-row.top .rank-num { color: var(--accent); }
-    .rank-name { font-weight: 600; font-size: 0.98rem; }
-    .rank-meta { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
-    .rank-score {
-      display: flex; align-items: center; gap: 4px;
-      font-weight: 800; color: var(--text);
+    .lb-table tbody tr:last-child td { border-bottom: none; }
+    .lb-table tbody tr:nth-child(even) td { background: color-mix(in oklab, var(--surface) 96%, var(--text) 4%); }
+    .lb-table tbody tr:hover td { background: var(--app-accent-soft); }
+    .lb-table tbody tr.me td {
+      background: var(--app-accent-soft);
+      font-weight: 500;
     }
-    .rank-score .n { color: var(--accent); font-size: 1.05rem; }
-    .rank-score .l { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
+    .lb-table tbody tr.me td:first-child {
+      border-inline-start: 3px solid var(--accent);
+      padding-inline-start: 13px;
+    }
+
+    /* Rank column with medal */
+    .col-rank { width: 74px; }
+    .rank-cell {
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      font-weight: 800; font-size: 0.92rem;
+      background: var(--surface-2);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+    .rank-cell.p1 {
+      background: linear-gradient(180deg, #fde68a 0%, #f59e0b 100%);
+      color: #7c2d12; border-color: #f59e0b;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+    }
+    .rank-cell.p2 {
+      background: linear-gradient(180deg, #e5e7eb 0%, #9ca3af 100%);
+      color: #1f2937; border-color: #9ca3af;
+      box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3);
+    }
+    .rank-cell.p3 {
+      background: linear-gradient(180deg, #fdba74 0%, #c2410c 100%);
+      color: #fff; border-color: #c2410c;
+      box-shadow: 0 2px 8px rgba(194, 65, 12, 0.35);
+    }
+
+    /* Name column */
+    .col-name { min-width: 0; }
+    .name-cell {
+      display: flex; align-items: center; gap: 12px;
+      min-width: 0;
+    }
+    .lb-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--app-gradient);
+      color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.95rem;
+      flex-shrink: 0;
+      text-transform: uppercase;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+    .lb-avatar.muted { background: var(--surface-2); color: var(--muted); box-shadow: none; }
+    .name-cell .name-txt {
+      font-weight: 600; font-size: 0.95rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      min-width: 0;
+    }
+    .name-cell .name-sub {
+      color: var(--muted); font-size: 0.75rem; margin-top: 2px;
+    }
+
+    /* Numeric columns */
+    .col-num { width: 110px; }
+    td.col-num { text-align: end; font-variant-numeric: tabular-nums; }
+    td.col-num .big {
+      font-weight: 800; font-size: 1.05rem;
+      color: var(--text);
+    }
+    td.col-num.done .big { color: var(--accent); }
+    td.col-num .sm {
+      color: var(--muted); font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    @media (max-width: 560px) {
+      .hide-mobile { display: none; }
+      .lb-table thead th, .lb-table tbody td { padding: 12px 12px; }
+      .lb-avatar { width: 34px; height: 34px; font-size: 0.85rem; }
+      .rank-cell { width: 30px; height: 30px; font-size: 0.85rem; border-radius: 8px; }
+      .col-rank { width: 46px; }
+    }
   </style>
 
   <script>
@@ -132,59 +221,45 @@ import AppShell from '../../layouts/AppShell.astro';
       const { from, to } = jalaliMonthRange(jy, jm);
       const { data, error } = await supabase.rpc('leaderboard', { from_date: from, to_date: to });
       if (error) {
-        document.getElementById('rank-list').innerHTML =
-          `<p class="app-msg error">${esc(error.message)}</p>`;
+        document.getElementById('lb-body').innerHTML =
+          `<tr><td colspan="5"><p class="app-msg error">${esc(error.message)}</p></td></tr>`;
         return;
       }
       const rows = data || [];
       const anyDone = rows.some((r) => r.done_count > 0);
       document.getElementById('empty').hidden = anyDone;
-      renderPodium(rows.slice(0, 3), anyDone);
-      renderList(rows);
+      renderTable(rows);
     }
 
-    function renderPodium(top3, anyDone) {
-      const box = document.getElementById('podium-wrap');
-      if (!anyDone || top3.length === 0) { box.innerHTML = ''; return; }
-      // Layout order in RTL DOM: 2nd, 1st, 3rd -> visually renders center=first
-      const [first, second, third] = [top3[0], top3[1], top3[2]];
-      const card = (r, pos, medal) => r ? `
-        <div class="podium-card p${pos}">
-          <span class="medal">${medal}</span>
-          <div class="podium-avatar">${esc(initial(r.full_name))}</div>
-          <div class="podium-name">${esc(r.full_name || '—')}</div>
-          <div class="podium-score">${faNum(r.done_count)}<small>جلسه‌ی تأییدشده</small></div>
-        </div>` : '<div></div>';
-      box.innerHTML = `
-        <div class="podium">
-          ${card(second, 2, '۲')}
-          ${card(first,  1, '۱')}
-          ${card(third,  3, '۳')}
-        </div>
-      `;
-    }
-
-    function renderList(rows) {
-      const box = document.getElementById('rank-list');
-      if (!rows.length) { box.innerHTML = ''; return; }
-      box.innerHTML = rows.map((r, i) => {
-        const isMe = r.student_id === meId;
+    function renderTable(rows) {
+      const body = document.getElementById('lb-body');
+      if (!rows.length) { body.innerHTML = ''; return; }
+      body.innerHTML = rows.map((r, i) => {
         const pos = i + 1;
-        const topCls = pos <= 3 && r.done_count > 0 ? ' top' : '';
-        const meCls  = isMe ? ' me' : '';
-        const submittedNote = r.submitted_count
-          ? ` · ${faNum(r.submitted_count)} منتظر تأیید`
-          : '';
+        const rankCls =
+          pos === 1 && r.done_count > 0 ? 'p1' :
+          pos === 2 && r.done_count > 0 ? 'p2' :
+          pos === 3 && r.done_count > 0 ? 'p3' : '';
+        const total = r.done_count + r.submitted_count + r.planned_count;
+        const isMe = r.student_id === meId;
         return `
-          <div class="rank-row${topCls}${meCls}">
-            <div class="rank-num">${faNum(pos)}</div>
-            <div class="avatar ${r.done_count === 0 ? 'muted' : ''}">${esc(initial(r.full_name))}</div>
-            <div>
-              <div class="rank-name">${esc(r.full_name || '—')}${isMe ? ' <span class="badge coach" style="margin-inline-start:6px;">شما</span>' : ''}</div>
-              <div class="rank-meta">${faNum(r.done_count)} تأییدشده${submittedNote}</div>
-            </div>
-            <div class="rank-score"><span class="n">${faNum(r.done_count)}</span><span class="l">/ ${faNum(r.done_count + r.submitted_count + r.planned_count)}</span></div>
-          </div>
+          <tr class="${isMe ? 'me' : ''}">
+            <td>
+              <span class="rank-cell ${rankCls}">${faNum(pos)}</span>
+            </td>
+            <td class="col-name">
+              <div class="name-cell">
+                <span class="lb-avatar ${r.done_count === 0 ? 'muted' : ''}">${esc(initial(r.full_name))}</span>
+                <div style="min-width:0;">
+                  <div class="name-txt">${esc(r.full_name || '—')}${isMe ? ' <span class="badge coach" style="margin-inline-start:6px;">شما</span>' : ''}</div>
+                  <div class="name-sub d-mobile-only" style="display:none;">${faNum(r.submitted_count)} منتظر · ${faNum(total)} کل</div>
+                </div>
+              </div>
+            </td>
+            <td class="col-num done"><span class="big">${faNum(r.done_count)}</span></td>
+            <td class="col-num hide-mobile"><span class="sm">${faNum(r.submitted_count)}</span></td>
+            <td class="col-num hide-mobile"><span class="sm">${faNum(total)}</span></td>
+          </tr>
         `;
       }).join('');
     }
