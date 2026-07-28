@@ -91,7 +91,7 @@ import AppShell from '../../layouts/AppShell.astro';
     </div>
   </div>
 
-  <style>
+  <style is:global>
     .modal-overlay[hidden] { display: none !important; }
     .modal-overlay {
       position: fixed; inset: 0;
@@ -170,9 +170,11 @@ import AppShell from '../../layouts/AppShell.astro';
     }
     .cal-cell.today .num { color: var(--accent); }
     .cal-cell.today .num-sec {
-      background: var(--app-gradient); color: #fff;
-      padding: 1px 6px; border-radius: 999px; margin-inline-start: 4px;
-      font-size: 0.62rem; font-weight: 700;
+      background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      padding: 2px 8px; border-radius: 999px; margin-inline-start: 4px;
+      font-size: 0.62rem; font-weight: 800;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
     }
     .cal-cell .num { font-weight: 700; font-size: 0.88rem; text-align: start; margin-bottom: 4px; }
     .cal-cell .num-sec { color: var(--muted); font-size: 0.68rem; font-weight: 400; }
