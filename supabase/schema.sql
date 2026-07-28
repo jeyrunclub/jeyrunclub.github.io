@@ -42,8 +42,8 @@ language sql
 immutable
 as $$
   select lower(em) = any(array[
-    'pjsofts@gmail.com'
-    -- , 'salar@example.com'  -- add Salar's real email here
+    'pjsofts@gmail.com',
+    'salar.piri71@gmail.com'
   ]);
 $$;
 
