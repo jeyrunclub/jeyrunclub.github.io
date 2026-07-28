@@ -5,14 +5,16 @@ import AppShell from '../../layouts/AppShell.astro';
   <div id="loading" class="app-empty">در حال بارگذاری…</div>
 
   <section id="content" hidden>
-    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
-      <h1 style="margin:0;font-size:1.6rem;">برنامه‌ی این هفته</h1>
-      <span id="week-label" style="color:var(--muted);font-size:0.9rem;"></span>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px;">
+      <button type="button" id="prev-week" class="app-btn ghost" style="padding:6px 12px;">‹ قبل</button>
+      <h1 id="week-heading" style="margin:0;font-size:1.25rem;text-align:center;flex:1;">برنامه‌ی این هفته</h1>
+      <button type="button" id="next-week" class="app-btn ghost" style="padding:6px 12px;">بعد ›</button>
     </div>
+    <p id="week-label" style="text-align:center;color:var(--muted);font-size:0.85rem;margin:0 0 14px;"></p>
     <p id="plan-notes" class="app-msg info" hidden></p>
     <div id="sessions"></div>
     <div id="no-plan" class="app-empty" hidden>
-      برای این هفته هنوز برنامه‌ای ثبت نشده. به‌زودی سالار برایت می‌نویسد.
+      برای این هفته هنوز برنامه‌ای ثبت نشده.
     </div>
   </section>
 
@@ -34,10 +36,25 @@ import AppShell from '../../layouts/AppShell.astro';
     return `${y}-${m}-${d}`;
   }
 
+  function addDays(iso, delta) {
+    const d = new Date(iso + 'T00:00:00');
+    d.setDate(d.getDate() + delta);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dd}`;
+  }
+
   function faDate(iso) {
     return new Date(iso + 'T00:00:00').toLocaleDateString('fa-IR', {
       day: 'numeric', month: 'long',
     });
+  }
+
+  // day-of-week index of today in Persian-week terms (Sat=0..Fri=6)
+  function todayDayIdx() {
+    const dow = new Date().getDay();
+    return (dow + 1) % 7;
   }
 
   function setupHeader(profile) {
@@ -52,18 +69,22 @@ import AppShell from '../../layouts/AppShell.astro';
     });
   }
 
-  function renderSessions(plan) {
+  function renderSessions(plan, isCurrentWeek) {
     const container = document.getElementById('sessions');
     const sessions = Array.isArray(plan.sessions) ? plan.sessions : [];
     if (!sessions.length) {
+      container.innerHTML = '';
       document.getElementById('no-plan').hidden = false;
       return;
     }
-    // Sort by day index
+    document.getElementById('no-plan').hidden = true;
     sessions.sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
-    container.innerHTML = sessions.map((s, i) => `
-      <div class="app-card">
-        <div class="day">${DAYS[s.day] ?? ''}</div>
+    const today = todayDayIdx();
+    container.innerHTML = sessions.map((s, i) => {
+      const isToday = isCurrentWeek && s.day === today;
+      return `
+      <div class="app-card ${isToday ? 'today' : ''}">
+        <div class="day">${DAYS[s.day] ?? ''}${isToday ? ' · امروز' : ''}</div>
         <label class="session-row">
           <input type="checkbox" class="session-check" data-idx="${i}" ${s.done ? 'checked' : ''} />
           <div style="flex:1;">
@@ -76,8 +97,8 @@ import AppShell from '../../layouts/AppShell.astro';
             </p>` : ''}
           </div>
         </label>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
 
     container.querySelectorAll('input.session-check').forEach((el) => {
       el.addEventListener('change', async (e) => {
@@ -90,7 +111,7 @@ import AppShell from '../../layouts/AppShell.astro';
           e.target.checked = !e.target.checked;
           sessions[idx].done = e.target.checked;
         } else {
-          renderSessions({ ...plan, sessions });
+          renderSessions({ ...plan, sessions }, isCurrentWeek);
         }
       });
     });
@@ -138,28 +159,51 @@ import AppShell from '../../layouts/AppShell.astro';
 
     setupHeader(profile);
 
-    const weekStart = currentWeekSaturday();
-    document.getElementById('week-label').textContent = 'شروع: ' + faDate(weekStart);
+    const studentId = session.user.id;
+    let viewWeek = currentWeekSaturday();
 
-    const { data: plan } = await supabase
-      .from('plans').select('*')
-      .eq('student_id', session.user.id)
-      .eq('week_start', weekStart)
-      .maybeSingle();
+    async function loadWeek() {
+      const cur = currentWeekSaturday();
+      const isCurrent = viewWeek === cur;
+      const heading = viewWeek === cur ? 'برنامه‌ی این هفته'
+                    : viewWeek === addDays(cur, 7)  ? 'برنامه‌ی هفته‌ی آینده'
+                    : viewWeek === addDays(cur, -7) ? 'برنامه‌ی هفته‌ی گذشته'
+                    : 'برنامه‌ی هفته';
+      document.getElementById('week-heading').textContent = heading;
+      document.getElementById('week-label').textContent = 'شروع: ' + faDate(viewWeek);
+      const notesEl = document.getElementById('plan-notes');
+      notesEl.hidden = true;
+      document.getElementById('sessions').innerHTML = '';
+      document.getElementById('no-plan').hidden = true;
+
+      const { data: plan } = await supabase
+        .from('plans').select('*')
+        .eq('student_id', studentId).eq('week_start', viewWeek)
+        .maybeSingle();
+
+      if (!plan) {
+        document.getElementById('no-plan').hidden = false;
+        return;
+      }
+      if (plan.notes) {
+        notesEl.textContent = plan.notes;
+        notesEl.hidden = false;
+      }
+      renderSessions(plan, isCurrent);
+    }
+
+    document.getElementById('prev-week').addEventListener('click', () => {
+      viewWeek = addDays(viewWeek, -7);
+      loadWeek();
+    });
+    document.getElementById('next-week').addEventListener('click', () => {
+      viewWeek = addDays(viewWeek, 7);
+      loadWeek();
+    });
 
     document.getElementById('loading').hidden = true;
     document.getElementById('content').hidden = false;
-
-    if (!plan) {
-      document.getElementById('no-plan').hidden = false;
-      return;
-    }
-    if (plan.notes) {
-      const n = document.getElementById('plan-notes');
-      n.textContent = plan.notes;
-      n.hidden = false;
-    }
-    renderSessions(plan);
+    await loadWeek();
   })();
 </script>
 </AppShell>

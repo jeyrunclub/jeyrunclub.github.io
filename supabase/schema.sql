@@ -57,10 +57,11 @@ as $$
 declare
   bootstrap boolean := public._is_bootstrap_coach(new.email);
 begin
-  insert into public.profiles (id, full_name, role, status)
+  insert into public.profiles (id, full_name, phone, role, status)
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'full_name', ''),
+    coalesce(new.raw_user_meta_data->>'phone', ''),
     case when bootstrap then 'coach'    else 'student' end,
     case when bootstrap then 'approved' else 'pending' end
   )

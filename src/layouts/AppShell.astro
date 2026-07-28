@@ -134,6 +134,11 @@ const { title } = Astro.props;
   .app-card h3 { margin: 0 0 6px; font-size: 1.05rem; }
   .app-card .day { color: var(--muted); font-size: 0.82rem; margin-bottom: 8px; }
   .app-card p { margin: 0; color: var(--text-dim); line-height: 1.75; }
+  .app-card.today {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent) inset;
+  }
+  .app-card.today .day { color: var(--accent); font-weight: 600; }
 
   .app-btn {
     display: inline-flex;
