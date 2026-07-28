@@ -205,6 +205,70 @@ $$;
 revoke execute on function public.list_all_users() from public;
 grant  execute on function public.list_all_users() to authenticated;
 
+-- ---------- Leaderboard: approved sessions per student in a date range ----------
+create or replace function public.leaderboard(from_date date, to_date date)
+returns table (
+  student_id      uuid,
+  full_name       text,
+  done_count      int,
+  submitted_count int,
+  planned_count   int
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with all_students as (
+    select id, full_name
+      from public.profiles
+     where status = 'approved' and role = 'student'
+  ),
+  expanded as (
+    select p.student_id, p.week_start, s
+      from public.plans p,
+           lateral jsonb_array_elements(p.sessions) as s
+     where p.week_start between (from_date - interval '6 days')::date and to_date
+  ),
+  scoped as (
+    select e.student_id,
+           coalesce(nullif(e.s->>'status', ''), 'planned') as status,
+           -- prefer explicit date, fall back to week_start + day for legacy sessions
+           coalesce(
+             (e.s->>'date')::date,
+             (e.week_start + ((e.s->>'day')::int) * interval '1 day')::date
+           ) as sdate
+      from expanded e
+  ),
+  in_range as (
+    select student_id, status
+      from scoped
+     where sdate between from_date and to_date
+  ),
+  counts as (
+    select student_id,
+           count(*) filter (where status = 'done')::int      as done_count,
+           count(*) filter (where status = 'submitted')::int as submitted_count,
+           count(*) filter (where status = 'planned')::int   as planned_count
+      from in_range
+     group by student_id
+  )
+  select st.id,
+         st.full_name,
+         coalesce(c.done_count, 0),
+         coalesce(c.submitted_count, 0),
+         coalesce(c.planned_count, 0)
+    from all_students st
+    left join counts c on c.student_id = st.id
+   where exists(select 1 from public.profiles where id = auth.uid() and status = 'approved')
+   order by coalesce(c.done_count, 0) desc,
+            coalesce(c.submitted_count, 0) desc,
+            st.full_name nulls last;
+$$;
+
+revoke execute on function public.leaderboard(date, date) from public;
+grant  execute on function public.leaderboard(date, date) to authenticated;
+
 -- ---------- promote any existing accounts on the bootstrap list ----------
 -- (idempotent; runs every time this file is executed)
 update public.profiles p

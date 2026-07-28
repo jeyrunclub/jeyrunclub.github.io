@@ -1,0 +1,221 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+---
+<AppShell title="جدول قهرمانان">
+  <div id="loading" class="app-empty"><div class="app-spinner"></div></div>
+
+  <section id="content" hidden>
+    <div class="page-hero">
+      <div>
+        <h1 class="page-title">جدول قهرمانان</h1>
+        <p class="page-subtitle">شاگردانی که این ماه بیشترین جلسات تأییدشده را داشته‌اند.</p>
+      </div>
+    </div>
+
+    <div class="cal-card" style="padding: 14px 18px;">
+      <div class="cal-header" style="margin: 0;">
+        <button class="arrow" id="mo-prev" aria-label="ماه قبل">‹</button>
+        <div>
+          <div class="cal-month" id="mo-label"></div>
+          <div class="cal-year" id="mo-year"></div>
+        </div>
+        <button class="arrow" id="mo-next" aria-label="ماه بعد">›</button>
+      </div>
+    </div>
+
+    <div id="podium-wrap"></div>
+    <div id="rank-list" class="list-card" style="padding: 6px 18px;"></div>
+    <div id="empty" class="app-empty" hidden>
+      <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2M4 22h16M10 22V4h4v18"/></svg>
+      <h3>هنوز جلسه‌ای ثبت نشده</h3>
+      <p>وقتی سالار جلسات را تأیید کند، اینجا نمایش داده می‌شود.</p>
+    </div>
+  </section>
+
+  <style>
+    .podium {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      gap: 10px;
+      align-items: end;
+      margin: 20px 0 18px;
+    }
+    .podium-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--app-radius-lg);
+      padding: 18px 12px 14px;
+      text-align: center;
+      box-shadow: var(--app-shadow-sm);
+      position: relative;
+    }
+    .podium-card .medal {
+      position: absolute; top: -14px; inset-inline-start: 50%; transform: translateX(-50%);
+      background: var(--surface); border: 2px solid;
+      width: 30px; height: 30px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.85rem;
+    }
+    .podium-card.p1 { padding-top: 26px; }
+    .podium-card.p1 .medal { border-color: #f0b429; color: #f0b429; background: linear-gradient(180deg, #fff8e1, #fbe6a2); }
+    .podium-card.p2 .medal { border-color: #b0b7c0; color: #7b8390; }
+    .podium-card.p3 .medal { border-color: #cd7f32; color: #cd7f32; }
+    .podium-card.p1 { transform: translateY(-4px); border-color: rgba(240,180,41,0.5); box-shadow: 0 0 0 2px rgba(240,180,41,0.15), var(--app-shadow); }
+    .podium-avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--app-gradient); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.35rem;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .podium-name { font-weight: 700; font-size: 0.95rem; margin: 4px 0; }
+    .podium-score { color: var(--accent); font-weight: 800; font-size: 1.3rem; line-height: 1; }
+    .podium-score small { color: var(--muted); font-size: 0.72rem; font-weight: 500; display: block; margin-top: 4px; }
+
+    .rank-row {
+      display: grid;
+      grid-template-columns: 36px 42px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .rank-row:last-child { border-bottom: none; }
+    .rank-row.me { background: var(--app-accent-soft); border-radius: 12px; padding-inline: 10px; }
+    .rank-num {
+      font-weight: 800; font-size: 0.95rem;
+      color: var(--muted); text-align: center;
+    }
+    .rank-row.top .rank-num { color: var(--accent); }
+    .rank-name { font-weight: 600; font-size: 0.98rem; }
+    .rank-meta { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
+    .rank-score {
+      display: flex; align-items: center; gap: 4px;
+      font-weight: 800; color: var(--text);
+    }
+    .rank-score .n { color: var(--accent); font-size: 1.05rem; }
+    .rank-score .l { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
+  </style>
+
+  <script>
+    import { supabase } from '../../lib/supabase.js';
+    import { MONTHS_FA_GREG, isoDate, faNum } from '../../lib/plan.js';
+
+    let year, monthIdx, meId;
+
+    function firstOfMonth(y, m) { return isoDate(new Date(y, m, 1)); }
+    function lastOfMonth(y, m)  { return isoDate(new Date(y, m + 1, 0)); }
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+    }
+    function initial(name) {
+      return ((name || '?').trim()[0] || '?').toUpperCase();
+    }
+
+    function setupHeader(profile) {
+      const nav = document.getElementById('app-nav');
+      nav.hidden = false;
+      if (profile.role === 'coach') document.getElementById('coach-link').hidden = false;
+      document.getElementById('signout-btn').addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.replace('/app/login');
+      });
+    }
+
+    async function refresh() {
+      document.getElementById('mo-label').textContent = MONTHS_FA_GREG[monthIdx];
+      document.getElementById('mo-year').textContent = year;
+      const from = firstOfMonth(year, monthIdx);
+      const to = lastOfMonth(year, monthIdx);
+      const { data, error } = await supabase.rpc('leaderboard', { from_date: from, to_date: to });
+      if (error) {
+        document.getElementById('rank-list').innerHTML =
+          `<p class="app-msg error">${esc(error.message)}</p>`;
+        return;
+      }
+      const rows = data || [];
+      const anyDone = rows.some((r) => r.done_count > 0);
+      document.getElementById('empty').hidden = anyDone;
+      renderPodium(rows.slice(0, 3), anyDone);
+      renderList(rows);
+    }
+
+    function renderPodium(top3, anyDone) {
+      const box = document.getElementById('podium-wrap');
+      if (!anyDone || top3.length === 0) { box.innerHTML = ''; return; }
+      // Layout order in RTL DOM: 2nd, 1st, 3rd -> visually renders center=first
+      const [first, second, third] = [top3[0], top3[1], top3[2]];
+      const card = (r, pos, medal) => r ? `
+        <div class="podium-card p${pos}">
+          <span class="medal">${medal}</span>
+          <div class="podium-avatar">${esc(initial(r.full_name))}</div>
+          <div class="podium-name">${esc(r.full_name || '—')}</div>
+          <div class="podium-score">${faNum(r.done_count)}<small>جلسه‌ی تأییدشده</small></div>
+        </div>` : '<div></div>';
+      box.innerHTML = `
+        <div class="podium">
+          ${card(second, 2, '۲')}
+          ${card(first,  1, '۱')}
+          ${card(third,  3, '۳')}
+        </div>
+      `;
+    }
+
+    function renderList(rows) {
+      const box = document.getElementById('rank-list');
+      if (!rows.length) { box.innerHTML = ''; return; }
+      box.innerHTML = rows.map((r, i) => {
+        const isMe = r.student_id === meId;
+        const pos = i + 1;
+        const topCls = pos <= 3 && r.done_count > 0 ? ' top' : '';
+        const meCls  = isMe ? ' me' : '';
+        const submittedNote = r.submitted_count
+          ? ` · ${faNum(r.submitted_count)} منتظر تأیید`
+          : '';
+        return `
+          <div class="rank-row${topCls}${meCls}">
+            <div class="rank-num">${faNum(pos)}</div>
+            <div class="avatar ${r.done_count === 0 ? 'muted' : ''}">${esc(initial(r.full_name))}</div>
+            <div>
+              <div class="rank-name">${esc(r.full_name || '—')}${isMe ? ' <span class="badge coach" style="margin-inline-start:6px;">شما</span>' : ''}</div>
+              <div class="rank-meta">${faNum(r.done_count)} تأییدشده${submittedNote}</div>
+            </div>
+            <div class="rank-score"><span class="n">${faNum(r.done_count)}</span><span class="l">/ ${faNum(r.done_count + r.submitted_count + r.planned_count)}</span></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    document.getElementById('mo-prev').addEventListener('click', () => {
+      monthIdx--; if (monthIdx < 0) { monthIdx = 11; year--; }
+      refresh();
+    });
+    document.getElementById('mo-next').addEventListener('click', () => {
+      monthIdx++; if (monthIdx > 11) { monthIdx = 0; year++; }
+      refresh();
+    });
+
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.replace('/app/login'); return; }
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+      if (!profile) { document.getElementById('loading').textContent = 'خطا در بارگذاری پروفایل'; return; }
+      if (profile.status !== 'approved') { window.location.replace('/app/pending'); return; }
+
+      meId = profile.id;
+      setupHeader(profile);
+
+      const now = new Date();
+      year = now.getFullYear();
+      monthIdx = now.getMonth();
+
+      document.getElementById('loading').hidden = true;
+      document.getElementById('content').hidden = false;
+      await refresh();
+    })();
+  </script>
+</AppShell>

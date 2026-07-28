@@ -185,45 +185,145 @@ import AppShell from '../../layouts/AppShell.astro';
     .block-item {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px 14px;
-      margin-bottom: 8px;
+      border-radius: 16px;
+      padding: 0;
+      margin-bottom: 10px;
       position: relative;
+      overflow: hidden;
+      border-inline-start: 4px solid var(--muted);
     }
+    .block-item.k-warmup   { border-inline-start-color: #f0b429; }
+    .block-item.k-run      { border-inline-start-color: #3fa25c; }
+    .block-item.k-interval { border-inline-start-color: #df2747; }
+    .block-item.k-cooldown { border-inline-start-color: #4a89dc; }
+    .block-item.k-rest     { border-inline-start-color: #7a8393; }
+    .block-item.k-note     { border-inline-start-color: #a259d9; }
     .block-item .blk-head {
       display:flex; align-items:center; justify-content:space-between;
-      margin-bottom: 8px;
+      gap: 8px;
+      padding: 12px 14px 4px;
     }
-    .block-item .blk-name {
-      font-weight: 700; font-size: 0.92rem;
+    .block-item .blk-title {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-weight: 700; font-size: 0.95rem;
     }
+    .blk-title-icon {
+      width: 26px; height: 26px; border-radius: 8px;
+      background: var(--surface-2);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--text-dim);
+    }
+    .block-item.k-warmup   .blk-title-icon { background: rgba(240,180,41,0.15); color:#f0b429; }
+    .block-item.k-run      .blk-title-icon { background: rgba(60,160,90,0.15); color:#3fa25c; }
+    .block-item.k-interval .blk-title-icon { background: rgba(223,39,71,0.15); color:#df2747; }
+    .block-item.k-cooldown .blk-title-icon { background: rgba(74,137,220,0.15); color:#4a89dc; }
     .block-item .blk-del {
       background: transparent; border: none; color: var(--muted);
-      font-family: inherit; font-size: 1.1rem; cursor: pointer;
-      width: 28px; height: 28px; border-radius: 999px;
+      font-family: inherit; font-size: 1.3rem; cursor: pointer;
+      width: 30px; height: 30px; border-radius: 9999px;
       display:inline-flex; align-items:center; justify-content:center;
+      transition: all .15s;
     }
     .block-item .blk-del:hover { color: #e05656; background: rgba(200,60,60,0.1); }
-    .blk-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
-    .blk-fields .desc { grid-column: 1 / -1; }
-    .blk-input {
-      padding: 8px 12px;
-      border-radius: 10px;
+    .blk-body { padding: 8px 14px 14px; display: flex; flex-direction: column; gap: 12px; }
+
+    .field-row { display: flex; flex-direction: column; gap: 6px; }
+    .field-row-inline { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 480px) { .field-row-inline { grid-template-columns: 1fr; } }
+    .field-lbl {
+      font-size: 0.78rem; color: var(--text-dim); font-weight: 500;
+    }
+    .num-wrap {
+      display: flex; align-items: stretch;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .num-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--app-accent-soft); }
+    .num-wrap .num-btn {
+      background: transparent; border: none; color: var(--text-dim);
+      width: 36px; cursor: pointer; font-size: 1.1rem;
+      font-family: inherit; font-weight: 700;
+      transition: all .15s;
+    }
+    .num-wrap .num-btn:hover { background: var(--app-accent-soft); color: var(--accent); }
+    .num-wrap .num-input {
+      flex: 1;
+      background: transparent; border: none; outline: none;
+      padding: 10px 4px; color: var(--text);
+      text-align: center; font-family: inherit; font-size: 0.98rem; font-weight: 600;
+      -moz-appearance: textfield;
+      min-width: 0;
+    }
+    .num-wrap .num-input::-webkit-outer-spin-button,
+    .num-wrap .num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .num-wrap .num-unit {
+      padding: 0 12px; display: flex; align-items: center;
+      color: var(--muted); font-size: 0.82rem; font-weight: 500;
+      background: var(--surface-2); border-inline-start: 1px solid var(--border);
+    }
+    .chips-row {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .chip {
+      background: var(--surface-2);
       border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-family: inherit; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer;
+      transition: all .12s;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--accent); }
+    .chip.on {
+      background: var(--app-accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .text-input, .text-area {
+      display: block; width: 100%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
       background: var(--bg);
       color: var(--text);
-      font-family: inherit; font-size: 0.88rem;
-      width: 100%; box-sizing: border-box;
+      font-family: inherit; font-size: 0.92rem;
+      box-sizing: border-box;
+      transition: border-color .15s, box-shadow .15s;
     }
-    .blk-input:focus {
+    .text-input:focus, .text-area:focus {
       outline: none; border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--app-accent-soft);
     }
-    .blk-input::placeholder { color: var(--muted); font-size: 0.82rem; }
-    .add-block-row {
-      display:flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 0;
+    .text-input::placeholder, .text-area::placeholder { color: var(--muted); }
+    .text-area { min-height: 60px; resize: vertical; line-height: 1.6; }
+    .seg {
+      display: inline-flex; padding: 3px;
+      background: var(--surface-2);
+      border-radius: 9999px;
+      border: 1px solid var(--border);
     }
-    .add-block-row .app-btn { padding: 6px 12px; font-size: 0.82rem; }
+    .seg button {
+      background: transparent; border: none;
+      padding: 6px 14px; border-radius: 9999px;
+      color: var(--text-dim); font-family: inherit;
+      font-size: 0.82rem; font-weight: 600;
+      cursor: pointer;
+    }
+    .seg button.on {
+      background: var(--surface); color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .add-block-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 6px; margin: 10px 0 0;
+    }
+    .add-block-row .app-btn { padding: 8px 12px; font-size: 0.85rem; }
 
     /* Calendar */
     .cal-card {
@@ -520,70 +620,175 @@ import AppShell from '../../layouts/AppShell.astro';
       });
     }
 
+    // Preset chip values per (kind, field)
+    const PRESETS = {
+      warmup:   { distance_km: [1, 2, 3] },
+      cooldown: { distance_km: [1, 2, 3] },
+      run:      { distance_km: [5, 8, 10, 15, 20], minutes: [30, 45, 60, 90] },
+      interval: {
+        repeat:     [4, 5, 6, 8, 10, 12],
+        distance_m: [200, 400, 600, 800, 1000, 1600],
+        rest_sec:   [30, 60, 90, 120, 180],
+      },
+      rest:     { minutes: [1, 2, 5, 10] },
+    };
+
+    function iconSvg(kind) {
+      const p = {
+        warmup:   '<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+        run:      '<path d="M13 5.5a2 2 0 1 0 0-.01M9 22l1.5-7.5L14 12l-2-4H8m5-6 3 5 3 1"/>',
+        interval: '<path d="M3 12h6l2-6 4 12 2-6h4"/>',
+        cooldown: '<path d="M12 22V2M4 8l8-6 8 6M4 16l8-6 8 6"/>',
+        rest:     '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>',
+        note:     '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>',
+      }[kind] || '<circle cx="12" cy="12" r="9"/>';
+      return `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+    }
+
+    // Number stepper with unit + optional preset chips
+    function numFieldHtml(idx, field, label, unit, value, step, presets) {
+      const chips = (presets || []).map((v) => `
+        <button type="button" class="chip ${Number(value) === v ? 'on' : ''}"
+                data-preset data-i="${idx}" data-f="${field}" data-v="${v}">${faNum(v)}</button>
+      `).join('');
+      const showVal = (value === undefined || value === null || value === '') ? '' : value;
+      return `
+        <div class="field-row">
+          <label class="field-lbl">${esc(label)}</label>
+          <div class="num-wrap">
+            <button type="button" class="num-btn" data-step="-${step}" data-i="${idx}" data-f="${field}">−</button>
+            <input class="num-input" type="number" step="${step}" min="0"
+                   data-f="${field}" data-i="${idx}" value="${showVal}" />
+            <button type="button" class="num-btn" data-step="${step}" data-i="${idx}" data-f="${field}">+</button>
+            <span class="num-unit">${esc(unit)}</span>
+          </div>
+          ${chips ? `<div class="chips-row">${chips}</div>` : ''}
+        </div>
+      `;
+    }
+
+    function textFieldHtml(idx, field, label, placeholder, value, area) {
+      const tag = area ? 'textarea' : 'input';
+      const t = area ? '' : 'type="text"';
+      const val = esc(value ?? '');
+      return `
+        <div class="field-row">
+          <label class="field-lbl">${esc(label)}</label>
+          <${tag} class="${area ? 'text-area' : 'text-input'}" ${t}
+                  data-f="${field}" data-i="${idx}"
+                  placeholder="${esc(placeholder || '')}">${area ? val : ''}</${tag}>
+        </div>
+      `.replace('">', `" ${area ? '' : `value="${val}"`}>`);
+    }
+
     function renderBlocks() {
       const box = document.getElementById('blocks-list');
       const blocks = editing.session.blocks || [];
+      if (!blocks.length) {
+        box.innerHTML = `<p style="color:var(--muted);margin:8px 0 4px;font-size:0.9rem;">
+          هنوز مرحله‌ای اضافه نشده. از دکمه‌های زیر یکی را انتخاب کن.
+        </p>`;
+        return;
+      }
       box.innerHTML = blocks.map((b, i) => {
-        const name = BLOCK_KIND_BY_ID[b.kind]?.label ?? b.kind;
-        let fields = '';
+        const label = BLOCK_KIND_BY_ID[b.kind]?.label ?? b.kind;
+        let body = '';
+        const ps = PRESETS[b.kind] || {};
         if (b.kind === 'interval') {
-          fields = `
-            <input class="blk-input" type="number" min="1" placeholder="تکرار" data-f="repeat" data-i="${i}" value="${b.repeat ?? ''}" />
-            <input class="blk-input" type="number" step="1" min="0" placeholder="متر" data-f="distance_m" data-i="${i}" value="${b.distance_m ?? ''}" />
-            <input class="blk-input" type="number" step="0.1" min="0" placeholder="کیلومتر" data-f="distance_km" data-i="${i}" value="${b.distance_km ?? ''}" />
-            <input class="blk-input" type="number" step="1" min="0" placeholder="دقیقه" data-f="minutes" data-i="${i}" value="${b.minutes ?? ''}" />
-            <input class="blk-input" type="number" step="1" min="0" placeholder="ثانیه استراحت" data-f="rest_sec" data-i="${i}" value="${b.rest_sec ?? ''}" />
-            <input class="blk-input desc" type="text" placeholder="توضیحات (اختیاری)" data-f="description" data-i="${i}" value="${esc(b.description || '')}" />
+          body = `
+            <div class="field-row-inline">
+              ${numFieldHtml(i, 'repeat',     'تعداد تکرار', 'بار', b.repeat, 1, ps.repeat)}
+              ${numFieldHtml(i, 'distance_m', 'مسافت',       'متر',  b.distance_m, 50, ps.distance_m)}
+            </div>
+            <div class="field-row-inline">
+              ${numFieldHtml(i, 'rest_sec',   'استراحت بین تکرار', 'ثانیه', b.rest_sec, 15, ps.rest_sec)}
+              ${textFieldHtml(i, 'description', 'توضیحات (اختیاری)', 'مثلاً: بین‌کش با ریتم مسابقه', b.description)}
+            </div>
+          `;
+        } else if (b.kind === 'run') {
+          body = `
+            <div class="field-row-inline">
+              ${numFieldHtml(i, 'distance_km', 'مسافت',   'کیلومتر', b.distance_km, 0.5, ps.distance_km)}
+              ${numFieldHtml(i, 'minutes',     'زمان',    'دقیقه',   b.minutes, 5, ps.minutes)}
+            </div>
+            <div class="field-row-inline">
+              ${textFieldHtml(i, 'pace', 'ریتم هدف', '5:00',           b.pace)}
+              ${textFieldHtml(i, 'description', 'توضیحات', 'استقامتی، در پارک…', b.description)}
+            </div>
+          `;
+        } else if (b.kind === 'warmup' || b.kind === 'cooldown') {
+          body = `
+            <div class="field-row-inline">
+              ${numFieldHtml(i, 'distance_km', 'مسافت', 'کیلومتر', b.distance_km, 0.5, ps.distance_km)}
+              ${numFieldHtml(i, 'minutes',     'زمان',  'دقیقه',   b.minutes, 5)}
+            </div>
+            ${textFieldHtml(i, 'description', 'توضیحات (اختیاری)', b.kind === 'warmup' ? 'دو سبک + حرکات کششی' : 'دو سبک + سردکردن', b.description)}
           `;
         } else if (b.kind === 'rest') {
-          fields = `
-            <input class="blk-input" type="number" step="1" min="0" placeholder="دقیقه" data-f="minutes" data-i="${i}" value="${b.minutes ?? ''}" />
-            <input class="blk-input desc" type="text" placeholder="توضیحات" data-f="description" data-i="${i}" value="${esc(b.description || '')}" />
-          `;
-        } else if (b.kind === 'note') {
-          fields = `
-            <input class="blk-input desc" type="text" placeholder="یادداشت" data-f="description" data-i="${i}" value="${esc(b.description || '')}" />
+          body = `
+            ${numFieldHtml(i, 'minutes', 'مدت', 'دقیقه', b.minutes, 1, ps.minutes)}
+            ${textFieldHtml(i, 'description', 'توضیحات (اختیاری)', 'استراحت فعال، مثلاً پیاده‌روی', b.description)}
           `;
         } else {
-          // warmup / run / cooldown
-          fields = `
-            <input class="blk-input" type="number" step="0.1" min="0" placeholder="کیلومتر" data-f="distance_km" data-i="${i}" value="${b.distance_km ?? ''}" />
-            <input class="blk-input" type="number" step="1" min="0" placeholder="دقیقه" data-f="minutes" data-i="${i}" value="${b.minutes ?? ''}" />
-            ${b.kind === 'run' ? `<input class="blk-input" type="text" placeholder="ریتم (مثلاً 5:00)" data-f="pace" data-i="${i}" value="${esc(b.pace || '')}" />` : ''}
-            <input class="blk-input desc" type="text" placeholder="توضیحات (اختیاری)" data-f="description" data-i="${i}" value="${esc(b.description || '')}" />
+          // note
+          body = `
+            ${textFieldHtml(i, 'description', 'یادداشت', 'مثلاً: قبل از تمرین کششی…', b.description, true)}
           `;
         }
         return `
-          <div class="block-item">
+          <div class="block-item k-${b.kind}">
             <div class="blk-head">
-              <span class="blk-name">${esc(name)}</span>
+              <span class="blk-title">
+                <span class="blk-title-icon">${iconSvg(b.kind)}</span>
+                ${esc(label)}
+              </span>
               <button type="button" class="blk-del" data-del="${i}" aria-label="حذف">×</button>
             </div>
-            <div class="blk-fields">${fields}</div>
+            <div class="blk-body">${body}</div>
           </div>
         `;
       }).join('');
 
-      box.querySelectorAll('button[data-del]').forEach((b) => {
-        b.addEventListener('click', () => {
-          const i = Number(b.dataset.del);
-          editing.session.blocks.splice(i, 1);
+      // Delete
+      box.querySelectorAll('button[data-del]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          editing.session.blocks.splice(Number(btn.dataset.del), 1);
           renderBlocks();
         });
       });
-      box.querySelectorAll('.blk-input').forEach((el) => {
+      // Text/number input change
+      box.querySelectorAll('.num-input, .text-input, .text-area').forEach((el) => {
         el.addEventListener('input', () => {
           const i = Number(el.dataset.i);
           const f = el.dataset.f;
           const val = el.value.trim();
           const blk = editing.session.blocks[i];
-          if (val === '') {
-            delete blk[f];
-          } else if (['repeat','distance_km','distance_m','minutes','rest_sec','rest_min'].includes(f)) {
-            blk[f] = Number(val);
-          } else {
-            blk[f] = val;
-          }
+          if (val === '') delete blk[f];
+          else if (['repeat','distance_km','distance_m','minutes','rest_sec','rest_min'].includes(f)) blk[f] = Number(val);
+          else blk[f] = val;
+        });
+      });
+      // Stepper +/-
+      box.querySelectorAll('.num-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const i = Number(btn.dataset.i);
+          const f = btn.dataset.f;
+          const step = Number(btn.dataset.step);
+          const blk = editing.session.blocks[i];
+          const cur = Number(blk[f] ?? 0);
+          const nx = Math.max(0, Math.round((cur + step) * 100) / 100);
+          if (nx === 0 && step < 0) delete blk[f]; else blk[f] = nx;
+          renderBlocks();
+        });
+      });
+      // Preset chips
+      box.querySelectorAll('.chip[data-preset]').forEach((c) => {
+        c.addEventListener('click', () => {
+          const i = Number(c.dataset.i);
+          const f = c.dataset.f;
+          const v = Number(c.dataset.v);
+          editing.session.blocks[i][f] = v;
+          renderBlocks();
         });
       });
     }
