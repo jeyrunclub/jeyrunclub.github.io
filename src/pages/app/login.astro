@@ -1,0 +1,62 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+---
+<AppShell title="ورود">
+  <section class="app-card" style="margin-top: 40px;">
+    <h2 style="margin-top:0;">ورود اعضا</h2>
+    <p style="color: var(--text-dim); line-height:1.8;">
+      ایمیل خود را وارد کن. یک لینک ورود برایت ارسال می‌شود.
+    </p>
+
+    <form id="login-form">
+      <label class="app-label" for="email">ایمیل</label>
+      <input class="app-input" type="email" id="email" name="email" required
+             autocomplete="email" placeholder="you@example.com" dir="ltr" />
+      <div id="msg"></div>
+      <button class="app-btn" type="submit" id="submit-btn" style="width:100%;margin-top:16px;">
+        ارسال لینک ورود
+      </button>
+    </form>
+    <p style="font-size:0.85rem;color:var(--muted);margin-top:20px;">
+      اگر عضو نیستی، همین فرم را با ایمیلت پر کن — بعد از تأیید سالار،
+      برنامه‌ی تمرینت را می‌بینی.
+    </p>
+  </section>
+
+  <script>
+    import { supabase } from '../../lib/supabase.js';
+
+    const form = document.getElementById('login-form');
+    const emailInput = document.getElementById('email');
+    const btn = document.getElementById('submit-btn');
+    const msg = document.getElementById('msg');
+
+    // If already logged in, bounce to /app
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) window.location.replace('/app');
+    });
+
+    function show(text, kind) {
+      msg.className = 'app-msg ' + kind;
+      msg.textContent = text;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      if (!email) return;
+      btn.disabled = true;
+      show('در حال ارسال...', 'info');
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: `${window.location.origin}/app` },
+      });
+      btn.disabled = false;
+      if (error) {
+        show('خطا: ' + error.message, 'error');
+      } else {
+        show('لینک ورود به ' + email + ' ارسال شد. ایمیلت را چک کن.', 'ok');
+      }
+    });
+  </script>
+</AppShell>

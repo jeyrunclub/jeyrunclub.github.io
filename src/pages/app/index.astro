@@ -1,0 +1,147 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+---
+<AppShell title="برنامه‌ی من">
+  <div id="loading" class="app-empty">در حال بارگذاری…</div>
+
+  <section id="content" hidden>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
+      <h1 style="margin:0;font-size:1.6rem;">برنامه‌ی این هفته</h1>
+      <span id="week-label" style="color:var(--muted);font-size:0.9rem;"></span>
+    </div>
+    <p id="plan-notes" class="app-msg info" hidden></p>
+    <div id="sessions"></div>
+    <div id="no-plan" class="app-empty" hidden>
+      برای این هفته هنوز برنامه‌ای ثبت نشده. به‌زودی سالار برایت می‌نویسد.
+    </div>
+  </section>
+
+  <script>
+  import { supabase } from '../../lib/supabase.js';
+
+  const DAYS = ['شنبه','یک‌شنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنج‌شنبه','جمعه'];
+  const FA_DIGITS = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+
+  // ISO Saturday of the current week (local time)
+  function currentWeekSaturday() {
+    const now = new Date();
+    const dow = now.getDay(); // 0=Sun ... 6=Sat
+    const daysSinceSat = (dow + 1) % 7; // Sat=0, Sun=1, ..., Fri=6
+    const sat = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceSat);
+    const y = sat.getFullYear();
+    const m = String(sat.getMonth() + 1).padStart(2, '0');
+    const d = String(sat.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  function faDate(iso) {
+    return new Date(iso + 'T00:00:00').toLocaleDateString('fa-IR', {
+      day: 'numeric', month: 'long',
+    });
+  }
+
+  function setupHeader(profile) {
+    const nav = document.getElementById('app-nav');
+    nav.hidden = false;
+    if (profile.role === 'coach') {
+      document.getElementById('coach-link').hidden = false;
+    }
+    document.getElementById('signout-btn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.replace('/app/login');
+    });
+  }
+
+  function renderSessions(plan) {
+    const container = document.getElementById('sessions');
+    const sessions = Array.isArray(plan.sessions) ? plan.sessions : [];
+    if (!sessions.length) {
+      document.getElementById('no-plan').hidden = false;
+      return;
+    }
+    // Sort by day index
+    sessions.sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
+    container.innerHTML = sessions.map((s, i) => `
+      <div class="app-card">
+        <div class="day">${DAYS[s.day] ?? ''}</div>
+        <label class="session-row">
+          <input type="checkbox" class="session-check" data-idx="${i}" ${s.done ? 'checked' : ''} />
+          <div style="flex:1;">
+            <h3 class="${s.done ? 'session-done' : ''}">${escapeHtml(s.title || '')}</h3>
+            ${s.description ? `<p class="${s.done ? 'session-done' : ''}">${escapeHtml(s.description)}</p>` : ''}
+            ${(s.distance_km || s.minutes) ? `<p style="font-size:0.85rem;color:var(--muted);margin-top:6px;">
+              ${s.distance_km ? FA_DIGITS(s.distance_km) + ' کیلومتر' : ''}
+              ${s.distance_km && s.minutes ? ' · ' : ''}
+              ${s.minutes ? FA_DIGITS(s.minutes) + ' دقیقه' : ''}
+            </p>` : ''}
+          </div>
+        </label>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('input.session-check').forEach((el) => {
+      el.addEventListener('change', async (e) => {
+        const idx = Number(e.target.dataset.idx);
+        sessions[idx].done = e.target.checked;
+        const { error } = await supabase.from('plans')
+          .update({ sessions }).eq('id', plan.id);
+        if (error) {
+          alert('ذخیره نشد: ' + error.message);
+          e.target.checked = !e.target.checked;
+          sessions[idx].done = e.target.checked;
+        } else {
+          renderSessions({ ...plan, sessions });
+        }
+      });
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  (async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { window.location.replace('/app/login'); return; }
+
+    const { data: profile, error: profileErr } = await supabase
+      .from('profiles').select('*').eq('id', session.user.id).single();
+
+    if (profileErr || !profile) {
+      document.getElementById('loading').textContent = 'خطا در بارگذاری پروفایل.';
+      return;
+    }
+    if (profile.status !== 'approved') {
+      window.location.replace('/app/pending');
+      return;
+    }
+
+    setupHeader(profile);
+
+    const weekStart = currentWeekSaturday();
+    document.getElementById('week-label').textContent = 'شروع: ' + faDate(weekStart);
+
+    const { data: plan } = await supabase
+      .from('plans').select('*')
+      .eq('student_id', session.user.id)
+      .eq('week_start', weekStart)
+      .maybeSingle();
+
+    document.getElementById('loading').hidden = true;
+    document.getElementById('content').hidden = false;
+
+    if (!plan) {
+      document.getElementById('no-plan').hidden = false;
+      return;
+    }
+    if (plan.notes) {
+      const n = document.getElementById('plan-notes');
+      n.textContent = plan.notes;
+      n.hidden = false;
+    }
+    renderSessions(plan);
+  })();
+</script>
+</AppShell>

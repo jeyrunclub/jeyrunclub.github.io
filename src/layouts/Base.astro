@@ -55,6 +55,9 @@ const altUrl = new URL(altPath, Astro.site).toString();
     <meta name="twitter:card" content="summary_large_image" />
 
     <link rel="icon" type="image/png" href="/images/favicon.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#c86432" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" />
@@ -76,6 +79,13 @@ const altUrl = new URL(altPath, Astro.site).toString();
       <slot />
     </main>
     <Footer lang={lang} />
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
     <script>
       const toggle = document.querySelector('.nav-toggle');
       const nav = document.querySelector('.site-nav');

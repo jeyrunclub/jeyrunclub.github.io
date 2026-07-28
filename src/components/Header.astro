@@ -29,6 +29,7 @@ const p = lang === 'fa'
       <a href={p.calendar} class:list={[isActive(p.calendar) && 'active']}>{t.calendar}</a>
       <a href={p.gallery} class:list={[isActive(p.gallery) && 'active']}>{t.gallery}</a>
       {lang === 'fa' && <a href={p.blog} class:list={[path.startsWith('/blog') && 'active']}>{t.blog}</a>}
+      <a href="/app" class:list={[path.startsWith('/app') && 'active']}>{t.app}</a>
       <a href={p.join} class="nav-cta">{t.join}</a>
       <a href={alt} class="nav-lang" title={t.langToggleLabel} aria-label={t.langToggleLabel}>{t.langToggleTo}</a>
     </nav>

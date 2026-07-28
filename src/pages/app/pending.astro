@@ -1,0 +1,27 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+---
+<AppShell title="در انتظار تأیید">
+  <section class="app-card" style="margin-top: 40px; text-align:center;">
+    <h2 style="margin-top:0;">در انتظار تأیید</h2>
+    <p style="color: var(--text-dim); line-height:1.8;">
+      ورودت با موفقیت انجام شد. سالار درخواست عضویتت را بررسی می‌کند و
+      به‌محض تأیید، برنامه‌ی تمرینت اینجا نمایش داده می‌شود.
+    </p>
+    <p id="user-email" style="color: var(--muted); font-size: 0.9rem; margin-top: 20px;" dir="ltr"></p>
+  </section>
+
+  <script>
+    import { supabase } from '../../lib/supabase.js';
+
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.replace('/app/login'); return; }
+      document.getElementById('user-email').textContent = session.user.email;
+
+      const { data: profile } = await supabase
+        .from('profiles').select('status').eq('id', session.user.id).single();
+      if (profile?.status === 'approved') window.location.replace('/app');
+    })();
+  </script>
+</AppShell>

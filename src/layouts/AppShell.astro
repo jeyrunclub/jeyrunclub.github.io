@@ -1,0 +1,225 @@
+---
+import '../styles/global.css';
+
+export interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>{title} — جیران</title>
+    <meta name="description" content="پنل اعضای باشگاه جیران" />
+    <meta name="robots" content="noindex, nofollow" />
+
+    <link rel="icon" type="image/png" href="/images/favicon.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#c86432" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="جیران" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" />
+
+    <!-- GA4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CJDCGQZF02"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-CJDCGQZF02');
+    </script>
+
+    <slot name="head" />
+  </head>
+  <body class="app-body lang-fa">
+    <header class="app-header">
+      <a class="app-brand" href="/app">
+        <img src="/images/logo.png" alt="جیران" class="app-logo" />
+        <span>پنل جیران</span>
+      </a>
+      <nav class="app-nav" id="app-nav" hidden>
+        <a href="/app">برنامه‌ی من</a>
+        <a href="/app/coach" id="coach-link" hidden>پنل مربی</a>
+        <button type="button" id="signout-btn">خروج</button>
+      </nav>
+    </header>
+    <main class="app-main">
+      <slot />
+    </main>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  /* App shell — visually distinct from the marketing site */
+  .app-body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding-top: env(safe-area-inset-top);
+  }
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .app-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 700;
+  }
+  .app-logo { width: 36px; height: 28px; object-fit: contain; }
+  .app-nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .app-nav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+  .app-nav a:hover { color: var(--accent); }
+  #signout-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  #signout-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .app-main {
+    flex: 1;
+    padding: 24px 18px 48px;
+    max-width: 780px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* Reusable app UI */
+  .app-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .app-card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+  .app-card .day { color: var(--muted); font-size: 0.82rem; margin-bottom: 8px; }
+  .app-card p { margin: 0; color: var(--text-dim); line-height: 1.75; }
+
+  .app-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .app-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .app-btn.ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .app-input {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  .app-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .app-label { display: block; font-size: 0.9rem; color: var(--text-dim); margin-bottom: 6px; }
+  .app-msg {
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin: 12px 0;
+    font-size: 0.95rem;
+  }
+  .app-msg.error { background: rgba(200,60,60,0.1); color: #e05656; border: 1px solid rgba(200,60,60,0.3); }
+  .app-msg.ok { background: rgba(60,160,90,0.1); color: #3fa25c; border: 1px solid rgba(60,160,90,0.3); }
+  .app-msg.info { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+
+  .app-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+  }
+
+  .session-done { opacity: 0.55; text-decoration: line-through; }
+  .session-check {
+    accent-color: var(--accent);
+    transform: scale(1.4);
+    margin-inline-end: 12px;
+  }
+  .session-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+  }
+  .session-row:first-child { border-top: none; }
+
+  .student-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .student-row .name { font-weight: 600; }
+  .student-row .meta { color: var(--muted); font-size: 0.85rem; }
+  .badge {
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge.pending  { background: rgba(200,150,50,0.15); color: #c8963e; }
+  .badge.approved { background: rgba(60,160,90,0.15);  color: #3fa25c; }
+  .badge.rejected { background: rgba(200,60,60,0.15);  color: #e05656; }
+  .badge.coach    { background: rgba(200,100,50,0.15); color: var(--accent); }
+</style>

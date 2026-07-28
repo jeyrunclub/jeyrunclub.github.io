@@ -1,0 +1,342 @@
+---
+import AppShell from '../../layouts/AppShell.astro';
+---
+<AppShell title="پنل مربی">
+  <div id="loading" class="app-empty">در حال بارگذاری…</div>
+  <div id="denied" class="app-empty" hidden>
+    این صفحه فقط برای مربی است.
+  </div>
+
+  <section id="content" hidden>
+    <h1 style="margin:0 0 8px;font-size:1.6rem;">پنل مربی</h1>
+
+    <div class="app-card" id="pending-block" hidden>
+      <h2 style="margin-top:0;font-size:1.1rem;">درخواست‌های در انتظار</h2>
+      <div id="pending-list"></div>
+    </div>
+
+    <div class="app-card">
+      <h2 style="margin-top:0;font-size:1.1rem;">شاگردان</h2>
+      <div id="student-list"></div>
+    </div>
+  </section>
+
+  <!-- Editor modal -->
+  <div id="editor" class="editor-overlay" hidden>
+    <div class="editor-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h2 id="editor-title" style="margin:0;font-size:1.2rem;"></h2>
+        <button type="button" id="editor-close" class="app-btn ghost" style="padding:6px 14px;">بستن</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <label class="app-label" style="margin:0;">هفته شروع (شنبه):</label>
+        <input type="date" id="editor-week" class="app-input" style="max-width:180px;" dir="ltr" />
+        <button type="button" id="editor-load" class="app-btn ghost" style="padding:8px 14px;">بارگذاری</button>
+      </div>
+
+      <label class="app-label">یادداشت هفتگی</label>
+      <textarea id="editor-notes" class="app-input" rows="2" placeholder="اختیاری — پیام کوتاه برای این هفته"></textarea>
+
+      <h3 style="margin:18px 0 8px;font-size:1rem;">جلسات</h3>
+      <div id="editor-sessions"></div>
+      <button type="button" id="editor-add" class="app-btn ghost" style="margin-top:8px;">+ افزودن جلسه</button>
+
+      <div id="editor-msg"></div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button type="button" id="editor-save" class="app-btn" style="flex:1;">ذخیره</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .editor-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; z-index: 100;
+      overflow-y: auto;
+    }
+    .editor-panel {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .session-edit {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: var(--surface);
+    }
+    .session-edit-row {
+      display: grid;
+      grid-template-columns: 100px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .session-edit input, .session-edit textarea, .session-edit select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .session-edit textarea { min-height: 44px; resize: vertical; }
+    .session-edit .del {
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 6px; padding: 4px 10px;
+      cursor: pointer; font-family: inherit;
+    }
+    .session-edit .del:hover { color: #e05656; border-color: #e05656; }
+    .num-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  </style>
+
+  <script>
+    import { supabase } from '../../lib/supabase.js';
+
+    const DAYS = ['شنبه','یک‌شنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنج‌شنبه','جمعه'];
+
+    function currentWeekSaturday() {
+      const now = new Date();
+      const dow = now.getDay();
+      const daysSinceSat = (dow + 1) % 7;
+      const sat = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceSat);
+      const y = sat.getFullYear();
+      const m = String(sat.getMonth() + 1).padStart(2, '0');
+      const d = String(sat.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+    }
+
+    let coachId = null;
+
+    function setupHeader() {
+      const nav = document.getElementById('app-nav');
+      nav.hidden = false;
+      document.getElementById('coach-link').hidden = false;
+      document.getElementById('signout-btn').addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.replace('/app/login');
+      });
+    }
+
+    async function loadPending() {
+      const { data: rows } = await supabase
+        .from('profiles').select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true });
+
+      const block = document.getElementById('pending-block');
+      const list = document.getElementById('pending-list');
+      if (!rows?.length) { block.hidden = true; return; }
+      block.hidden = false;
+      list.innerHTML = rows.map((r) => `
+        <div class="student-row">
+          <div>
+            <div class="name">${escapeHtml(r.full_name || '(بدون نام)')}</div>
+            <div class="meta" dir="ltr">${escapeHtml(r.id)}</div>
+          </div>
+          <button class="app-btn" data-id="${r.id}" data-act="approve" style="padding:6px 14px;font-size:0.85rem;">تأیید</button>
+          <button class="app-btn ghost" data-id="${r.id}" data-act="reject" style="padding:6px 14px;font-size:0.85rem;">رد</button>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('button[data-act]').forEach((b) => {
+        b.addEventListener('click', async () => {
+          const id = b.dataset.id;
+          const status = b.dataset.act === 'approve' ? 'approved' : 'rejected';
+          const { error } = await supabase.rpc('set_profile_status', {
+            target: id, new_status: status, new_role: null,
+          });
+          if (error) { alert(error.message); return; }
+          await loadPending();
+          await loadStudents();
+        });
+      });
+    }
+
+    async function loadStudents() {
+      const { data: rows } = await supabase
+        .from('profiles').select('*')
+        .in('status', ['approved','rejected'])
+        .order('full_name', { ascending: true });
+
+      const list = document.getElementById('student-list');
+      if (!rows?.length) {
+        list.innerHTML = '<p class="app-empty" style="padding:20px 0;">هنوز شاگردی تأیید نشده.</p>';
+        return;
+      }
+      list.innerHTML = rows.map((r) => `
+        <div class="student-row">
+          <div>
+            <div class="name">
+              ${escapeHtml(r.full_name || '(بدون نام)')}
+              ${r.role === 'coach' ? '<span class="badge coach" style="margin-inline-start:6px;">مربی</span>' : ''}
+              ${r.status === 'rejected' ? '<span class="badge rejected" style="margin-inline-start:6px;">رد شده</span>' : ''}
+            </div>
+            <div class="meta" dir="ltr">${escapeHtml(r.id)}</div>
+          </div>
+          <button class="app-btn" data-id="${r.id}" data-name="${escapeHtml(r.full_name || '')}" data-act="edit" style="padding:6px 14px;font-size:0.85rem;">
+            ویرایش برنامه
+          </button>
+          <div></div>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('button[data-act="edit"]').forEach((b) => {
+        b.addEventListener('click', () => openEditor(b.dataset.id, b.dataset.name));
+      });
+    }
+
+    // ---------- Plan editor ----------
+    let editing = null; // { studentId, name, week, plan? }
+
+    function sessionRow(s, idx) {
+      return `
+        <div class="session-edit" data-idx="${idx}">
+          <div class="session-edit-row">
+            <select data-f="day">
+              ${DAYS.map((n, i) => `<option value="${i}" ${s.day === i ? 'selected' : ''}>${n}</option>`).join('')}
+            </select>
+            <input data-f="title" placeholder="عنوان جلسه (مثلاً: تمرین سرعت)" value="${escapeHtml(s.title || '')}" />
+            <button type="button" class="del" data-del="${idx}">حذف</button>
+          </div>
+          <textarea data-f="description" placeholder="توضیحات (اختیاری)">${escapeHtml(s.description || '')}</textarea>
+          <div class="num-row" style="margin-top:6px;">
+            <input data-f="distance_km" type="number" step="0.1" min="0" placeholder="کیلومتر" value="${s.distance_km ?? ''}" />
+            <input data-f="minutes" type="number" step="1" min="0" placeholder="دقیقه" value="${s.minutes ?? ''}" />
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSessionsEditor(sessions) {
+      const box = document.getElementById('editor-sessions');
+      box.innerHTML = sessions.map((s, i) => sessionRow(s, i)).join('');
+      box.querySelectorAll('button[data-del]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.del);
+          editing.sessions.splice(idx, 1);
+          renderSessionsEditor(editing.sessions);
+        });
+      });
+    }
+
+    function collectSessions() {
+      const rows = document.querySelectorAll('#editor-sessions .session-edit');
+      const out = [];
+      rows.forEach((row) => {
+        const g = (f) => row.querySelector(`[data-f="${f}"]`);
+        const s = {
+          day: Number(g('day').value),
+          title: g('title').value.trim(),
+          description: g('description').value.trim(),
+          done: false,
+        };
+        const dk = g('distance_km').value.trim();
+        const mn = g('minutes').value.trim();
+        if (dk) s.distance_km = Number(dk);
+        if (mn) s.minutes = Number(mn);
+        if (s.title || s.description) out.push(s);
+      });
+      return out;
+    }
+
+    async function openEditor(studentId, name) {
+      editing = { studentId, name, week: currentWeekSaturday(), sessions: [], notes: '' };
+      document.getElementById('editor-title').textContent = 'برنامه‌ی ' + (name || '');
+      document.getElementById('editor-week').value = editing.week;
+      document.getElementById('editor-msg').innerHTML = '';
+      document.getElementById('editor').hidden = false;
+      await loadWeek();
+    }
+
+    function closeEditor() {
+      document.getElementById('editor').hidden = true;
+      editing = null;
+    }
+
+    async function loadWeek() {
+      const wk = document.getElementById('editor-week').value;
+      editing.week = wk;
+      const { data: plan } = await supabase
+        .from('plans').select('*')
+        .eq('student_id', editing.studentId).eq('week_start', wk)
+        .maybeSingle();
+      editing.plan = plan;
+      editing.sessions = Array.isArray(plan?.sessions) ? [...plan.sessions] : [];
+      editing.notes = plan?.notes || '';
+      document.getElementById('editor-notes').value = editing.notes;
+      renderSessionsEditor(editing.sessions);
+    }
+
+    async function saveWeek() {
+      const sessions = collectSessions();
+      const notes = document.getElementById('editor-notes').value.trim();
+      const msg = document.getElementById('editor-msg');
+      const payload = {
+        student_id: editing.studentId,
+        week_start: editing.week,
+        sessions,
+        notes: notes || null,
+        updated_by: coachId,
+        updated_at: new Date().toISOString(),
+      };
+      const { error } = await supabase
+        .from('plans')
+        .upsert(payload, { onConflict: 'student_id,week_start' });
+      if (error) {
+        msg.className = 'app-msg error';
+        msg.textContent = 'خطا: ' + error.message;
+      } else {
+        msg.className = 'app-msg ok';
+        msg.textContent = 'ذخیره شد.';
+      }
+    }
+
+    // Wire editor buttons
+    document.getElementById('editor-close').addEventListener('click', closeEditor);
+    document.getElementById('editor-load').addEventListener('click', loadWeek);
+    document.getElementById('editor-save').addEventListener('click', saveWeek);
+    document.getElementById('editor-add').addEventListener('click', () => {
+      editing.sessions.push({ day: 0, title: '', description: '', done: false });
+      renderSessionsEditor(editing.sessions);
+    });
+
+    // ---------- Boot ----------
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.replace('/app/login'); return; }
+
+      const { data: profile } = await supabase
+        .from('profiles').select('*').eq('id', session.user.id).single();
+      if (!profile || profile.role !== 'coach') {
+        document.getElementById('loading').hidden = true;
+        document.getElementById('denied').hidden = false;
+        return;
+      }
+      coachId = profile.id;
+      setupHeader();
+      document.getElementById('loading').hidden = true;
+      document.getElementById('content').hidden = false;
+      await loadPending();
+      await loadStudents();
+    })();
+  </script>
+</AppShell>
