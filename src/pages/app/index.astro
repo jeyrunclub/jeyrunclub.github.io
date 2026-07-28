@@ -2,208 +2,529 @@
 import AppShell from '../../layouts/AppShell.astro';
 ---
 <AppShell title="برنامه‌ی من">
-  <div id="loading" class="app-empty">در حال بارگذاری…</div>
+  <div id="loading" class="app-empty"><div class="app-spinner"></div></div>
 
   <section id="content" hidden>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px;">
-      <button type="button" id="prev-week" class="app-btn ghost" style="padding:6px 12px;">‹ قبل</button>
-      <h1 id="week-heading" style="margin:0;font-size:1.25rem;text-align:center;flex:1;">برنامه‌ی این هفته</h1>
-      <button type="button" id="next-week" class="app-btn ghost" style="padding:6px 12px;">بعد ›</button>
+    <div class="page-hero">
+      <div>
+        <h1 class="page-title" id="hello">برنامه‌ی من</h1>
+        <p class="page-subtitle" id="sub">در ادامه، تقویم تمرین‌های این ماه.</p>
+      </div>
+      <div class="stats">
+        <div class="stat-pill"><span class="n accent" id="stat-done">۰</span><span class="l">تیک‌خورده</span></div>
+        <div class="stat-pill"><span class="n" id="stat-total">۰</span><span class="l">جلسه‌ی ماه</span></div>
+      </div>
     </div>
-    <p id="week-label" style="text-align:center;color:var(--muted);font-size:0.85rem;margin:0 0 14px;"></p>
-    <p id="plan-notes" class="app-msg info" hidden></p>
-    <div id="sessions"></div>
-    <div id="no-plan" class="app-empty" hidden>
-      برای این هفته هنوز برنامه‌ای ثبت نشده.
+
+    <!-- Progress -->
+    <div class="progress">
+      <div class="progress-label">
+        <span>پیشرفت این هفته</span>
+        <strong><span id="progress-done">۰</span> از <span id="progress-total">۰</span></strong>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0"></div></div>
     </div>
+
+    <!-- Calendar -->
+    <div class="cal-card">
+      <div class="cal-header">
+        <button class="arrow" id="cal-prev" aria-label="ماه قبل">‹</button>
+        <div>
+          <div class="cal-month" id="cal-month"></div>
+          <div class="cal-year" id="cal-year"></div>
+        </div>
+        <button class="arrow" id="cal-next" aria-label="ماه بعد">›</button>
+      </div>
+      <div class="cal-dow-row">
+        <span>شنبه</span><span>یک‌شنبه</span><span>دوشنبه</span><span>سه‌شنبه</span>
+        <span>چهارشنبه</span><span>پنج‌شنبه</span><span>جمعه</span>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <!-- Today / selected day -->
+    <div id="day-view"></div>
   </section>
 
+  <!-- SESSION VIEW / MARK-DONE MODAL -->
+  <div id="viewer" class="modal-overlay" hidden>
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div>
+          <h2 id="viewer-title" class="modal-h"></h2>
+          <p id="viewer-sub" class="modal-sub"></p>
+        </div>
+        <button type="button" id="viewer-close" class="icon-btn" aria-label="بستن">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div id="viewer-body"></div>
+
+      <div id="mark-done-form" hidden style="margin-top:16px;">
+        <label class="app-label" for="student-note">یادداشت برای مربی (اختیاری)</label>
+        <textarea id="student-note" class="app-textarea" placeholder="مثلاً: احساس خوبی داشتم، ریتم ۵:۱۰"></textarea>
+      </div>
+
+      <div id="viewer-msg"></div>
+
+      <div class="modal-actions" id="viewer-actions"></div>
+    </div>
+  </div>
+
+  <style>
+    .modal-overlay[hidden] { display: none !important; }
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px; z-index: 100;
+      overflow-y: auto;
+      animation: fadeIn .2s ease-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-panel {
+      background: var(--bg-alt); border: 1px solid var(--border);
+      border-radius: 22px; padding: 24px;
+      width: 100%; max-width: 560px;
+      max-height: 92vh; overflow-y: auto;
+      box-shadow: var(--app-shadow-lg);
+      animation: slideUp .25s ease-out;
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-head { display:flex; align-items:flex-start; justify-content:space-between; gap: 12px; margin-bottom: 16px; }
+    .modal-h { margin: 0; font-size: 1.25rem; font-weight: 700; }
+    .modal-sub { margin: 4px 0 0; color: var(--muted); font-size: 0.88rem; }
+    .icon-btn {
+      width: 36px; height: 36px; background: transparent;
+      border: 1px solid var(--border); color: var(--text-dim);
+      border-radius: 999px; cursor: pointer;
+      display:inline-flex; align-items:center; justify-content:center;
+      transition: all .15s;
+    }
+    .icon-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .modal-actions { display:flex; gap:10px; margin-top: 18px; align-items: center; }
+
+    .cal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--app-radius-lg);
+      padding: 18px;
+      box-shadow: var(--app-shadow-sm);
+      margin-bottom: 18px;
+    }
+    .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px; }
+    .cal-header .arrow {
+      width: 38px; height: 38px; background: transparent; border: none;
+      color: var(--text-dim); font-size: 1.4rem; cursor: pointer;
+      border-radius: 999px; transition: all .15s; font-family: inherit;
+    }
+    .cal-header .arrow:hover { background: var(--app-accent-soft); color: var(--accent); }
+    .cal-header > div { text-align: center; }
+    .cal-month { font-size: 1.15rem; font-weight: 700; }
+    .cal-year { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+    .cal-dow-row {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px;
+      font-size: 0.72rem; color: var(--muted); text-align: center; font-weight: 600;
+    }
+    .cal-dow-row span { padding: 6px 0; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-cell {
+      min-height: 72px;
+      background: var(--surface-2);
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 6px;
+      cursor: pointer;
+      display: flex; flex-direction: column;
+      transition: background .12s, border-color .12s;
+      position: relative;
+    }
+    .cal-cell:hover { background: var(--app-accent-soft); border-color: var(--accent); }
+    .cal-cell.out { opacity: 0.35; cursor: default; }
+    .cal-cell.out:hover { background: var(--surface-2); border-color: transparent; }
+    .cal-cell.today { background: var(--app-accent-soft); border-color: var(--accent); }
+    .cal-cell .num { font-weight: 700; font-size: 0.88rem; text-align: start; margin-bottom: 4px; }
+    .cal-cell .num-sec { color: var(--muted); font-size: 0.68rem; font-weight: 400; }
+    .cal-cell .pills { display: flex; flex-direction: column; gap: 2px; }
+    .cal-pill {
+      background: var(--surface);
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-size: 0.68rem;
+      color: var(--text);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      border-inline-start: 3px solid;
+      line-height: 1.3;
+    }
+    .cal-pill.status-submitted { background: rgba(230,162,60,0.12); }
+    .cal-pill.status-done { background: rgba(60,160,90,0.15); }
+
+    /* Day view (below the calendar for selected day) */
+    .day-header {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom: 12px;
+    }
+    .day-header h2 { margin: 0; font-size: 1.15rem; font-weight: 700; }
+    .day-header .d-sub { color: var(--muted); font-size: 0.85rem; }
+
+    .session-hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--app-radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--app-shadow-sm);
+      margin-bottom: 12px;
+    }
+    .session-hero .top-row {
+      display:flex; align-items:center; gap: 10px; margin-bottom: 8px;
+    }
+    .type-tag {
+      display: inline-flex; align-items: center;
+      padding: 4px 12px; border-radius: 999px;
+      font-size: 0.78rem; font-weight: 700;
+      background: rgba(0,0,0,0.06); color: #fff;
+    }
+    :root, .lang-fa { }
+    .status-tag {
+      margin-inline-start: auto;
+      padding: 3px 10px; border-radius: 999px;
+      font-size: 0.72rem; font-weight: 600;
+    }
+    .status-tag.planned { background: var(--surface-2); color: var(--muted); }
+    .status-tag.submitted { background: rgba(230,162,60,0.15); color: #c8963e; }
+    .status-tag.done { background: rgba(60,160,90,0.15); color: #3fa25c; }
+    .session-hero h3 { margin: 0; font-size: 1.05rem; }
+    .block-line {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0;
+      border-top: 1px solid var(--border);
+    }
+    .block-line:first-of-type { border-top: none; padding-top: 6px; }
+    .block-icon {
+      width: 34px; height: 34px;
+      background: var(--surface-2);
+      border-radius: 10px;
+      display:inline-flex; align-items:center; justify-content:center;
+      flex-shrink: 0; color: var(--text-dim);
+    }
+    .block-title { font-weight: 600; font-size: 0.95rem; }
+    .block-sub { color: var(--text-dim); font-size: 0.88rem; margin-top: 2px; }
+    @media (max-width: 560px) {
+      .cal-cell { min-height: 58px; padding: 4px; }
+      .cal-cell .num { font-size: 0.78rem; margin-bottom: 2px; }
+      .cal-pill { font-size: 0.6rem; padding: 1px 4px; }
+    }
+  </style>
+
   <script>
-  import { supabase } from '../../lib/supabase.js';
+    import { supabase } from '../../lib/supabase.js';
+    import {
+      TYPES, TYPE_BY_ID, BLOCK_KIND_BY_ID, MONTHS_FA_GREG,
+      isoDate, addDays, weekSaturdayOf, today, faNum, faDateLong,
+      monthGrid, fetchSessionsForRange, loadOrInitPlan, savePlan,
+      summariseSession, formatBlock, ensureSessionDate,
+    } from '../../lib/plan.js';
 
-  const DAYS = ['شنبه','یک‌شنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنج‌شنبه','جمعه'];
-  const FA_DIGITS = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+    let studentId = null;
+    let calYear, calMonth;
+    let sessionsByDate = {};   // dateIso -> [session]
+    let viewing = null;        // { dateIso, session }
 
-  // ISO Saturday of the current week (local time)
-  function currentWeekSaturday() {
-    const now = new Date();
-    const dow = now.getDay(); // 0=Sun ... 6=Sat
-    const daysSinceSat = (dow + 1) % 7; // Sat=0, Sun=1, ..., Fri=6
-    const sat = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceSat);
-    const y = sat.getFullYear();
-    const m = String(sat.getMonth() + 1).padStart(2, '0');
-    const d = String(sat.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
-
-  function addDays(iso, delta) {
-    const d = new Date(iso + 'T00:00:00');
-    d.setDate(d.getDate() + delta);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${dd}`;
-  }
-
-  function faDate(iso) {
-    return new Date(iso + 'T00:00:00').toLocaleDateString('fa-IR', {
-      day: 'numeric', month: 'long',
-    });
-  }
-
-  // day-of-week index of today in Persian-week terms (Sat=0..Fri=6)
-  function todayDayIdx() {
-    const dow = new Date().getDay();
-    return (dow + 1) % 7;
-  }
-
-  function setupHeader(profile) {
-    const nav = document.getElementById('app-nav');
-    nav.hidden = false;
-    if (profile.role === 'coach') {
-      document.getElementById('coach-link').hidden = false;
-    }
-    document.getElementById('signout-btn').addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      window.location.replace('/app/login');
-    });
-  }
-
-  function renderSessions(plan, isCurrentWeek) {
-    const container = document.getElementById('sessions');
-    const sessions = Array.isArray(plan.sessions) ? plan.sessions : [];
-    if (!sessions.length) {
-      container.innerHTML = '';
-      document.getElementById('no-plan').hidden = false;
-      return;
-    }
-    document.getElementById('no-plan').hidden = true;
-    sessions.sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
-    const today = todayDayIdx();
-    container.innerHTML = sessions.map((s, i) => {
-      const isToday = isCurrentWeek && s.day === today;
-      return `
-      <div class="app-card ${isToday ? 'today' : ''}">
-        <div class="day">${DAYS[s.day] ?? ''}${isToday ? ' · امروز' : ''}</div>
-        <label class="session-row">
-          <input type="checkbox" class="session-check" data-idx="${i}" ${s.done ? 'checked' : ''} />
-          <div style="flex:1;">
-            <h3 class="${s.done ? 'session-done' : ''}">${escapeHtml(s.title || '')}</h3>
-            ${s.description ? `<p class="${s.done ? 'session-done' : ''}">${escapeHtml(s.description)}</p>` : ''}
-            ${(s.distance_km || s.minutes) ? `<p style="font-size:0.85rem;color:var(--muted);margin-top:6px;">
-              ${s.distance_km ? FA_DIGITS(s.distance_km) + ' کیلومتر' : ''}
-              ${s.distance_km && s.minutes ? ' · ' : ''}
-              ${s.minutes ? FA_DIGITS(s.minutes) + ' دقیقه' : ''}
-            </p>` : ''}
-          </div>
-        </label>
-      </div>`;
-    }).join('');
-
-    container.querySelectorAll('input.session-check').forEach((el) => {
-      el.addEventListener('change', async (e) => {
-        const idx = Number(e.target.dataset.idx);
-        sessions[idx].done = e.target.checked;
-        const { error } = await supabase.from('plans')
-          .update({ sessions }).eq('id', plan.id);
-        if (error) {
-          alert('ذخیره نشد: ' + error.message);
-          e.target.checked = !e.target.checked;
-          sessions[idx].done = e.target.checked;
-        } else {
-          renderSessions({ ...plan, sessions }, isCurrentWeek);
-        }
+    function setupHeader(profile) {
+      const nav = document.getElementById('app-nav');
+      nav.hidden = false;
+      if (profile.role === 'coach') document.getElementById('coach-link').hidden = false;
+      document.getElementById('signout-btn').addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.replace('/app/login');
       });
-    });
-  }
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, (c) => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[c]));
-  }
-
-  (async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { window.location.replace('/app/login'); return; }
-
-    const { data: profile, error: profileErr } = await supabase
-      .from('profiles').select('*').eq('id', session.user.id).single();
-
-    if (profileErr || !profile) {
-      document.getElementById('loading').textContent = 'خطا در بارگذاری پروفایل.';
-      return;
     }
 
-    // Backfill full_name from the login form (Supabase only writes metadata
-    // on user creation, so returning users need a client-side update).
-    if (!profile.full_name) {
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+    }
+
+    // ---------- Backfill full name if signup metadata missed ----------
+    async function maybeBackfillName(profile) {
+      if (profile.full_name) return;
       let pending = null;
       try { pending = localStorage.getItem('jeyrun.pending_full_name'); } catch {}
       if (pending) {
-        await supabase.from('profiles').update({ full_name: pending }).eq('id', session.user.id);
+        await supabase.from('profiles').update({ full_name: pending }).eq('id', profile.id);
         try { localStorage.removeItem('jeyrun.pending_full_name'); } catch {}
         profile.full_name = pending;
       }
     }
 
-    // Coaches go to the coach panel — they don't have a student plan.
-    if (profile.role === 'coach') {
-      window.location.replace('/app/coach');
-      return;
+    // ---------- Calendar ----------
+    function initCalendar() {
+      const now = new Date();
+      calYear = now.getFullYear();
+      calMonth = now.getMonth();
+      document.getElementById('cal-prev').addEventListener('click', () => {
+        calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+        refreshCalendar();
+      });
+      document.getElementById('cal-next').addEventListener('click', () => {
+        calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+        refreshCalendar();
+      });
     }
-    if (profile.status !== 'approved') {
-      window.location.replace('/app/pending');
-      return;
+
+    async function refreshCalendar() {
+      const cells = monthGrid(calYear, calMonth);
+      const from = cells[0].date, to = cells[cells.length - 1].date;
+      const byStudent = await fetchSessionsForRange(supabase, [studentId], from, to);
+      sessionsByDate = byStudent[studentId] || {};
+
+      // Stats: this month (only in-month dates)
+      const monthSessions = cells.filter((c) => c.inMonth).flatMap((c) => sessionsByDate[c.date] || []);
+      document.getElementById('stat-total').textContent = faNum(monthSessions.length);
+      document.getElementById('stat-done').textContent = faNum(monthSessions.filter((s) => s.status === 'done').length);
+
+      // Week progress
+      const todayIso = today();
+      const wkStart = weekSaturdayOf(todayIso);
+      const wkDates = Array.from({length: 7}, (_, i) => addDays(wkStart, i));
+      const wkSessions = wkDates.flatMap((d) => sessionsByDate[d] || []);
+      const wkDone = wkSessions.filter((s) => s.status === 'done' || s.status === 'submitted').length;
+      document.getElementById('progress-done').textContent = faNum(wkDone);
+      document.getElementById('progress-total').textContent = faNum(wkSessions.length);
+      document.getElementById('progress-fill').style.width =
+        wkSessions.length ? `${Math.round((wkDone / wkSessions.length) * 100)}%` : '0%';
+
+      renderCalendar(cells);
+      renderDayView(todayIso);
     }
 
-    setupHeader(profile);
+    function renderCalendar(cells) {
+      document.getElementById('cal-month').textContent = MONTHS_FA_GREG[calMonth];
+      document.getElementById('cal-year').textContent = calYear;
+      const grid = document.getElementById('cal-grid');
+      grid.innerHTML = cells.map((c) => {
+        const sessions = sessionsByDate[c.date] || [];
+        const pills = sessions.map((s) => {
+          const t = TYPE_BY_ID[s.type] || TYPE_BY_ID.easy;
+          const st = s.status === 'done' ? 'status-done'
+                   : s.status === 'submitted' ? 'status-submitted' : '';
+          return `<div class="cal-pill ${st}" style="border-color:${t.color}">${esc(summariseSession(s))}</div>`;
+        }).join('');
+        const outCls = c.inMonth ? '' : ' out';
+        const todayCls = c.isToday ? ' today' : '';
+        return `<div class="cal-cell${outCls}${todayCls}" data-date="${c.date}">
+          <div class="num">${faNum(c.day)}${c.isToday ? ' <span class="num-sec">امروز</span>' : ''}</div>
+          <div class="pills">${pills}</div>
+        </div>`;
+      }).join('');
+      grid.querySelectorAll('.cal-cell').forEach((el) => {
+        if (el.classList.contains('out')) return;
+        el.addEventListener('click', () => renderDayView(el.dataset.date));
+      });
+    }
 
-    const studentId = session.user.id;
-    let viewWeek = currentWeekSaturday();
+    // ---------- Day view (below calendar) ----------
+    function renderDayView(dateIso) {
+      const box = document.getElementById('day-view');
+      const sessions = sessionsByDate[dateIso] || [];
+      const isToday = dateIso === today();
+      const heading = isToday ? 'امروز' : faDateLong(dateIso);
 
-    async function loadWeek() {
-      const cur = currentWeekSaturday();
-      const isCurrent = viewWeek === cur;
-      const heading = viewWeek === cur ? 'برنامه‌ی این هفته'
-                    : viewWeek === addDays(cur, 7)  ? 'برنامه‌ی هفته‌ی آینده'
-                    : viewWeek === addDays(cur, -7) ? 'برنامه‌ی هفته‌ی گذشته'
-                    : 'برنامه‌ی هفته';
-      document.getElementById('week-heading').textContent = heading;
-      document.getElementById('week-label').textContent = 'شروع: ' + faDate(viewWeek);
-      const notesEl = document.getElementById('plan-notes');
-      notesEl.hidden = true;
-      document.getElementById('sessions').innerHTML = '';
-      document.getElementById('no-plan').hidden = true;
-
-      const { data: plan } = await supabase
-        .from('plans').select('*')
-        .eq('student_id', studentId).eq('week_start', viewWeek)
-        .maybeSingle();
-
-      if (!plan) {
-        document.getElementById('no-plan').hidden = false;
+      if (!sessions.length) {
+        box.innerHTML = `
+          <div class="day-header">
+            <h2>${esc(heading)}</h2>
+            <span class="d-sub">${isToday ? '' : esc(faDateLong(dateIso))}</span>
+          </div>
+          <div class="app-empty" style="padding:32px 20px;">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <h3>بدون تمرین</h3>
+            <p>برای این روز برنامه‌ای ثبت نشده.</p>
+          </div>
+        `;
         return;
       }
-      if (plan.notes) {
-        notesEl.textContent = plan.notes;
-        notesEl.hidden = false;
-      }
-      renderSessions(plan, isCurrent);
+
+      const cards = sessions.map((s) => {
+        const t = TYPE_BY_ID[s.type] || TYPE_BY_ID.easy;
+        const statusLabel = s.status === 'done' ? 'انجام شد'
+                          : s.status === 'submitted' ? 'منتظر تأیید'
+                          : 'برنامه‌ریزی‌شده';
+        const blocks = (s.blocks || []).map((b) => `
+          <div class="block-line">
+            <div class="block-icon">
+              ${blockIcon(b.kind)}
+            </div>
+            <div style="flex:1;">
+              <div class="block-title">${esc(BLOCK_KIND_BY_ID[b.kind]?.label ?? b.kind)}</div>
+              <div class="block-sub">${esc(formatBlockSub(b))}</div>
+            </div>
+          </div>
+        `).join('');
+        const notes = s.notes ? `<div class="app-msg info" style="margin-top:10px;">${esc(s.notes)}</div>` : '';
+        return `
+          <div class="session-hero" data-date="${s.date}" data-open="1">
+            <div class="top-row">
+              <span class="type-tag" style="background:${t.color}">${esc(t.label)}</span>
+              ${s.title ? `<h3>${esc(s.title)}</h3>` : ''}
+              <span class="status-tag ${s.status || 'planned'}">${statusLabel}</span>
+            </div>
+            ${blocks || '<p style="color:var(--muted);margin:0;">بدون مرحله‌ی تمرینی</p>'}
+            ${notes}
+          </div>
+        `;
+      }).join('');
+
+      box.innerHTML = `
+        <div class="day-header">
+          <h2>${esc(heading)}</h2>
+          <span class="d-sub">${isToday ? esc(faDateLong(dateIso)) : ''}</span>
+        </div>
+        ${cards}
+      `;
+
+      box.querySelectorAll('.session-hero').forEach((el, i) => {
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', () => openViewer(dateIso, sessions[i]));
+      });
     }
 
-    document.getElementById('prev-week').addEventListener('click', () => {
-      viewWeek = addDays(viewWeek, -7);
-      loadWeek();
-    });
-    document.getElementById('next-week').addEventListener('click', () => {
-      viewWeek = addDays(viewWeek, 7);
-      loadWeek();
-    });
+    function blockIcon(kind) {
+      const paths = {
+        warmup:   '<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+        run:      '<path d="M13 5.5a2 2 0 1 0 0-.001M10 22l1-6 2-2-2-4H8m5-7 3 5 2 1"/>',
+        interval: '<path d="M3 12h6l2-6 4 12 2-6h4"/>',
+        cooldown: '<path d="M12 22V2M4 8l8-6 8 6M4 16l8-6 8 6"/>',
+        rest:     '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>',
+        note:     '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>',
+      };
+      return `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths[kind] ?? paths.note}</svg>`;
+    }
 
-    document.getElementById('loading').hidden = true;
-    document.getElementById('content').hidden = false;
-    await loadWeek();
-  })();
-</script>
+    function formatBlockSub(b) {
+      const parts = [];
+      if (b.kind === 'interval') {
+        const r = b.repeat || 1;
+        if (b.distance_m)       parts.push(`${faNum(r)}×${faNum(b.distance_m)}m`);
+        else if (b.distance_km) parts.push(`${faNum(r)}×${faNum(b.distance_km)}km`);
+        else if (b.minutes)     parts.push(`${faNum(r)}×${faNum(b.minutes)} دقیقه`);
+        if (b.rest_sec)         parts.push(`استراحت ${faNum(b.rest_sec)} ثانیه`);
+        else if (b.rest_min)    parts.push(`استراحت ${faNum(b.rest_min)} دقیقه`);
+      } else {
+        if (b.distance_km) parts.push(`${faNum(b.distance_km)} کیلومتر`);
+        if (b.minutes)     parts.push(`${faNum(b.minutes)} دقیقه`);
+        if (b.pace)        parts.push(`ریتم ${b.pace}`);
+      }
+      if (b.description) parts.push(b.description);
+      return parts.join(' · ');
+    }
+
+    // ---------- Viewer / mark-done ----------
+    function openViewer(dateIso, session) {
+      viewing = { dateIso, session: JSON.parse(JSON.stringify(session)) };
+      const t = TYPE_BY_ID[session.type] || TYPE_BY_ID.easy;
+      document.getElementById('viewer-title').textContent = session.title || t.label;
+      document.getElementById('viewer-sub').textContent = faDateLong(dateIso) + ' · ' + t.label;
+      document.getElementById('viewer-body').innerHTML = renderViewerBody(session);
+      document.getElementById('viewer-msg').innerHTML = '';
+      document.getElementById('student-note').value = session.student_note || '';
+
+      const actions = document.getElementById('viewer-actions');
+      const isPastOrToday = dateIso <= today();
+      const formEl = document.getElementById('mark-done-form');
+
+      if (session.status === 'done') {
+        formEl.hidden = true;
+        actions.innerHTML = `<button type="button" id="v-close" class="app-btn ghost">بستن</button>`;
+      } else if (session.status === 'submitted') {
+        formEl.hidden = false;
+        actions.innerHTML = `
+          <button type="button" id="v-unsubmit" class="app-btn ghost">لغو ثبت انجام</button>
+          <button type="button" id="v-close" class="app-btn ghost" style="margin-inline-start:auto;">بستن</button>
+        `;
+      } else {
+        formEl.hidden = !isPastOrToday;
+        actions.innerHTML = isPastOrToday
+          ? `<button type="button" id="v-close" class="app-btn ghost">بستن</button>
+             <button type="button" id="v-submit" class="app-btn" style="margin-inline-start:auto;">ثبت انجام</button>`
+          : `<button type="button" id="v-close" class="app-btn ghost">بستن</button>`;
+      }
+
+      // Wire actions (they're re-rendered each open)
+      document.getElementById('viewer').hidden = false;
+      const closeBtn = document.getElementById('v-close');
+      if (closeBtn) closeBtn.addEventListener('click', closeViewer);
+      const subBtn = document.getElementById('v-submit');
+      if (subBtn) subBtn.addEventListener('click', () => markDone('submitted'));
+      const unsubBtn = document.getElementById('v-unsubmit');
+      if (unsubBtn) unsubBtn.addEventListener('click', () => markDone('planned'));
+    }
+
+    function renderViewerBody(s) {
+      const blocks = (s.blocks || []).map((b) => `
+        <div class="block-line">
+          <div class="block-icon">${blockIcon(b.kind)}</div>
+          <div style="flex:1;">
+            <div class="block-title">${esc(BLOCK_KIND_BY_ID[b.kind]?.label ?? b.kind)}</div>
+            <div class="block-sub">${esc(formatBlockSub(b))}</div>
+          </div>
+        </div>
+      `).join('');
+      const notes = s.notes ? `<div class="app-msg info" style="margin-top:10px;">${esc(s.notes)}</div>` : '';
+      return `${blocks || '<p style="color:var(--muted);margin:0;">بدون مرحله‌ی تمرینی</p>'}${notes}`;
+    }
+
+    function closeViewer() {
+      document.getElementById('viewer').hidden = true;
+      viewing = null;
+    }
+
+    async function markDone(newStatus) {
+      const s = viewing.session;
+      s.status = newStatus;
+      s.student_note = document.getElementById('student-note').value.trim();
+      s.submitted_at = newStatus === 'submitted' ? new Date().toISOString() : null;
+
+      // load plan for this week and update
+      const weekStart = weekSaturdayOf(viewing.dateIso);
+      const plan = await loadOrInitPlan(supabase, studentId, weekStart);
+      const sessions = (plan.sessions || []).map((x) => ensureSessionDate(x, weekStart));
+      const idx = sessions.findIndex((x) => x.date === viewing.dateIso);
+      if (idx === -1) { alert('جلسه پیدا نشد'); return; }
+      sessions[idx] = { ...sessions[idx], ...s };
+      plan.sessions = sessions;
+      const { error } = await savePlan(supabase, plan, null);
+      if (error) {
+        const m = document.getElementById('viewer-msg');
+        m.className = 'app-msg error'; m.textContent = 'خطا: ' + error.message;
+        return;
+      }
+      closeViewer();
+      await refreshCalendar();
+    }
+
+    document.getElementById('viewer-close').addEventListener('click', closeViewer);
+
+    // ---------- Boot ----------
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.replace('/app/login'); return; }
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+      if (!profile) { document.getElementById('loading').textContent = 'خطا در بارگذاری پروفایل'; return; }
+      await maybeBackfillName(profile);
+      if (profile.role === 'coach') { window.location.replace('/app/coach'); return; }
+      if (profile.status !== 'approved') { window.location.replace('/app/pending'); return; }
+
+      studentId = profile.id;
+      setupHeader(profile);
+      document.getElementById('hello').textContent = 'سلام ' + (profile.full_name || '');
+      initCalendar();
+      document.getElementById('loading').hidden = true;
+      document.getElementById('content').hidden = false;
+      await refreshCalendar();
+    })();
+  </script>
 </AppShell>
