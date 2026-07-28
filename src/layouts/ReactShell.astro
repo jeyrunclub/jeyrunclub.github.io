@@ -1,5 +1,6 @@
 ---
 import '../styles/app.css';
+import { InstallPrompt } from '../components/app/InstallPrompt';
 
 export interface Props {
   title: string;
@@ -36,6 +37,7 @@ const { title } = Astro.props;
   </head>
   <body class="min-h-screen bg-background text-foreground antialiased">
     <slot />
+    <InstallPrompt client:load />
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
