@@ -22,7 +22,7 @@ Creates: `profiles`, `plans`, RLS policies, `is_coach()` helper,
 
 Safe to re-run; it's idempotent.
 
-## 3. Configure magic-link email
+## 3. Configure email + password auth
 
 - Dashboard → **Authentication → URL Configuration**.
   - **Site URL:** `https://jeyrun.com`
@@ -30,13 +30,35 @@ Safe to re-run; it's idempotent.
     dev) `http://localhost:4321/app/*`.
 - Dashboard → **Authentication → Providers → Email**.
   - Enable **Email**.
-  - Enable **"Confirm email"** = on.
-  - Enable **"Enable Magic Link"** = on.
-  - Disable "Enable Signups" only if you want signup fully off. Leave on
-    for the "open signup, coach approves" flow we chose.
+  - **"Confirm email"** = **OFF** — users can sign in immediately after
+    registering. This avoids the "confirmation link doesn't open" problem
+    on some networks / mail apps.
+  - Leave "Enable Signups" ON (open signup, coach approves).
+  - Magic link no longer required; can leave on or off.
 
-Free tier limit: 4 auth-emails / hour from Supabase's built-in SMTP. If
-that becomes a problem, wire in Resend / SendGrid under **Auth → SMTP**.
+Password reset still uses email (the "Forgot password?" link on the
+login page calls `resetPasswordForEmail`). If your users can't receive
+Supabase emails at all, tell them to contact the coach for a manual
+reset instead.
+
+## 3b. Turnstile captcha (recommended, blocks spam signups)
+
+Because signup no longer requires clicking an email link, add a captcha
+so bots can't create garbage accounts.
+
+1. Cloudflare dashboard → **Turnstile → Add site**. Domain: `jeyrun.com`.
+   Widget mode: Managed. Grab the **Site key** and **Secret key**.
+2. In `src/components/app/LoginPage.tsx`, set:
+   ```ts
+   const TURNSTILE_SITE_KEY = 'PASTE_SITE_KEY_HERE';
+   ```
+3. Supabase dashboard → **Authentication → Attack Protection → Captcha**.
+   - Enable, provider = **Cloudflare Turnstile**, paste the **secret key**.
+4. Redeploy the site. The captcha widget appears above the signup button
+   and the token is passed to `supabase.auth.signUp({ options: { captchaToken } })`.
+
+Signin is not gated (no spam risk — credentials must already be valid).
+Leave `TURNSTILE_SITE_KEY` empty during local dev to skip the widget.
 
 ## 4. Coach accounts
 
