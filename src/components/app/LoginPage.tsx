@@ -25,6 +25,8 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [signinMsg, setSigninMsg] = useState<Msg>(null);
+  const [signinCaptcha, setSigninCaptcha] = useState('');
+  const [signinResetKey, setSigninResetKey] = useState(0);
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -32,10 +34,8 @@ export function LoginPage() {
   const [signupPassword, setSignupPassword] = useState('');
   const [showSignupPw, setShowSignupPw] = useState(false);
   const [signupMsg, setSignupMsg] = useState<Msg>(null);
-
-  const [captchaToken, setCaptchaToken] = useState('');
-  const captchaRef = useRef<HTMLDivElement | null>(null);
-  const captchaWidgetId = useRef<string | null>(null);
+  const [signupCaptcha, setSignupCaptcha] = useState('');
+  const [signupResetKey, setSignupResetKey] = useState(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -43,63 +43,23 @@ export function LoginPage() {
     });
   }, []);
 
-  // Load Turnstile script once; render/reset the widget whenever we're on a
-  // form that needs it. Only signup uses captcha (signin doesn't leak spam).
-  useEffect(() => {
-    if (!TURNSTILE_SITE_KEY) return;
-    if (tab !== 'signup') return;
-
-    const SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${SRC}"]`);
-    if (!existing) {
-      const s = document.createElement('script');
-      s.src = SRC;
-      s.async = true;
-      s.defer = true;
-      document.head.appendChild(s);
-    }
-
-    let cancelled = false;
-    const tryRender = () => {
-      if (cancelled) return;
-      const ts = (window as any).turnstile;
-      if (!ts || !captchaRef.current) {
-        setTimeout(tryRender, 200);
-        return;
-      }
-      if (captchaWidgetId.current !== null) return;
-      captchaWidgetId.current = ts.render(captchaRef.current, {
-        sitekey: TURNSTILE_SITE_KEY,
-        theme: 'auto',
-        language: 'fa',
-        callback: (token: string) => setCaptchaToken(token),
-        'expired-callback': () => setCaptchaToken(''),
-        'error-callback': () => setCaptchaToken(''),
-      });
-    };
-    tryRender();
-
-    return () => {
-      cancelled = true;
-      const ts = (window as any).turnstile;
-      if (ts && captchaWidgetId.current !== null) {
-        try { ts.remove(captchaWidgetId.current); } catch {}
-      }
-      captchaWidgetId.current = null;
-      setCaptchaToken('');
-    };
-  }, [tab]);
-
   async function onSignIn(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim() || !password) return;
+    if (TURNSTILE_SITE_KEY && !signinCaptcha) {
+      setSigninMsg({ kind: 'error', text: 'لطفاً کپچا را کامل کن.' });
+      return;
+    }
     setBusy(true);
     setSigninMsg({ kind: 'info', text: 'در حال ورود...' });
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
+      options: signinCaptcha ? { captchaToken: signinCaptcha } : undefined,
     });
     setBusy(false);
+    setSigninResetKey((k) => k + 1); // one token, one use — remount for next attempt
+    setSigninCaptcha('');
     if (error) {
       const bad = /invalid.*(credential|login|password)/i.test(error.message);
       setSigninMsg({
@@ -124,7 +84,7 @@ export function LoginPage() {
       setSignupMsg({ kind: 'error', text: 'رمز عبور باید حداقل ۸ کاراکتر باشد.' });
       return;
     }
-    if (TURNSTILE_SITE_KEY && !captchaToken) {
+    if (TURNSTILE_SITE_KEY && !signupCaptcha) {
       setSignupMsg({ kind: 'error', text: 'لطفاً کپچا را کامل کن.' });
       return;
     }
@@ -139,17 +99,12 @@ export function LoginPage() {
       options: {
         data: { full_name: name.trim(), phone: phone.trim() || null },
         emailRedirectTo: `${window.location.origin}/app`,
-        ...(captchaToken ? { captchaToken } : {}),
+        ...(signupCaptcha ? { captchaToken: signupCaptcha } : {}),
       },
     });
     setBusy(false);
-
-    // Refresh the captcha token — one token, one use.
-    const ts = (window as any).turnstile;
-    if (ts && captchaWidgetId.current !== null) {
-      try { ts.reset(captchaWidgetId.current); } catch {}
-    }
-    setCaptchaToken('');
+    setSignupResetKey((k) => k + 1);
+    setSignupCaptcha('');
 
     if (error) {
       const exists = /already.*(registered|exist)|user.*exists/i.test(error.message);
@@ -183,12 +138,19 @@ export function LoginPage() {
       setSigninMsg({ kind: 'error', text: 'اول ایمیلت را در کادر بالا وارد کن.' });
       return;
     }
+    if (TURNSTILE_SITE_KEY && !signinCaptcha) {
+      setSigninMsg({ kind: 'error', text: 'اول کپچا را کامل کن، بعد روی این لینک بزن.' });
+      return;
+    }
     setBusy(true);
     setSigninMsg({ kind: 'info', text: 'در حال ارسال لینک بازیابی...' });
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${window.location.origin}/app`,
-    });
+      captchaToken: signinCaptcha || undefined,
+    } as any);
     setBusy(false);
+    setSigninResetKey((k) => k + 1);
+    setSigninCaptcha('');
     if (error) setSigninMsg({ kind: 'error', text: `خطا: ${error.message}` });
     else setSigninMsg({ kind: 'ok', text: 'اگر این ایمیل ثبت شده باشد، لینک بازیابی ارسال شد.' });
   }
@@ -232,8 +194,7 @@ export function LoginPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="signin-email">ایمیل</Label>
-                <div className="relative">
-                  <Mail className="pointer-events-none absolute end-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <IconInputWrapper icon={<Mail className="size-4" />}>
                   <Input
                     id="signin-email"
                     type="email"
@@ -243,41 +204,33 @@ export function LoginPage() {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pe-10 text-start"
+                    className="pr-10 text-start"
                   />
-                </div>
+                </IconInputWrapper>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="signin-password">رمز عبور</Label>
-                <div className="relative">
-                  <Lock className="pointer-events-none absolute end-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="signin-password"
-                    type={showPw ? 'text' : 'password'}
-                    required
-                    dir="ltr"
-                    autoComplete="current-password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pe-10 ps-10 text-start"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw((v) => !v)}
-                    className="absolute start-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground transition-colors hover:text-foreground"
-                    aria-label={showPw ? 'مخفی کردن رمز' : 'نمایش رمز'}
-                    tabIndex={-1}
-                  >
-                    {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                  </button>
-                </div>
+                <PasswordField
+                  id="signin-password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={setPassword}
+                  show={showPw}
+                  toggle={() => setShowPw((v) => !v)}
+                />
               </div>
+
+              <TurnstileWidget onToken={setSigninCaptcha} resetKey={signinResetKey} />
 
               {signinMsg && <Message msg={signinMsg} />}
 
-              <Button type="submit" size="lg" disabled={busy || !email.trim() || !password} className="w-full">
+              <Button
+                type="submit"
+                size="lg"
+                disabled={busy || !email.trim() || !password || (!!TURNSTILE_SITE_KEY && !signinCaptcha)}
+                className="w-full"
+              >
                 ورود
               </Button>
 
@@ -299,8 +252,7 @@ export function LoginPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="signup-name">نام و نام خانوادگی</Label>
-                <div className="relative">
-                  <User className="pointer-events-none absolute end-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <IconInputWrapper icon={<User className="size-4" />}>
                   <Input
                     id="signup-name"
                     required
@@ -308,17 +260,16 @@ export function LoginPage() {
                     placeholder="مثلاً: علی رضایی"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="pe-10"
+                    className="pr-10"
                   />
-                </div>
+                </IconInputWrapper>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="signup-phone">
                   شماره همراه <span className="font-normal text-muted-foreground">(اختیاری)</span>
                 </Label>
-                <div className="relative">
-                  <Phone className="pointer-events-none absolute end-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <IconInputWrapper icon={<Phone className="size-4" />}>
                   <Input
                     id="signup-phone"
                     type="tel"
@@ -327,15 +278,14 @@ export function LoginPage() {
                     placeholder="09xxxxxxxxx"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="pe-10 text-start"
+                    className="pr-10 text-start"
                   />
-                </div>
+                </IconInputWrapper>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="signup-email">ایمیل</Label>
-                <div className="relative">
-                  <Mail className="pointer-events-none absolute end-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <IconInputWrapper icon={<Mail className="size-4" />}>
                   <Input
                     id="signup-email"
                     type="email"
@@ -345,46 +295,27 @@ export function LoginPage() {
                     placeholder="you@example.com"
                     value={signupEmail}
                     onChange={(e) => setSignupEmail(e.target.value)}
-                    className="pe-10 text-start"
+                    className="pr-10 text-start"
                   />
-                </div>
+                </IconInputWrapper>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="signup-password">
                   رمز عبور <span className="font-normal text-muted-foreground">(حداقل ۸ کاراکتر)</span>
                 </Label>
-                <div className="relative">
-                  <Lock className="pointer-events-none absolute end-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="signup-password"
-                    type={showSignupPw ? 'text' : 'password'}
-                    required
-                    minLength={8}
-                    dir="ltr"
-                    autoComplete="new-password"
-                    placeholder="••••••••"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    className="pe-10 ps-10 text-start"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSignupPw((v) => !v)}
-                    className="absolute start-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground transition-colors hover:text-foreground"
-                    aria-label={showSignupPw ? 'مخفی کردن رمز' : 'نمایش رمز'}
-                    tabIndex={-1}
-                  >
-                    {showSignupPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                  </button>
-                </div>
+                <PasswordField
+                  id="signup-password"
+                  autoComplete="new-password"
+                  value={signupPassword}
+                  onChange={setSignupPassword}
+                  show={showSignupPw}
+                  toggle={() => setShowSignupPw((v) => !v)}
+                  minLength={8}
+                />
               </div>
 
-              {TURNSTILE_SITE_KEY && (
-                <div className="flex justify-center pt-1">
-                  <div ref={captchaRef} />
-                </div>
-              )}
+              <TurnstileWidget onToken={setSignupCaptcha} resetKey={signupResetKey} />
 
               {signupMsg && <Message msg={signupMsg} />}
 
@@ -396,7 +327,7 @@ export function LoginPage() {
                   !name.trim() ||
                   !signupEmail.trim() ||
                   signupPassword.length < 8 ||
-                  (!!TURNSTILE_SITE_KEY && !captchaToken)
+                  (!!TURNSTILE_SITE_KEY && !signupCaptcha)
                 }
                 className="w-full"
               >
@@ -415,6 +346,66 @@ export function LoginPage() {
   );
 }
 
+// ---------- shared bits ----------
+
+function IconInputWrapper({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+        {icon}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+function PasswordField({
+  id,
+  autoComplete,
+  value,
+  onChange,
+  show,
+  toggle,
+  minLength,
+}: {
+  id: string;
+  autoComplete: string;
+  value: string;
+  onChange: (v: string) => void;
+  show: boolean;
+  toggle: () => void;
+  minLength?: number;
+}) {
+  return (
+    <div className="relative">
+      <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+        <Lock className="size-4" />
+      </span>
+      <Input
+        id={id}
+        type={show ? 'text' : 'password'}
+        required
+        dir="ltr"
+        autoComplete={autoComplete}
+        placeholder="••••••••"
+        minLength={minLength}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="pr-10 pl-10 text-start"
+      />
+      <button
+        type="button"
+        onClick={toggle}
+        className="absolute left-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground transition-colors hover:text-foreground"
+        aria-label={show ? 'مخفی کردن رمز' : 'نمایش رمز'}
+        tabIndex={-1}
+      >
+        {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+      </button>
+    </div>
+  );
+}
+
 function Message({ msg }: { msg: NonNullable<Msg> }) {
   return (
     <div
@@ -426,6 +417,80 @@ function Message({ msg }: { msg: NonNullable<Msg> }) {
       )}
     >
       {msg.text}
+    </div>
+  );
+}
+
+// ---------- Turnstile ----------
+
+const TURNSTILE_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+
+function TurnstileWidget({
+  onToken,
+  resetKey,
+}: {
+  onToken: (token: string) => void;
+  resetKey: number;
+}) {
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const widgetId = useRef<string | null>(null);
+
+  // Load Cloudflare's script once (idempotent).
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY) return;
+    if (!document.querySelector(`script[src="${TURNSTILE_SRC}"]`)) {
+      const s = document.createElement('script');
+      s.src = TURNSTILE_SRC;
+      s.async = true;
+      s.defer = true;
+      document.head.appendChild(s);
+    }
+  }, []);
+
+  // (Re-)render the widget whenever this instance mounts or resetKey bumps.
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY) return;
+    if (!boxRef.current) return;
+
+    let cancelled = false;
+    const tryRender = () => {
+      if (cancelled) return;
+      const ts = (window as any).turnstile;
+      if (!ts || !boxRef.current) {
+        setTimeout(tryRender, 200);
+        return;
+      }
+      // Widget already there from a previous render → reset it.
+      if (widgetId.current !== null) {
+        try { ts.reset(widgetId.current); } catch {}
+        return;
+      }
+      widgetId.current = ts.render(boxRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        theme: 'auto',
+        language: 'fa',
+        callback: (token: string) => onToken(token),
+        'expired-callback': () => onToken(''),
+        'error-callback': () => onToken(''),
+      });
+    };
+    tryRender();
+
+    return () => {
+      cancelled = true;
+      const ts = (window as any).turnstile;
+      if (ts && widgetId.current !== null) {
+        try { ts.remove(widgetId.current); } catch {}
+      }
+      widgetId.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetKey]);
+
+  if (!TURNSTILE_SITE_KEY) return null;
+  return (
+    <div className="flex justify-center pt-1">
+      <div ref={boxRef} />
     </div>
   );
 }
