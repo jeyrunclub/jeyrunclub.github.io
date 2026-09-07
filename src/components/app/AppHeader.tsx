@@ -5,9 +5,8 @@ import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 
 const links = [
-  { href: '/app',             label: 'برنامه‌ی من' },
-  { href: '/app/leaderboard', label: 'قهرمانان' },
-  { href: '/app/coach',       label: 'پنل مربی', coachOnly: true },
+  { href: '/app',       label: 'برنامه‌ی من' },
+  { href: '/app/coach', label: 'پنل مربی', coachOnly: true },
 ];
 
 export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: boolean; hideNav?: boolean }) {

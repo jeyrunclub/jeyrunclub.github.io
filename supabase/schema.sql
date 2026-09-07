@@ -16,18 +16,24 @@ create table if not exists public.profiles (
   created_at  timestamptz not null default now()
 );
 
--- ---------- plans (one row per student per ISO-week Saturday) ----------
+-- ---------- plans (one row per student per week, Saturday-start) ----------
+-- The coach writes the whole week as free text in `plan_text`; the student
+-- reads it as-is. `sessions`/`notes` are leftovers from the old structured
+-- planner and are no longer read or written.
 create table if not exists public.plans (
   id           uuid primary key default gen_random_uuid(),
   student_id   uuid not null references public.profiles(id) on delete cascade,
   week_start   date not null, -- the Saturday (Persian week start)
-  sessions     jsonb not null default '[]'::jsonb,
-  -- shape: [{day:0..6, title, description, distance_km?, minutes?, done:false}]
-  notes        text,
+  plan_text    text,
+  sessions     jsonb not null default '[]'::jsonb, -- legacy, unused
+  notes        text,                               -- legacy, unused
   updated_by   uuid references public.profiles(id),
   updated_at   timestamptz not null default now(),
   unique(student_id, week_start)
 );
+
+-- Existing installs: add the column.
+alter table public.plans add column if not exists plan_text text;
 
 create index if not exists plans_student_week_idx
   on public.plans(student_id, week_start desc);
@@ -150,7 +156,7 @@ revoke update on public.profiles from authenticated;
 grant  update (full_name, phone) on public.profiles to authenticated;
 grant  select on public.profiles to authenticated;
 
--- plans: student reads own, coach reads all; student can toggle "done"; coach can CRUD
+-- plans: student reads own (read-only); coach can CRUD everything.
 drop policy if exists "plans: student read"  on public.plans;
 drop policy if exists "plans: student edit"  on public.plans;
 drop policy if exists "plans: coach all"     on public.plans;
@@ -159,23 +165,15 @@ create policy "plans: student read"
   on public.plans for select
   using (student_id = auth.uid());
 
-create policy "plans: student edit"
-  on public.plans for update
-  using (student_id = auth.uid());
-
 create policy "plans: coach all"
   on public.plans for all
   using (public.is_coach())
   with check (public.is_coach());
 
--- Students can only mark sessions done — restrict column-level UPDATE.
-revoke update on public.plans from authenticated;
-grant  update (sessions) on public.plans to authenticated;
-grant  select on public.plans to authenticated;
--- Coach can insert / delete via RLS above (all commands allowed for coach).
-grant  insert, delete, update on public.plans to authenticated;
--- ^ Together with column grants and RLS: only coach effectively gets full update
---   (RLS "plans: student edit" applies to students, whose grants are limited to `sessions`).
+-- Grants are role-wide (coach and student are both `authenticated`), so the
+-- write side is gated by RLS alone: with no student UPDATE/INSERT policy, only
+-- the coach's "plans: coach all" policy admits a write.
+grant select, insert, update, delete on public.plans to authenticated;
 
 -- ---------- coach-only view of all users (joins auth.users for email) ----------
 create or replace function public.list_all_users()
@@ -205,69 +203,9 @@ $$;
 revoke execute on function public.list_all_users() from public;
 grant  execute on function public.list_all_users() to authenticated;
 
--- ---------- Leaderboard: approved sessions per student in a date range ----------
-create or replace function public.leaderboard(from_date date, to_date date)
-returns table (
-  student_id      uuid,
-  full_name       text,
-  done_count      int,
-  submitted_count int,
-  planned_count   int
-)
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  with all_students as (
-    select id, full_name
-      from public.profiles
-     where status = 'approved' and role = 'student'
-  ),
-  expanded as (
-    select p.student_id, p.week_start, s
-      from public.plans p,
-           lateral jsonb_array_elements(p.sessions) as s
-     where p.week_start between (from_date - interval '6 days')::date and to_date
-  ),
-  scoped as (
-    select e.student_id,
-           coalesce(nullif(e.s->>'status', ''), 'planned') as status,
-           -- prefer explicit date, fall back to week_start + day for legacy sessions
-           coalesce(
-             (e.s->>'date')::date,
-             (e.week_start + ((e.s->>'day')::int) * interval '1 day')::date
-           ) as sdate
-      from expanded e
-  ),
-  in_range as (
-    select student_id, status
-      from scoped
-     where sdate between from_date and to_date
-  ),
-  counts as (
-    select student_id,
-           count(*) filter (where status = 'done')::int      as done_count,
-           count(*) filter (where status = 'submitted')::int as submitted_count,
-           count(*) filter (where status = 'planned')::int   as planned_count
-      from in_range
-     group by student_id
-  )
-  select st.id,
-         st.full_name,
-         coalesce(c.done_count, 0),
-         coalesce(c.submitted_count, 0),
-         coalesce(c.planned_count, 0)
-    from all_students st
-    left join counts c on c.student_id = st.id
-   where exists(select 1 from public.profiles where id = auth.uid() and status = 'approved')
-   order by coalesce(c.done_count, 0) desc,
-            coalesce(c.submitted_count, 0) desc,
-            st.full_name nulls last;
-$$;
-
-revoke execute on function public.leaderboard(date, date) from public;
-grant  execute on function public.leaderboard(date, date) to authenticated;
+-- ---------- Leaderboard (removed) ----------
+-- The app no longer tracks per-session completion, so the leaderboard is gone.
+drop function if exists public.leaderboard(date, date);
 
 -- ---------- promote any existing accounts on the bootstrap list ----------
 -- (idempotent; runs every time this file is executed)
@@ -278,7 +216,9 @@ update public.profiles p
    and public._is_bootstrap_coach(u.email)
    and (p.role <> 'coach' or p.status <> 'approved');
 
--- ---------- Storage bucket for session photos ----------
+-- ---------- Storage bucket for session photos (legacy) ----------
+-- No longer written to — the app has no photo upload. Kept so existing photos
+-- stay reachable; drop the bucket by hand in the Supabase dashboard to delete them.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('session-photos', 'session-photos', false, 10485760,
         array['image/jpeg','image/png','image/webp'])
