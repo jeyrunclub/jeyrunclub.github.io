@@ -17,14 +17,18 @@ create table if not exists public.profiles (
 );
 
 -- ---------- plans (one row per student per week, Saturday-start) ----------
--- The coach writes the whole week as free text in `plan_text`; the student
--- reads it as-is. `sessions`/`notes` are leftovers from the old structured
--- planner and are no longer read or written.
+-- The coach fills one row per day of the week in `plan_days`; the student
+-- reads it day by day. `plan_text` holds weeks written before the table
+-- existed and is still shown when a week has no `plan_days`.
+-- `sessions`/`notes` are leftovers from the old planner and are never read.
 create table if not exists public.plans (
   id           uuid primary key default gen_random_uuid(),
   student_id   uuid not null references public.profiles(id) on delete cascade,
   week_start   date not null, -- the Saturday (Persian week start)
-  plan_text    text,
+  -- One entry per day of the week, index 0 = Saturday .. 6 = Friday:
+  --   [{"workout": "...", "note": "..."}, ...]
+  plan_days    jsonb not null default '[]'::jsonb,
+  plan_text    text,                               -- legacy free-text weeks
   sessions     jsonb not null default '[]'::jsonb, -- legacy, unused
   notes        text,                               -- legacy, unused
   updated_by   uuid references public.profiles(id),
@@ -34,6 +38,8 @@ create table if not exists public.plans (
 
 -- Existing installs: add the column.
 alter table public.plans add column if not exists plan_text text;
+alter table public.plans
+  add column if not exists plan_days jsonb not null default '[]'::jsonb;
 
 create index if not exists plans_student_week_idx
   on public.plans(student_id, week_start desc);

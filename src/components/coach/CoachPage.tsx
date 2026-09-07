@@ -2,11 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import {
-  addDays, thisWeekStart, weekLabel, weekRelativeLabel,
-  faNum, fetchWeekTextForStudents, loadWeekText, saveWeekText,
+  addDays, today, thisWeekStart, weekLabel, weekRelativeLabel,
+  faNum, faDateShort, DAYS_FA, dayIndexOf,
+  emptyDays, normalizeDays, daysAreEmpty,
+  fetchWeekPlansForStudents, loadWeekPlan, saveWeekPlan,
 } from '../../lib/plan.js';
 import { AppHeader } from '../app/AppHeader';
 import { PlanText } from '../app/PlanText';
+import { WeekList, type Day } from '../app/PlanWeek';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
@@ -19,6 +22,9 @@ type Profile = {
   role: 'coach' | 'student'; status: 'pending' | 'approved' | 'rejected';
   email?: string;
 };
+type Plan = { days: Day[]; text: string };
+
+const WORKOUT_PLACEHOLDER = '2k گرم کردن\n8*(6min @3:30 / 1min rest)\n2k سرد کردن';
 
 export function CoachPage() {
   const [loading, setLoading] = useState(true);
@@ -27,12 +33,14 @@ export function CoachPage() {
   const [allUsers, setAllUsers] = useState<Profile[]>([]);
   const [currentStudentId, setCurrentStudentId] = useState<string | null>(null);
   const [weekStart, setWeekStart] = useState(() => thisWeekStart());
-  const [textByStudent, setTextByStudent] = useState<Record<string, string>>({});
-  const [draft, setDraft] = useState('');
+  const [planByStudent, setPlanByStudent] = useState<Record<string, Plan>>({});
+  const [draft, setDraft] = useState<Day[]>(() => emptyDays());
   const [baseline, setBaseline] = useState('');
+  const [legacyText, setLegacyText] = useState('');
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState(false);
 
   const refreshUsers = useCallback(async () => {
     const { data } = await supabase.rpc('list_all_users');
@@ -58,11 +66,9 @@ export function CoachPage() {
     })();
   }, [refreshUsers]);
 
-  // Load every student's text for the shown week
+  // Load every student's plan for the shown week
   const refreshWeek = useCallback(async () => {
-    const byStudent = await fetchWeekTextForStudents(supabase, weekStart);
-    setTextByStudent(byStudent);
-    return byStudent;
+    setPlanByStudent(await fetchWeekPlansForStudents(supabase, weekStart));
   }, [weekStart]);
 
   useEffect(() => { if (profile) refreshWeek(); }, [profile, refreshWeek]);
@@ -71,12 +77,14 @@ export function CoachPage() {
   useEffect(() => {
     setSavedAt(0);
     setError(null);
-    if (!currentStudentId) { setDraft(''); setBaseline(''); return; }
+    setPreview(false);
+    if (!currentStudentId) { setDraft(emptyDays()); setBaseline(''); setLegacyText(''); return; }
     let alive = true;
-    loadWeekText(supabase, currentStudentId, weekStart).then((t) => {
+    loadWeekPlan(supabase, currentStudentId, weekStart).then((plan) => {
       if (!alive) return;
-      setDraft(t);
-      setBaseline(t);
+      setDraft(plan.days);
+      setBaseline(fingerprint(plan.days));
+      setLegacyText(daysAreEmpty(plan.days) ? plan.text : '');
     });
     return () => { alive = false; };
   }, [currentStudentId, weekStart]);
@@ -90,8 +98,18 @@ export function CoachPage() {
     [allUsers],
   );
   const currentStudent = students.find((s) => s.id === currentStudentId) || null;
-  const writtenCount = students.filter((s) => (textByStudent[s.id] || '').trim()).length;
-  const dirty = draft.trim() !== baseline.trim();
+  const hasPlan = (id: string) => {
+    const p = planByStudent[id];
+    return !!p && (!daysAreEmpty(p.days) || !!p.text.trim());
+  };
+  const writtenCount = students.filter((s) => hasPlan(s.id)).length;
+  const dirty = fingerprint(draft) !== baseline;
+  const isThisWeek = weekStart === thisWeekStart();
+  const todayIndex = isThisWeek ? dayIndexOf(today(), weekStart) : -1;
+
+  function setDay(i: number, field: 'workout' | 'note', value: string) {
+    setDraft((prev) => prev.map((d, j) => (j === i ? { ...d, [field]: value } : d)));
+  }
 
   async function approveOrReject(id: string, status: 'approved' | 'rejected') {
     const { error: err } = await supabase.rpc('set_profile_status',
@@ -100,17 +118,28 @@ export function CoachPage() {
     await refreshUsers();
   }
 
+  // Start from last week's table instead of an empty one.
+  async function copyPreviousWeek() {
+    if (!currentStudentId) return;
+    const prev = await loadWeekPlan(supabase, currentStudentId, addDays(weekStart, -7));
+    if (daysAreEmpty(prev.days)) { setError('هفته‌ی قبل جدولی ندارد.'); return; }
+    setError(null);
+    setDraft(prev.days);
+  }
+
   async function save() {
     if (!currentStudentId || !profile) return;
     setSaving(true);
     setError(null);
-    const { error: err } = await saveWeekText(
+    const { error: err } = await saveWeekPlan(
       supabase, currentStudentId, weekStart, draft, profile.id,
     );
     setSaving(false);
     if (err) { setError('خطا در ذخیره: ' + err.message); return; }
-    setBaseline(draft.trim());
-    setTextByStudent((prev) => ({ ...prev, [currentStudentId]: draft.trim() }));
+    const saved = normalizeDays(draft);
+    setBaseline(fingerprint(saved));
+    setPlanByStudent((p) => ({ ...p, [currentStudentId]: { days: saved, text: '' } }));
+    setLegacyText('');
     setSavedAt(Date.now());
   }
 
@@ -138,7 +167,7 @@ export function CoachPage() {
   return (
     <div className="min-h-screen">
       <AppHeader isCoach />
-      <main className="mx-auto max-w-3xl space-y-5 px-5 py-8 pb-20">
+      <main className="mx-auto max-w-4xl space-y-5 px-5 py-8 pb-20">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight">پنل مربی</h1>
@@ -207,7 +236,6 @@ export function CoachPage() {
           ) : (
             <div className="flex flex-wrap gap-2">
               {students.map((s) => {
-                const has = !!(textByStudent[s.id] || '').trim();
                 const active = s.id === currentStudentId;
                 return (
                   <button
@@ -221,7 +249,7 @@ export function CoachPage() {
                         : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground',
                     )}
                   >
-                    {has && <Check className="size-3.5 text-emerald-600" />}
+                    {hasPlan(s.id) && <Check className="size-3.5 text-emerald-600" />}
                     {s.full_name || s.email || '—'}
                   </button>
                 );
@@ -230,7 +258,7 @@ export function CoachPage() {
           )}
         </Card>
 
-        {/* PLAN TEXT EDITOR */}
+        {/* WEEK TABLE */}
         {currentStudent && (
           <Card className="space-y-3 p-5">
             <div className="flex flex-wrap items-center gap-2">
@@ -244,14 +272,57 @@ export function CoachPage() {
               )}
             </div>
 
-            <Textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              rows={16}
-              dir="auto"
-              placeholder={'دوشنبه\n5k recovery pace 6:30\n\nسه‌شنبه اینتروال\n2k Wu\n…'}
-              className="font-mono text-sm leading-7"
-            />
+            {legacyText && (
+              <div className="rounded-xl border border-border bg-secondary/50 p-4">
+                <Label className="mb-2 block">متن قبلی این هفته</Label>
+                <PlanText text={legacyText} />
+                <p className="mt-3 text-xs text-muted-foreground">
+                  این هفته قبلاً به‌صورت متن نوشته شده. تا وقتی جدول را پر نکنی، شاگرد همین متن را می‌بیند.
+                </p>
+              </div>
+            )}
+
+            {/* Header row — the table only reads as a table on wider screens */}
+            <div className="hidden gap-3 px-3 pb-1 text-xs font-bold text-muted-foreground sm:grid sm:grid-cols-[4.5rem_1fr_13rem]">
+              <span>روز</span><span>تمرین</span><span>یادداشت</span>
+            </div>
+
+            <div className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+              {draft.map((d, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    'grid gap-2 p-3 sm:grid-cols-[4.5rem_1fr_13rem] sm:items-start sm:gap-3',
+                    i === todayIndex && 'bg-accent/40',
+                  )}
+                >
+                  <div className="flex items-baseline gap-2 sm:flex-col sm:gap-0.5 sm:pt-2">
+                    <span className={cn('text-sm font-bold', i === todayIndex && 'text-primary')}>
+                      {DAYS_FA[i]}
+                    </span>
+                    <span className="text-[0.68rem] text-muted-foreground">
+                      {faDateShort(addDays(weekStart, i))}
+                    </span>
+                  </div>
+                  <Textarea
+                    value={d.workout}
+                    onChange={(e) => setDay(i, 'workout', e.target.value)}
+                    rows={3}
+                    dir="auto"
+                    placeholder={WORKOUT_PLACEHOLDER}
+                    className="field-sizing-content min-h-20 text-sm leading-7"
+                  />
+                  <Textarea
+                    value={d.note}
+                    onChange={(e) => setDay(i, 'note', e.target.value)}
+                    rows={2}
+                    dir="auto"
+                    placeholder="یادداشت"
+                    className="field-sizing-content min-h-20 text-sm leading-7"
+                  />
+                </div>
+              ))}
+            </div>
 
             {error && (
               <div className="rounded-xl border border-destructive/25 bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
@@ -259,21 +330,24 @@ export function CoachPage() {
               </div>
             )}
 
-            <div className="flex items-center gap-2">
-              <p className="text-xs text-muted-foreground">
-                هر خط همان‌طور که بنویسی به شاگرد نشان داده می‌شود.
-              </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" size="sm" onClick={copyPreviousWeek}>
+                کپی از هفته‌ی قبل
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setPreview((p) => !p)}>
+                {preview ? 'بستن پیش‌نمایش' : 'پیش‌نمایش'}
+              </Button>
               <Button onClick={save} disabled={saving || !dirty} className="ms-auto">
                 <Check className="size-4" />
                 {saving ? 'در حال ذخیره…' : 'ذخیره'}
               </Button>
             </div>
 
-            {draft.trim() && (
+            {preview && (
               <div className="border-t border-border pt-4">
-                <Label className="mb-2 block">پیش‌نمایش</Label>
+                <Label className="mb-2 block">آنچه شاگرد می‌بیند</Label>
                 <div className="rounded-xl border border-border bg-secondary/50 p-4">
-                  <PlanText text={draft} />
+                  <WeekList days={draft} weekStart={weekStart} todayIndex={todayIndex} />
                 </div>
               </div>
             )}
@@ -319,6 +393,13 @@ export function CoachPage() {
       </main>
     </div>
   );
+}
+
+// Trimmed shape of a week, for the "unsaved changes" comparison.
+function fingerprint(days: Day[]) {
+  return normalizeDays(days)
+    .map((d) => d.workout.trim() + ' ' + d.note.trim())
+    .join('');
 }
 
 function StatCard({ n, label, accent }: { n: number; label: string; accent?: boolean }) {

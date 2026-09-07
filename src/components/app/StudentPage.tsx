@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ChevronRight, ChevronLeft, CalendarDays } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import {
-  addDays, thisWeekStart, weekLabel, weekRelativeLabel, loadWeekText,
+  addDays, today, thisWeekStart, weekLabel, weekRelativeLabel,
+  loadWeekPlan, emptyDays, daysAreEmpty, dayIsEmpty, dayIndexOf,
+  DAYS_FA, faDateShort,
 } from '../../lib/plan.js';
 import { AppHeader } from './AppHeader';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { PlanText } from './PlanText';
+import { DayBlock, WeekList, type Day } from './PlanWeek';
+import { cn } from '../../lib/utils';
 
 type Profile = {
   id: string;
@@ -20,8 +24,11 @@ export function StudentPage() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [weekStart, setWeekStart] = useState(() => thisWeekStart());
+  const [days, setDays] = useState<Day[]>(() => emptyDays());
   const [text, setText] = useState('');
-  const [loadingText, setLoadingText] = useState(true);
+  const [loadingPlan, setLoadingPlan] = useState(true);
+  const [view, setView] = useState<'day' | 'week'>('day');
+  const [selected, setSelected] = useState(() => dayIndexOf(today(), thisWeekStart()));
 
   // Boot / auth
   useEffect(() => {
@@ -48,18 +55,30 @@ export function StudentPage() {
     })();
   }, []);
 
-  // Load the week's text
+  // Load the week's plan
   useEffect(() => {
     if (!profile) return;
     let alive = true;
-    setLoadingText(true);
-    loadWeekText(supabase, profile.id, weekStart).then((t) => {
+    setLoadingPlan(true);
+    loadWeekPlan(supabase, profile.id, weekStart).then((plan) => {
       if (!alive) return;
-      setText(t);
-      setLoadingText(false);
+      setDays(plan.days);
+      setText(plan.text);
+      setLoadingPlan(false);
     });
     return () => { alive = false; };
   }, [profile, weekStart]);
+
+  const isThisWeek = weekStart === thisWeekStart();
+  const todayIndex = isThisWeek ? dayIndexOf(today(), weekStart) : -1;
+
+  // Past weeks open on their first day; the current week opens on today.
+  useEffect(() => {
+    setSelected(isThisWeek ? dayIndexOf(today(), weekStart) : 0);
+  }, [weekStart, isThisWeek]);
+
+  const empty = useMemo(() => daysAreEmpty(days) && !text.trim(), [days, text]);
+  const legacy = daysAreEmpty(days) && !!text.trim();
 
   if (loading) {
     return (
@@ -73,8 +92,6 @@ export function StudentPage() {
   }
   if (!profile) return null;
 
-  const isThisWeek = weekStart === thisWeekStart();
-
   return (
     <div className="min-h-screen">
       <AppHeader isCoach={false} />
@@ -84,7 +101,7 @@ export function StudentPage() {
             سلام {profile.full_name || ''}
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            برنامه‌ای که سالار برای این هفته نوشته.
+            برنامه‌ای که سالار برایت نوشته.
           </p>
         </div>
 
@@ -111,20 +128,81 @@ export function StudentPage() {
           </Button>
         </Card>
 
-        {loadingText ? (
+        {loadingPlan ? (
           <Card className="flex justify-center p-10">
             <div className="size-7 animate-spin rounded-full border-4 border-secondary border-t-primary" />
           </Card>
-        ) : text ? (
-          <Card className="p-6">
-            <PlanText text={text} />
-          </Card>
-        ) : (
+        ) : empty ? (
           <Card className="flex flex-col items-center gap-3 p-10 text-center text-muted-foreground">
             <CalendarDays className="size-10 text-muted-foreground/60" />
             <h3 className="text-base font-bold text-foreground">هنوز برنامه‌ای نیست</h3>
             <p className="text-sm">برای این هفته چیزی ثبت نشده.</p>
           </Card>
+        ) : legacy ? (
+          // A week written before the day table existed
+          <Card className="p-6">
+            <PlanText text={text} />
+          </Card>
+        ) : (
+          <>
+            {/* روزانه / هفتگی */}
+            <div className="flex gap-1 self-center rounded-full border border-border bg-card p-1">
+              {([['day', 'روزانه'], ['week', 'هفتگی']] as const).map(([v, label]) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setView(v)}
+                  className={cn(
+                    'rounded-full px-5 py-1.5 text-sm font-semibold transition-colors',
+                    view === v ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {view === 'day' ? (
+              <>
+                {/* Day strip */}
+                <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+                  {days.map((d, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setSelected(i)}
+                      className={cn(
+                        'flex min-w-16 shrink-0 flex-col items-center gap-0.5 rounded-2xl border px-3 py-2 transition-colors',
+                        i === selected
+                          ? 'border-primary bg-accent text-primary'
+                          : 'border-border bg-card text-muted-foreground hover:bg-accent/50',
+                      )}
+                    >
+                      <span className="text-xs font-bold">{DAYS_FA[i]}</span>
+                      <span className="text-[0.68rem]">{faDateShort(addDays(weekStart, i))}</span>
+                      <span className={cn(
+                        'mt-0.5 size-1.5 rounded-full',
+                        dayIsEmpty(d) ? 'bg-transparent' : i === selected ? 'bg-primary' : 'bg-primary/40',
+                      )} />
+                    </button>
+                  ))}
+                </div>
+
+                <Card className="p-6">
+                  <DayBlock
+                    day={days[selected]}
+                    index={selected}
+                    weekStart={weekStart}
+                    isToday={selected === todayIndex}
+                  />
+                </Card>
+              </>
+            ) : (
+              <Card className="p-6">
+                <WeekList days={days} weekStart={weekStart} todayIndex={todayIndex} />
+              </Card>
+            )}
+          </>
         )}
 
         {!isThisWeek && (
