@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronRight, ChevronLeft, CalendarDays } from 'lucide-react';
+import { ChevronRight, ChevronLeft, CalendarDays, Check, Target } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import {
   addDays, today, thisWeekStart, weekLabel, weekRelativeLabel, faDateLong,
-  loadWeekPlan, emptyDays, daysAreEmpty, dayIsEmpty, dayIndexOf,
+  loadWeekPlan, loadWeekLogs, emptyDays, daysAreEmpty, dayIsEmpty, dayIndexOf,
   DAYS_FA, faDayNum, faNum,
 } from '../../lib/plan.js';
 import { sessionType, typeClasses } from '../../lib/session-type.js';
@@ -12,6 +12,7 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { PlanText } from './PlanText';
 import { DayCard, WeekList, type Day } from './PlanWeek';
+import { DayLog, type Log } from './DayLog';
 import { cn } from '../../lib/utils';
 
 type Profile = {
@@ -19,6 +20,8 @@ type Profile = {
   role: string;
   status: string;
   full_name: string | null;
+  pr_10k: string | null;
+  goal_10k: string | null;
 };
 
 export function StudentPage() {
@@ -28,6 +31,7 @@ export function StudentPage() {
   const [days, setDays] = useState<Day[]>(() => emptyDays());
   const [text, setText] = useState('');
   const [loadingPlan, setLoadingPlan] = useState(true);
+  const [logs, setLogs] = useState<Record<string, Log>>({});
   const [view, setView] = useState<'day' | 'week'>('day');
   const [selected, setSelected] = useState(() => dayIndexOf(today(), thisWeekStart()));
 
@@ -61,10 +65,14 @@ export function StudentPage() {
     if (!profile) return;
     let alive = true;
     setLoadingPlan(true);
-    loadWeekPlan(supabase, profile.id, weekStart).then((plan) => {
+    Promise.all([
+      loadWeekPlan(supabase, profile.id, weekStart),
+      loadWeekLogs(supabase, profile.id, weekStart),
+    ]).then(([plan, weekLogs]) => {
       if (!alive) return;
       setDays(plan.days);
       setText(plan.text);
+      setLogs(weekLogs);
       setLoadingPlan(false);
     });
     return () => { alive = false; };
@@ -82,6 +90,8 @@ export function StudentPage() {
   const empty = useMemo(() => daysAreEmpty(days) && !text.trim(), [days, text]);
   const legacy = daysAreEmpty(days) && !!text.trim();
   const sessionCount = days.filter((d) => !dayIsEmpty(d)).length;
+  const doneCount = Object.values(logs).filter((l) => l.done).length;
+  const selectedIso = addDays(weekStart, selected);
   const firstName = (profile?.full_name || '').trim().split(/\s+/)[0] || '';
 
   if (loading) {
@@ -116,12 +126,22 @@ export function StudentPage() {
             <p className="mt-1 text-sm text-white/85">
               {isThisWeek
                 ? sessionCount > 0
-                  ? `این هفته ${faNum(sessionCount)} روز تمرین داری.`
+                  ? doneCount > 0
+                    ? `${faNum(doneCount)} از ${faNum(sessionCount)} تمرین این هفته انجام شده.`
+                    : `این هفته ${faNum(sessionCount)} روز تمرین داری.`
                   : 'برنامه‌ی این هفته هنوز نوشته نشده.'
                 : `${weekRelativeLabel(weekStart)} را می‌بینی.`}
             </p>
           </div>
         </section>
+
+        {/* 10K — set by the coach, read-only here */}
+        {(profile.pr_10k || profile.goal_10k) && (
+          <div className="grid grid-cols-2 gap-3">
+            <StatBox label="رکورد ۱۰ کیلومتر" value={profile.pr_10k} />
+            <StatBox label="هدف ۱۰ کیلومتر" value={profile.goal_10k} goal />
+          </div>
+        )}
 
         {/* WEEK NAV — in RTL, the right chevron goes back */}
         <Card className="flex items-center justify-between gap-2 p-2">
@@ -223,7 +243,11 @@ export function StudentPage() {
                         <span className="figures text-base font-extrabold leading-none">
                           {faDayNum(addDays(weekStart, i))}
                         </span>
-                        <span className={cn('size-1.5 rounded-full', type ? c.dot : 'bg-transparent')} />
+                        {logs[addDays(weekStart, i)]?.done ? (
+                          <Check className="size-3 text-easy" strokeWidth={3} />
+                        ) : (
+                          <span className={cn('size-1.5 rounded-full', type ? c.dot : 'bg-transparent')} />
+                        )}
                       </button>
                     );
                   })}
@@ -236,6 +260,12 @@ export function StudentPage() {
                     weekStart={weekStart}
                     isToday={selected === todayIndex}
                   />
+                  <DayLog
+                    studentId={profile.id}
+                    day={selectedIso}
+                    log={logs[selectedIso]}
+                    onChange={(d, l) => setLogs((prev) => ({ ...prev, [d]: l }))}
+                  />
                 </div>
               </>
             ) : (
@@ -246,6 +276,27 @@ export function StudentPage() {
           </>
         )}
       </main>
+    </div>
+  );
+}
+
+function StatBox({ label, value, goal }: { label: string; value: string | null; goal?: boolean }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-center gap-1.5 text-[0.7rem] font-semibold text-muted-foreground">
+        {goal && <Target className="size-3.5" />}
+        {label}
+      </div>
+      <div
+        dir="ltr"
+        className={cn(
+          'figures mt-1 text-right text-2xl font-extrabold tabular-nums',
+          goal ? 'text-primary' : 'text-foreground',
+          !value && 'text-muted-foreground/50',
+        )}
+      >
+        {value || '—'}
+      </div>
     </div>
   );
 }

@@ -37,6 +37,9 @@ create table if not exists public.plans (
 );
 
 -- Existing installs: add the column.
+alter table public.profiles add column if not exists pr_10k   text;
+alter table public.profiles add column if not exists goal_10k text;
+
 alter table public.plans add column if not exists plan_text text;
 alter table public.plans
   add column if not exists plan_days jsonb not null default '[]'::jsonb;
@@ -159,7 +162,7 @@ create policy "profiles: coach edit"
 -- Lock down which columns a normal user can UPDATE.
 -- (Coach still edits status/role via set_profile_status(), which is security-definer.)
 revoke update on public.profiles from authenticated;
-grant  update (full_name, phone) on public.profiles to authenticated;
+grant  update (full_name, phone, pr_10k, goal_10k) on public.profiles to authenticated;
 grant  select on public.profiles to authenticated;
 
 -- plans: student reads own (read-only); coach can CRUD everything.
@@ -181,7 +184,44 @@ create policy "plans: coach all"
 -- the coach's "plans: coach all" policy admits a write.
 grant select, insert, update, delete on public.plans to authenticated;
 
+-- ---------- day_logs (the student's own record of a session) ----------
+-- One row per student per calendar day. The coach writes the plan; the student
+-- writes whether they actually did it. Deliberately separate from `plans` so a
+-- student never needs write access to the plan itself.
+create table if not exists public.day_logs (
+  id          uuid primary key default gen_random_uuid(),
+  student_id  uuid not null references public.profiles(id) on delete cascade,
+  day         date not null,
+  done        boolean not null default false,
+  note        text,
+  photo_path  text,   -- object name inside the `session-photos` bucket
+  updated_at  timestamptz not null default now(),
+  unique(student_id, day)
+);
+
+create index if not exists day_logs_student_day_idx
+  on public.day_logs(student_id, day desc);
+
+alter table public.day_logs enable row level security;
+
+drop policy if exists "day_logs: student own" on public.day_logs;
+drop policy if exists "day_logs: coach read"  on public.day_logs;
+
+-- The log belongs to the student: they are the only one who can write it.
+create policy "day_logs: student own"
+  on public.day_logs for all
+  using (student_id = auth.uid())
+  with check (student_id = auth.uid());
+
+create policy "day_logs: coach read"
+  on public.day_logs for select
+  using (public.is_coach());
+
+grant select, insert, update, delete on public.day_logs to authenticated;
+
 -- ---------- coach-only view of all users (joins auth.users for email) ----------
+-- The return type changes when columns are added, so drop before replacing.
+drop function if exists public.list_all_users();
 create or replace function public.list_all_users()
 returns table (
   id         uuid,
@@ -190,6 +230,8 @@ returns table (
   phone      text,
   role       text,
   status     text,
+  pr_10k     text,
+  goal_10k   text,
   created_at timestamptz
 )
 language sql
@@ -197,7 +239,8 @@ stable
 security definer
 set search_path = public
 as $$
-  select p.id, p.full_name, u.email::text, p.phone, p.role, p.status, p.created_at
+  select p.id, p.full_name, u.email::text, p.phone, p.role, p.status,
+         p.pr_10k, p.goal_10k, p.created_at
     from public.profiles p
     join auth.users u on u.id = p.id
    where public.is_coach()

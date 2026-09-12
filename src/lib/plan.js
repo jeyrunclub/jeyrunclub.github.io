@@ -167,3 +167,71 @@ export async function fetchWeekPlansForStudents(supabase, weekStart) {
     { days: normalizeDays(r.plan_days), text: r.plan_text || '' },
   ]));
 }
+
+// ---------- Day logs (the student's own record of a session) ----------
+//
+// The coach owns `plans`; the student owns `day_logs`. They are keyed by
+// calendar day rather than by week so a log survives if a week is rewritten.
+
+export const PHOTO_BUCKET = 'session-photos';
+
+// { 'YYYY-MM-DD': { done, note, photo_path } } for one student's week.
+export async function loadWeekLogs(supabase, studentId, weekStart) {
+  const { data, error } = await supabase.from('day_logs')
+    .select('day, done, note, photo_path')
+    .eq('student_id', studentId)
+    .gte('day', weekStart)
+    .lte('day', addDays(weekStart, 6));
+  if (error) { console.error(error); return {}; }
+  return Object.fromEntries((data || []).map((r) => [r.day, r]));
+}
+
+// Student-only: write one day's log.
+export async function saveDayLog(supabase, studentId, day, fields) {
+  const { data, error } = await supabase.from('day_logs').upsert({
+    student_id: studentId,
+    day,
+    ...fields,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'student_id,day' }).select().maybeSingle();
+  if (error) console.error(error);
+  return { data, error };
+}
+
+// Photos live under <uid>/… so the storage policy can scope them by folder.
+export async function uploadDayPhoto(supabase, studentId, day, file) {
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const path = `${studentId}/${day}-${Date.now()}.${ext}`;
+  const { error } = await supabase.storage.from(PHOTO_BUCKET)
+    .upload(path, file, { upsert: true, contentType: file.type });
+  if (error) return { path: null, error };
+  return { path, error: null };
+}
+
+// The bucket is private, so every view needs a short-lived signed URL.
+export async function signedPhotoUrl(supabase, path, seconds = 3600) {
+  if (!path) return null;
+  const { data, error } = await supabase.storage.from(PHOTO_BUCKET)
+    .createSignedUrl(path, seconds);
+  if (error) { console.error(error); return null; }
+  return data?.signedUrl || null;
+}
+
+export async function removeDayPhoto(supabase, path) {
+  if (!path) return;
+  await supabase.storage.from(PHOTO_BUCKET).remove([path]);
+}
+
+// Coach dashboard: how many days of a week each student has ticked off.
+export async function fetchWeekLogsForStudents(supabase, weekStart) {
+  const { data, error } = await supabase.from('day_logs')
+    .select('student_id, day, done, note, photo_path')
+    .gte('day', weekStart)
+    .lte('day', addDays(weekStart, 6));
+  if (error) { console.error(error); return {}; }
+  const out = {};
+  for (const r of data || []) {
+    (out[r.student_id] ||= {})[r.day] = r;
+  }
+  return out;
+}

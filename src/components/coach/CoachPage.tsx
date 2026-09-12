@@ -1,17 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Camera, Target } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import {
   addDays, today, thisWeekStart, weekLabel, weekRelativeLabel,
   faNum, faDateShort, DAYS_FA, dayIndexOf,
   emptyDays, normalizeDays, daysAreEmpty, trimDays,
-  fetchWeekPlansForStudents, loadWeekPlan, saveWeekPlan,
+  fetchWeekPlansForStudents, fetchWeekLogsForStudents, loadWeekPlan, saveWeekPlan,
+  signedPhotoUrl,
 } from '../../lib/plan.js';
 import { AppHeader } from '../app/AppHeader';
 import { PlanText } from '../app/PlanText';
 import { WeekList, TypeBadge, type Day } from '../app/PlanWeek';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
@@ -21,7 +23,9 @@ type Profile = {
   id: string; full_name: string | null; phone: string | null;
   role: 'coach' | 'student'; status: 'pending' | 'approved' | 'rejected';
   email?: string;
+  pr_10k?: string | null; goal_10k?: string | null;
 };
+type Log = { done: boolean; note: string | null; photo_path: string | null };
 type Plan = { days: Day[]; text: string };
 
 const WORKOUT_PLACEHOLDER = '2k گرم کردن\n8*(6min @3:30 / 1min rest)\n2k سرد کردن';
@@ -41,6 +45,10 @@ export function CoachPage() {
   const [savedAt, setSavedAt] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
+  const [logsByStudent, setLogsByStudent] = useState<Record<string, Record<string, Log>>>({});
+  const [pr, setPr] = useState('');
+  const [goal, setGoal] = useState('');
+  const [savingPr, setSavingPr] = useState(false);
 
   const refreshUsers = useCallback(async () => {
     const { data } = await supabase.rpc('list_all_users');
@@ -68,7 +76,12 @@ export function CoachPage() {
 
   // Load every student's plan for the shown week
   const refreshWeek = useCallback(async () => {
-    setPlanByStudent(await fetchWeekPlansForStudents(supabase, weekStart));
+    const [plans, logs] = await Promise.all([
+      fetchWeekPlansForStudents(supabase, weekStart),
+      fetchWeekLogsForStudents(supabase, weekStart),
+    ]);
+    setPlanByStudent(plans);
+    setLogsByStudent(logs);
   }, [weekStart]);
 
   useEffect(() => { if (profile) refreshWeek(); }, [profile, refreshWeek]);
@@ -79,6 +92,9 @@ export function CoachPage() {
     setError(null);
     setPreview(false);
     if (!currentStudentId) { setDraft(emptyDays()); setBaseline(''); setLegacyText(''); return; }
+    const st = allUsers.find((u) => u.id === currentStudentId);
+    setPr(st?.pr_10k || '');
+    setGoal(st?.goal_10k || '');
     let alive = true;
     loadWeekPlan(supabase, currentStudentId, weekStart).then((plan) => {
       if (!alive) return;
@@ -98,6 +114,7 @@ export function CoachPage() {
     [allUsers],
   );
   const currentStudent = students.find((s) => s.id === currentStudentId) || null;
+  const studentLogs = logsByStudent[currentStudentId || ''] || {};
   const hasPlan = (id: string) => {
     const p = planByStudent[id];
     return !!p && (!daysAreEmpty(p.days) || !!p.text.trim());
@@ -106,6 +123,22 @@ export function CoachPage() {
   const dirty = fingerprint(draft) !== baseline;
   const isThisWeek = weekStart === thisWeekStart();
   const todayIndex = isThisWeek ? dayIndexOf(today(), weekStart) : -1;
+
+  async function saveTenK() {
+    if (!currentStudentId) return;
+    setSavingPr(true);
+    setError(null);
+    const { error: err } = await supabase.from('profiles')
+      .update({ pr_10k: pr.trim() || null, goal_10k: goal.trim() || null })
+      .eq('id', currentStudentId);
+    setSavingPr(false);
+    if (err) { setError('خطا در ذخیره‌ی رکورد: ' + err.message); return; }
+    setAllUsers((prev) => prev.map((u) => (
+      u.id === currentStudentId
+        ? { ...u, pr_10k: pr.trim() || null, goal_10k: goal.trim() || null }
+        : u
+    )));
+  }
 
   function setDay(i: number, field: 'workout' | 'note', value: string) {
     setDraft((prev) => prev.map((d, j) => (j === i ? { ...d, [field]: value } : d)));
@@ -258,6 +291,42 @@ export function CoachPage() {
           )}
         </Card>
 
+        {/* 10K RECORD + GOAL */}
+        {currentStudent && (
+          <Card className="p-5">
+            <div className="mb-3 flex items-center gap-2">
+              <Target className="size-4 text-primary" />
+              <h2 className="text-base font-bold">۱۰ کیلومتر</h2>
+              <span className="text-xs text-muted-foreground">
+                شاگرد این را در صفحه‌ی خودش می‌بیند
+              </span>
+            </div>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="min-w-36 flex-1">
+                <Label className="mb-1.5 block">رکورد فعلی</Label>
+                <Input
+                  value={pr} onChange={(e) => setPr(e.target.value)}
+                  dir="ltr" placeholder="46:20" className="figures text-right"
+                />
+              </div>
+              <div className="min-w-36 flex-1">
+                <Label className="mb-1.5 block">هدف</Label>
+                <Input
+                  value={goal} onChange={(e) => setGoal(e.target.value)}
+                  dir="ltr" placeholder="44:00" className="figures text-right"
+                />
+              </div>
+              <Button
+                onClick={saveTenK}
+                disabled={savingPr || (pr.trim() === (currentStudent.pr_10k || '') && goal.trim() === (currentStudent.goal_10k || ''))}
+              >
+                <Check className="size-4" />
+                {savingPr ? 'در حال ذخیره…' : 'ذخیره'}
+              </Button>
+            </div>
+          </Card>
+        )}
+
         {/* WEEK TABLE */}
         {currentStudent && (
           <Card className="space-y-3 p-5">
@@ -292,7 +361,7 @@ export function CoachPage() {
                 <div
                   key={i}
                   className={cn(
-                    'grid gap-2 p-3 sm:grid-cols-[4.5rem_1fr_13rem] sm:items-start sm:gap-3',
+                    'grid gap-2 p-3 sm:grid-cols-[4.5rem_1fr_13rem] sm:items-start sm:gap-x-3 sm:gap-y-2 sm:[&>*:last-child]:col-span-3',
                     i === todayIndex && 'bg-accent/40',
                   )}
                 >
@@ -321,6 +390,7 @@ export function CoachPage() {
                     placeholder="یادداشت"
                     className="field-sizing-content min-h-20 text-sm leading-7"
                   />
+                  <StudentLog log={studentLogs[addDays(weekStart, i)]} />
                 </div>
               ))}
             </div>
@@ -421,6 +491,42 @@ function Avatar({ name, muted }: { name: string; muted?: boolean }) {
       muted ? 'bg-muted text-muted-foreground' : 'bg-accent text-primary',
     )}>
       {name.trim().charAt(0) || '?'}
+    </div>
+  );
+}
+
+// Read-only: what the student recorded for this day. The coach cannot edit it.
+function StudentLog({ log }: { log?: Log }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const photo = log?.photo_path || null;
+
+  useEffect(() => {
+    let alive = true;
+    if (!photo) { setUrl(null); return; }
+    signedPhotoUrl(supabase, photo).then((u) => { if (alive) setUrl(u); });
+    return () => { alive = false; };
+  }, [photo]);
+
+  if (!log || (!log.done && !log.note && !photo)) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-secondary/60 px-3 py-2 text-xs">
+      <span className={cn(
+        'inline-flex items-center gap-1 font-bold',
+        log.done ? 'text-easy' : 'text-muted-foreground',
+      )}>
+        <Check className="size-3.5" strokeWidth={3} />
+        {log.done ? 'انجام شد' : 'ثبت نشده'}
+      </span>
+      {log.note && (
+        <span dir="auto" className="min-w-0 flex-1 text-muted-foreground">{log.note}</span>
+      )}
+      {url && (
+        <a href={url} target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-primary hover:underline">
+          <Camera className="size-3.5" />
+          عکس
+        </a>
+      )}
     </div>
   );
 }
