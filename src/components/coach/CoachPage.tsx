@@ -23,7 +23,7 @@ type Profile = {
   id: string; full_name: string | null; phone: string | null;
   role: 'coach' | 'student'; status: 'pending' | 'approved' | 'rejected';
   email?: string;
-  pr_10k?: string | null; goal_10k?: string | null;
+  training_goal?: string | null;
 };
 type Log = { done: boolean; note: string | null; photo_path: string | null };
 type Plan = { days: Day[]; text: string };
@@ -46,9 +46,8 @@ export function CoachPage() {
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
   const [logsByStudent, setLogsByStudent] = useState<Record<string, Record<string, Log>>>({});
-  const [pr, setPr] = useState('');
   const [goal, setGoal] = useState('');
-  const [savingPr, setSavingPr] = useState(false);
+  const [savingGoal, setSavingGoal] = useState(false);
 
   const refreshUsers = useCallback(async () => {
     const { data } = await supabase.rpc('list_all_users');
@@ -93,8 +92,7 @@ export function CoachPage() {
     setPreview(false);
     if (!currentStudentId) { setDraft(emptyDays()); setBaseline(''); setLegacyText(''); return; }
     const st = allUsers.find((u) => u.id === currentStudentId);
-    setPr(st?.pr_10k || '');
-    setGoal(st?.goal_10k || '');
+    setGoal(st?.training_goal || '');
     let alive = true;
     loadWeekPlan(supabase, currentStudentId, weekStart).then((plan) => {
       if (!alive) return;
@@ -124,19 +122,17 @@ export function CoachPage() {
   const isThisWeek = weekStart === thisWeekStart();
   const todayIndex = isThisWeek ? dayIndexOf(today(), weekStart) : -1;
 
-  async function saveTenK() {
+  async function saveGoal() {
     if (!currentStudentId) return;
-    setSavingPr(true);
+    setSavingGoal(true);
     setError(null);
+    const next = goal.trim() || null;
     const { error: err } = await supabase.from('profiles')
-      .update({ pr_10k: pr.trim() || null, goal_10k: goal.trim() || null })
-      .eq('id', currentStudentId);
-    setSavingPr(false);
-    if (err) { setError('خطا در ذخیره‌ی رکورد: ' + err.message); return; }
+      .update({ training_goal: next }).eq('id', currentStudentId);
+    setSavingGoal(false);
+    if (err) { setError('خطا در ذخیره‌ی هدف: ' + err.message); return; }
     setAllUsers((prev) => prev.map((u) => (
-      u.id === currentStudentId
-        ? { ...u, pr_10k: pr.trim() || null, goal_10k: goal.trim() || null }
-        : u
+      u.id === currentStudentId ? { ...u, training_goal: next } : u
     )));
   }
 
@@ -291,37 +287,31 @@ export function CoachPage() {
           )}
         </Card>
 
-        {/* 10K RECORD + GOAL */}
+        {/* TRAINING GOAL */}
         {currentStudent && (
           <Card className="p-5">
             <div className="mb-3 flex items-center gap-2">
               <Target className="size-4 text-primary" />
-              <h2 className="text-base font-bold">۱۰ کیلومتر</h2>
+              <h2 className="text-base font-bold">هدف تمرینی</h2>
               <span className="text-xs text-muted-foreground">
-                شاگرد این را در صفحه‌ی خودش می‌بیند
+                شاگرد هم می‌تواند این را در صفحه‌ی خودش بنویسد
               </span>
             </div>
             <div className="flex flex-wrap items-end gap-3">
-              <div className="min-w-36 flex-1">
-                <Label className="mb-1.5 block">رکورد فعلی</Label>
+              <div className="min-w-48 flex-1">
                 <Input
-                  value={pr} onChange={(e) => setPr(e.target.value)}
-                  dir="ltr" placeholder="46:20" className="figures text-right"
-                />
-              </div>
-              <div className="min-w-36 flex-1">
-                <Label className="mb-1.5 block">هدف</Label>
-                <Input
-                  value={goal} onChange={(e) => setGoal(e.target.value)}
-                  dir="ltr" placeholder="44:00" className="figures text-right"
+                  value={goal}
+                  onChange={(e) => setGoal(e.target.value)}
+                  dir="auto"
+                  placeholder="مثلاً ماراتن استانبول ۲۰۲۶"
                 />
               </div>
               <Button
-                onClick={saveTenK}
-                disabled={savingPr || (pr.trim() === (currentStudent.pr_10k || '') && goal.trim() === (currentStudent.goal_10k || ''))}
+                onClick={saveGoal}
+                disabled={savingGoal || goal.trim() === (currentStudent.training_goal || '')}
               >
                 <Check className="size-4" />
-                {savingPr ? 'در حال ذخیره…' : 'ذخیره'}
+                {savingGoal ? 'در حال ذخیره…' : 'ذخیره'}
               </Button>
             </div>
           </Card>

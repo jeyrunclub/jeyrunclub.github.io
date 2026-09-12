@@ -37,8 +37,13 @@ create table if not exists public.plans (
 );
 
 -- Existing installs: add the column.
-alter table public.profiles add column if not exists pr_10k   text;
-alter table public.profiles add column if not exists goal_10k text;
+-- What the runner is training for, in their own words: «ماراتن استانبول»,
+-- «صعود دماوند», «اولین نیمه‌ماراتن». Free text, because a goal is a race far
+-- more often than it is a time. pr_10k/goal_10k are the earlier 10k-specific
+-- pair, kept so nothing already typed is lost, but no longer shown anywhere.
+alter table public.profiles add column if not exists training_goal text;
+alter table public.profiles add column if not exists pr_10k   text;  -- legacy
+alter table public.profiles add column if not exists goal_10k text;  -- legacy
 
 alter table public.plans add column if not exists plan_text text;
 alter table public.plans
@@ -162,7 +167,7 @@ create policy "profiles: coach edit"
 -- Lock down which columns a normal user can UPDATE.
 -- (Coach still edits status/role via set_profile_status(), which is security-definer.)
 revoke update on public.profiles from authenticated;
-grant  update (full_name, phone, pr_10k, goal_10k) on public.profiles to authenticated;
+grant  update (full_name, phone, training_goal, pr_10k, goal_10k) on public.profiles to authenticated;
 grant  select on public.profiles to authenticated;
 
 -- plans: student reads own (read-only); coach can CRUD everything.
@@ -230,6 +235,7 @@ returns table (
   phone      text,
   role       text,
   status     text,
+  training_goal text,
   pr_10k     text,
   goal_10k   text,
   created_at timestamptz
@@ -240,7 +246,7 @@ security definer
 set search_path = public
 as $$
   select p.id, p.full_name, u.email::text, p.phone, p.role, p.status,
-         p.pr_10k, p.goal_10k, p.created_at
+         p.training_goal, p.pr_10k, p.goal_10k, p.created_at
     from public.profiles p
     join auth.users u on u.id = p.id
    where public.is_coach()
