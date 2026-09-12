@@ -1,0 +1,53 @@
+---
+// The gazelle out in front, the club strung out behind it.
+//
+// Purely decorative, so it is aria-hidden and carries no text. It also breaks
+// the page's rhythm on purpose: every other section is eyebrow → heading →
+// grid inside the same container, and this one is a full-bleed strip with
+// nothing in it but movement.
+//
+// The figures are drawn in the same line language as Icon.astro — one weight,
+// round caps. They are plainly simpler than the mark, which is the point: the
+// gazelle is the thing being chased.
+
+const runners = [
+  // leading human, longest stride
+  `<circle cx="28" cy="8" r="4.3"/>
+   <path d="M26 13 21 26"/>
+   <path d="M25.5 16 32 18 33 24"/>
+   <path d="M24.5 16.5 17.5 13 14 17"/>
+   <path d="M21 26 28 31 31 40"/>
+   <path d="M21 26 14.5 34 9.5 37.5"/>`,
+  `<circle cx="26.5" cy="9" r="4.3"/>
+   <path d="M24.5 14 20 26.5"/>
+   <path d="M24 17 30.5 15 33.5 20"/>
+   <path d="M23 18 16.5 18.5 15 24"/>
+   <path d="M20 26.5 25.5 35 27.5 43.5"/>
+   <path d="M20 26.5 13 30.5 11 38.5"/>`,
+  `<circle cx="27" cy="8.5" r="4.3"/>
+   <path d="M25 13.5 19.5 26"/>
+   <path d="M24.5 16.5 31.5 14 34 19"/>
+   <path d="M23.5 17.5 16 16 13.5 21.5"/>
+   <path d="M19.5 26 26.5 32.5 25 42.5"/>
+   <path d="M19.5 26 12 32.5 14 41"/>`,
+];
+---
+<div class="runners-band" aria-hidden="true">
+  <span class="runners-ground"></span>
+
+  <span class="runner runner--gazelle">
+    <span class="runner-bob">
+      <img src="/images/logo.png" alt="" width="88" height="71" />
+    </span>
+  </span>
+
+  {runners.map((d, i) => (
+    <span class:list={['runner', `runner--${i + 1}`]}>
+      <span class="runner-bob">
+        <svg viewBox="0 0 40 48" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+             set:html={d} />
+      </span>
+    </span>
+  ))}
+</div>

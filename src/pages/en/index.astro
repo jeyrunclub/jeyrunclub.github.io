@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Icon from '../../components/Icon.astro';
+import RunnersBand from '../../components/RunnersBand.astro';
 import { Image } from 'astro:assets';
 import { photos as galleryPhotos, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../../lib/gallery.js';
 import heroPhoto from '../../assets/gallery/group-b.jpg';
@@ -108,6 +109,8 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
   </section>
 
   <!-- SERVICES preview -->
+  <RunnersBand />
+
   <section id="services" class="section services">
     <div class="container">
       <p class="section-eyebrow">Services</p>

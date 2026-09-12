@@ -1430,3 +1430,61 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
   .gal-caption { padding: 1.6rem 0.6rem 0.55rem; }
   .gal-caption strong { font-size: 0.78rem; }
 }
+
+/* ---------- Runners band: the gazelle leading, the club behind ---------- */
+.runners-band {
+  position: relative;
+  overflow: hidden;
+  height: clamp(7rem, 13vw, 10.5rem);
+  background: var(--sand-2);
+  border-block: 1.5px solid var(--border);
+  background-image: var(--strokes);
+}
+.runners-ground {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 22%;
+  height: 1.5px;
+  background: linear-gradient(to left, transparent, var(--border-strong) 15%, var(--border-strong) 85%, transparent);
+}
+.runner {
+  position: absolute;
+  bottom: 22%;
+  left: 0;
+  display: block;
+  color: var(--ink);
+  animation: run-across 15s linear infinite;
+}
+.runner-bob {
+  display: block;
+  animation: run-bob 0.42s ease-in-out infinite alternate;
+}
+.runner svg { display: block; height: clamp(3rem, 5.2vw, 4.1rem); width: auto; }
+.runner img { display: block; height: clamp(3.4rem, 6vw, 4.8rem); width: auto; }
+
+/* Negative delays so the line is already strung out on arrival, rather than
+   the gazelle setting off alone and the club trickling in afterwards. */
+.runner--gazelle { animation-delay: -3.9s; }
+.runner--1 { animation-delay: -2.8s; opacity: 0.88; }
+.runner--2 { animation-delay: -1.8s; opacity: 0.72; }
+.runner--3 { animation-delay: -0.9s; opacity: 0.58; }
+.runner--2 .runner-bob { animation-duration: 0.38s; }
+.runner--3 .runner-bob { animation-duration: 0.46s; }
+
+@keyframes run-across {
+  from { transform: translateX(-22vw); }
+  to   { transform: translateX(128vw); }
+}
+@keyframes run-bob {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-0.42rem); }
+}
+
+/* Still a composition, just a still one. */
+@media (prefers-reduced-motion: reduce) {
+  .runner, .runner-bob { animation: none; }
+  .runner--gazelle { left: 66%; }
+  .runner--1 { left: 48%; }
+  .runner--2 { left: 32%; }
+  .runner--3 { left: 17%; }
+}
