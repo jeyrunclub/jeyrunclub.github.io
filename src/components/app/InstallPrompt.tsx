@@ -8,7 +8,7 @@
 //     so the hint has to name the right browser or it sends people hunting.
 
 import { useEffect, useState } from 'react';
-import { Download, X, Share, SquarePlus, MoreVertical } from 'lucide-react';
+import { Download, X, Share, SquarePlus, Copy, Check } from 'lucide-react';
 import { Button } from '../ui/button';
 
 const DISMISS_KEY = 'jeyrun.install_dismissed_at';
@@ -31,17 +31,22 @@ function iosBrowser(ua: string): 'safari' | 'chrome' | 'firefox' | 'edge' | null
   return 'safari';
 }
 
-const IOS_HINT: Record<string, { where: string; icon: 'share' | 'dots' }> = {
-  safari:  { where: 'نوار پایین سافاری', icon: 'share' },
-  chrome:  { where: 'نوار بالای کروم',   icon: 'share' },
-  edge:    { where: 'منوی «…» در اج',    icon: 'dots'  },
-  firefox: { where: 'منوی «…» در فایرفاکس', icon: 'dots' },
+// Where the share control actually lives, per browser. Being vague here sends
+// people into the ⋮ menu, which on Chrome does NOT carry "Add to Home Screen" —
+// it sits behind the share icon in the address bar instead. Chrome, Edge and
+// Firefox also need iOS 16.4+; below that, Safari is the only route.
+const IOS_HINT: Record<string, { where: string; needs164: boolean }> = {
+  safari:  { where: 'آیکن اشتراک‌گذاری در نوار پایین سافاری', needs164: false },
+  chrome:  { where: 'آیکن اشتراک‌گذاری کنار نوار آدرس (بالا) — نه منوی سه‌نقطه', needs164: true },
+  edge:    { where: 'آیکن اشتراک‌گذاری در نوار پایین اج', needs164: true },
+  firefox: { where: 'آیکن اشتراک‌گذاری در نوار پایین فایرفاکس', needs164: true },
 };
 
 export function InstallPrompt() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [ios, setIos] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     // Already installed / running standalone → nothing to ask for.
@@ -84,6 +89,14 @@ export function InstallPrompt() {
   function dismiss() {
     setVisible(false);
     dismissFor();
+  }
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.origin + '/app');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
   }
 
   async function install() {
@@ -137,26 +150,37 @@ export function InstallPrompt() {
 
         {hint ? (
           <>
-            <ol className="mt-4 space-y-2.5 text-sm">
-              <li className="flex items-center gap-2">
+            <ol className="mt-4 space-y-3 text-sm">
+              <li className="flex items-start gap-2">
                 <Step n="۱" />
-                <span className="inline-flex flex-wrap items-center gap-1.5">
-                  {hint.icon === 'share'
-                    ? <Share className="size-4 text-primary" />
-                    : <MoreVertical className="size-4 text-primary" />}
-                  را از {hint.where} بزن.
+                <span className="inline-flex flex-wrap items-center gap-1.5 leading-6">
+                  <Share className="size-4 shrink-0 text-primary" />
+                  {hint.where}
                 </span>
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-start gap-2">
                 <Step n="۲" />
-                <span className="inline-flex flex-wrap items-center gap-1.5">
-                  <SquarePlus className="size-4 text-primary" />
+                <span className="inline-flex flex-wrap items-center gap-1.5 leading-6">
+                  <SquarePlus className="size-4 shrink-0 text-primary" />
                   <span dir="ltr" className="figures">Add to Home Screen</span>
                   را انتخاب کن.
                 </span>
               </li>
             </ol>
-            <Button variant="outline" onClick={dismiss} className="mt-4 w-full">
+
+            {hint.needs164 && (
+              <p className="nib-sm mt-3 bg-secondary/70 px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
+                اگر این گزینه را ندیدی، iOS دستگاهت قدیمی‌تر از ۱۶٫۴ است. لینک را کپی کن و
+                در <strong className="text-foreground">سافاری</strong> باز کن — آنجا همیشه هست.
+              </p>
+            )}
+
+            <Button variant="outline" onClick={copyLink} className="mt-3 w-full">
+              {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+              {copied ? 'کپی شد' : 'کپی لینک برای سافاری'}
+            </Button>
+
+            <Button variant="ghost" onClick={dismiss} className="mt-1 w-full">
               فهمیدم
             </Button>
           </>
