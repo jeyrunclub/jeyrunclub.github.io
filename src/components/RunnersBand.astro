@@ -61,55 +61,63 @@ const men: Kit[] = [
   { shirt: '#8e9298', shorts: INK,  skin: '#d9a677', hair: '#241811', shoe: WHITE,     head: 'short', stride: 0.62 },
 ];
 
-// One man, one woman in every rank.
-const kits: Kit[] = [];
-for (let i = 0; i < 5; i++) kits.push(women[i], men[i]);
+// Mixed, not sorted. Alternating strictly put every woman in the near file and
+// every man in the far one, which read as two separate groups running side by
+// side. This order gives mixed ranks, a pair of women and a pair of men — the
+// way a group actually strings out. Fixed rather than random so the build is
+// reproducible.
+const kits: Kit[] = [
+  women[0], men[0],
+  men[1],   women[1],
+  women[2], women[3],
+  men[2],   women[4],
+  men[3],   men[4],
+];
 
-// Five ranks of two. More negative delay is further along the street, so the
-// leading pair is first. The far runner of each pair trails by a hair, because
-// nobody holds a perfect line.
+// Five ranks of two.
 //
-// STEP is the gap between ranks, in seconds of the crossing. At 0.62 the group
-// was strung out over most of the band with daylight between every rank, which
-// is not how a group runs — 0.38 puts them about a figure's width apart, close
-// enough to be one pack.
+// Spacing used to come from each figure's animation-delay, which made the gap a
+// share of the VIEWPORT while the figures are sized in rem. On a phone that put
+// them roughly 16px apart with 38px shoulders — a pile-up. The pack is one
+// element now and every figure sits at a rem offset inside it, so the gap
+// scales with the figures instead of the screen and a phone looks like a
+// desktop.
 const PAIRS = 5;
-const STEP = 0.38;
-const ranks = Array.from({ length: PAIRS }, (_, i) => {
-  const d = -(2.4 - i * STEP);
-  return {
-    near: kits[i * 2],
-    far: kits[i * 2 + 1],
-    nearDelay: d,
-    farDelay: d + 0.05,
-  };
-});
+const STEP = 4.6;        // rem between ranks
+const FAR_LAG = 0.9;     // rem — nobody holds a perfect line
+const ranks = Array.from({ length: PAIRS }, (_, i) => ({
+  near: kits[i * 2],
+  far: kits[i * 2 + 1],
+  nearX: -i * STEP,
+  farX: -i * STEP - FAR_LAG,
+}));
 
-// Out in front of the whole group — but placed between the two files in depth
-// rather than in either of them, so it leads the column down the middle.
-const GAZELLE_DELAY = -2.82;
+// Out in front of the whole group, and between the two files in depth rather
+// than in either of them, so it leads the column up the middle.
+const GAZELLE_X = STEP * 1.15;
 ---
 <div class="runners-band" aria-hidden="true">
   <span class="runners-ground"></span>
 
-  {/* Far file first. */}
-  {ranks.map((r) => (
-    <span class="runner runner--person runner--far" style={`--d:${r.farDelay}s`}>
-      <RunnerFigure {...r.far} delay={r.farDelay} />
-    </span>
-  ))}
+  <div class="runners-pack">
+    {/* Far file first. */}
+    {ranks.map((r) => (
+      <span class="runner runner--person runner--far" style={`--x:${r.farX}rem`}>
+        <RunnerFigure {...r.far} />
+      </span>
+    ))}
 
-  {/* Drawn between the files: the near rank passes in front of it, the far
-      rank behind, so it runs up the middle of the column rather than in one
-      line or the other. */}
-  <span class="runner runner--gazelle" style={`--d:${GAZELLE_DELAY}s`}>
-    <GazelleFigure delay={-0.2} stride={0.58} />
-  </span>
-
-  {/* Near file last, so it passes in front of everything. */}
-  {ranks.map((r) => (
-    <span class="runner runner--person runner--near" style={`--d:${r.nearDelay}s`}>
-      <RunnerFigure {...r.near} delay={r.nearDelay} />
+    {/* Drawn between the files: the near rank passes in front of it, the far
+        rank behind, so it runs up the middle of the column. */}
+    <span class="runner runner--gazelle" style={`--x:${GAZELLE_X}rem`}>
+      <GazelleFigure stride={0.58} />
     </span>
-  ))}
+
+    {/* Near file last, so it passes in front of everything. */}
+    {ranks.map((r) => (
+      <span class="runner runner--person runner--near" style={`--x:${r.nearX}rem`}>
+        <RunnerFigure {...r.near} />
+      </span>
+    ))}
+  </div>
 </div>

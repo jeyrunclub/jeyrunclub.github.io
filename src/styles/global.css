@@ -1447,69 +1447,68 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
   height: 1.5px;
   background: linear-gradient(to left, transparent, var(--border-strong) 15%, var(--border-strong) 85%, transparent);
 }
+
+/* One element carries the whole group across. Spacing between figures is a rem
+   offset INSIDE it, so the gaps scale with the figures rather than with the
+   viewport — when the spacing came from each figure's animation-delay it was a
+   share of the screen, and on a phone the pack collapsed into a pile. */
+.runners-pack {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 0;
+  animation: run-across 15s linear infinite;
+}
 .runner {
   position: absolute;
   bottom: 16%;
-  left: 0;
+  left: var(--x, 0rem);
   display: block;
-  animation: run-across 15s linear infinite;
-  animation-delay: var(--d, 0s);
 }
 
 /* Figures stand ON the ground line: each viewBox leaves room under the feet,
    so they are nudged down by that much. In rem, not a percentage — a
-   percentage margin resolves against the containing block's WIDTH, which here
-   is the whole band. */
+   percentage margin resolves against the containing block's WIDTH. */
 .runner--person { margin-bottom: -0.5rem; }
 .runner--person .runner-fig {
   display: block;
-  height: clamp(3.8rem, 6.6vw, 5.6rem);
+  height: clamp(4.4rem, 6.6vw, 5.6rem);
   width: auto;
 }
 
 /* The far file of each pair: further up the band, smaller, and hazed back
-   towards the paper. That is the whole of the perspective here — there is no
-   vanishing point, just two ranks. */
+   towards the paper. That is the whole of the perspective here — no vanishing
+   point, just two ranks. */
 .runner--far {
   bottom: calc(16% + 1.5rem);
   filter: saturate(0.82) brightness(1.06);
   opacity: 0.9;
 }
-.runner--far .runner-fig { height: clamp(3.1rem, 5.4vw, 4.6rem); }
+.runner--far .runner-fig { height: clamp(3.6rem, 5.4vw, 4.6rem); }
 
 .runner--gazelle {
   color: var(--crimson);
   margin-bottom: -0.62rem;
-  /* Halfway between the near file's baseline and the far file's, so it runs
-     up the centre of the column instead of alongside one of the two lines. */
+  /* Halfway between the near file's baseline and the far file's, so it runs up
+     the centre of the column instead of alongside one of the two lines. */
   bottom: calc(16% + 0.75rem);
 }
 .runner--gazelle .gazelle-fig {
   display: block;
-  height: clamp(3.4rem, 6vw, 5.1rem);
+  height: clamp(3.9rem, 6vw, 5.1rem);
   width: auto;
 }
 
+/* The pack is ~24rem wide, so it clears the left edge before it starts. */
 @keyframes run-across {
-  from { transform: translateX(-26vw); }
-  to   { transform: translateX(132vw); }
+  from { transform: translateX(-2rem); }
+  to   { transform: translateX(calc(100vw + 26rem)); }
 }
 
 /* Still a composition, just a still one: the pack parked in view rather than
-   standing still off-screen, which would just read as an empty strip. */
+   standing still off-screen, which would read as an empty strip. */
 @media (prefers-reduced-motion: reduce) {
-  .runner { animation: none; }
-  .runner--gazelle { left: 74%; }
-  .runner--near:nth-of-type(7)  { left: 62%; }
-  .runner--near:nth-of-type(8)  { left: 50%; }
-  .runner--near:nth-of-type(9)  { left: 32%; }
-  .runner--near:nth-of-type(10) { left: 20%; }
-  .runner--near:nth-of-type(11) { left: 8%; }
-  .runner--far:nth-of-type(1)   { left: 65%; }
-  .runner--far:nth-of-type(2)   { left: 53%; }
-  .runner--far:nth-of-type(3)   { left: 35%; }
-  .runner--far:nth-of-type(4)   { left: 23%; }
-  .runner--far:nth-of-type(5)   { left: 11%; }
+  .runners-pack { animation: none; transform: translateX(72vw); }
 }
 
 /* ---------- Quick links bar (phones) ---------- */
