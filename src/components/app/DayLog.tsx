@@ -86,7 +86,7 @@ export function DayLog({ studentId, day, log, onChange }: {
   }
 
   return (
-    <div className="mt-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+    <div className="nib mt-4 border border-border bg-card p-4 shadow-sm">
       {/* Did it */}
       <button
         type="button"
@@ -94,7 +94,7 @@ export function DayLog({ studentId, day, log, onChange }: {
         disabled={busy === 'done'}
         aria-pressed={done}
         className={cn(
-          'flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-start transition-all',
+          'nib-sm flex w-full items-center gap-3 border px-4 py-3 text-start transition-all',
           done
             ? 'border-easy/40 bg-easy/10'
             : 'border-border hover:border-primary/50 hover:bg-accent/40',
@@ -156,7 +156,7 @@ export function DayLog({ studentId, day, log, onChange }: {
             <button
               type="button"
               onClick={() => setLightbox(true)}
-              className="size-16 overflow-hidden rounded-xl border border-border"
+              className="nib-sm size-16 overflow-hidden border border-border"
             >
               <img src={photoUrl} alt="عکس تمرین" className="size-full object-cover" />
             </button>

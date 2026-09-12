@@ -113,7 +113,8 @@ export function StudentPage() {
       <AppHeader isCoach={false} />
       <main className="mx-auto flex max-w-2xl flex-col gap-5 px-5 pb-20 pt-6">
         {/* HERO */}
-        <section className="rise relative overflow-hidden rounded-3xl bg-gradient-to-bl from-brand-400 via-brand-500 to-brand-700 p-6 text-white shadow-lg shadow-brand-500/25">
+        <section className="rise nib relative overflow-hidden bg-gradient-to-bl from-brand-500 via-brand-500 to-brand-700 p-6 text-white shadow-lg shadow-brand-600/25">
+          <span aria-hidden className="strokes pointer-events-none absolute inset-0" />
           <span aria-hidden className="pointer-events-none absolute -top-20 -start-12 size-52 rounded-full bg-white/15 blur-3xl" />
           <span aria-hidden className="pointer-events-none absolute -bottom-24 -end-10 size-48 rounded-full bg-black/15 blur-3xl" />
           <img
@@ -122,7 +123,7 @@ export function StudentPage() {
           />
           <div className="relative">
             <p className="figures text-xs font-semibold text-white/75">{faDateLong(today())}</p>
-            <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight">سلام {firstName}</h1>
+            <h1 className="display mt-1 text-3xl">سلام {firstName}</h1>
             <p className="mt-1 text-sm text-white/85">
               {isThisWeek
                 ? sessionCount > 0
@@ -179,7 +180,7 @@ export function StudentPage() {
         ) : empty ? (
           <Card className="flex flex-col items-center gap-3 p-12 text-center text-muted-foreground">
             <CalendarDays className="size-10 text-muted-foreground/50" />
-            <h3 className="text-base font-bold text-foreground">هنوز برنامه‌ای نیست</h3>
+            <h3 className="display text-xl text-foreground">هنوز برنامه‌ای نیست</h3>
             <p className="text-sm">
               {isFuture
                 ? 'سالار هنوز برنامه‌ی این هفته را ننوشته.'
@@ -201,7 +202,7 @@ export function StudentPage() {
                   type="button"
                   onClick={() => setView(v)}
                   className={cn(
-                    'rounded-full px-6 py-1.5 text-sm font-bold transition-all',
+                    'nib-pill px-6 py-1.5 text-sm font-bold transition-all',
                     view === v
                       ? 'bg-primary text-primary-foreground shadow-sm'
                       : 'text-muted-foreground hover:text-foreground',
@@ -227,7 +228,7 @@ export function StudentPage() {
                         onClick={() => setSelected(i)}
                         aria-current={active ? 'true' : undefined}
                         className={cn(
-                          'flex w-17 shrink-0 flex-col items-center gap-1 rounded-2xl border py-2.5 transition-all',
+                          'nib-sm flex w-17 shrink-0 flex-col items-center gap-1 border py-2.5 transition-all',
                           active
                             ? '-translate-y-0.5 border-primary bg-card shadow-md'
                             : 'border-border bg-card/60 hover:bg-card',

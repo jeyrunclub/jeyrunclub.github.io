@@ -47,10 +47,10 @@ export function PendingPage() {
 
         {view === 'pending' && (
           <Card className="p-8 text-center">
-            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-700">
               <Hourglass className="size-8" />
             </div>
-            <h2 className="text-2xl font-extrabold tracking-tight">در انتظار تأیید</h2>
+            <h2 className="display text-3xl">در انتظار تأیید</h2>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               ورودت با موفقیت انجام شد. سالار درخواست عضویتت را بررسی می‌کند و
               به‌محض تأیید، برنامه‌ی تمرینت اینجا نمایش داده می‌شود.
@@ -72,7 +72,7 @@ export function PendingPage() {
             <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
               <XCircle className="size-8" />
             </div>
-            <h2 className="text-2xl font-extrabold tracking-tight">درخواست پذیرفته نشد</h2>
+            <h2 className="display text-3xl">درخواست پذیرفته نشد</h2>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               متأسفانه درخواست عضویت شما در جیران پذیرفته نشد. اگر فکر می‌کنی
               اشتباهی رخ داده، از طریق واتس‌اپ با سالار در تماس باش.

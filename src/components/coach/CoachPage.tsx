@@ -191,7 +191,7 @@ export function CoachPage() {
     <div className="min-h-screen">
       <AppHeader />
       <main className="mx-auto max-w-lg px-5 py-20 text-center">
-        <h2 className="text-xl font-bold">دسترسی ندارد</h2>
+        <h2 className="display text-2xl">دسترسی ندارد</h2>
         <p className="mt-2 text-muted-foreground">این صفحه فقط برای مربی است.</p>
       </main>
     </div>
@@ -203,7 +203,7 @@ export function CoachPage() {
       <main className="mx-auto max-w-4xl space-y-5 px-5 py-8 pb-20">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">پنل مربی</h1>
+            <h1 className="display text-3xl">پنل مربی</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {profile?.full_name ? `سلام ${profile.full_name}` : 'خوش آمدی'}
             </p>
@@ -276,7 +276,7 @@ export function CoachPage() {
                     type="button"
                     onClick={() => setCurrentStudentId(s.id)}
                     className={cn(
-                      'flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors',
+                      'nib-pill flex items-center gap-1.5 border px-3.5 py-1.5 text-sm font-medium transition-colors',
                       active
                         ? 'border-primary bg-accent text-primary'
                         : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground',
@@ -356,7 +356,7 @@ export function CoachPage() {
               <span>روز</span><span>تمرین</span><span>یادداشت</span>
             </div>
 
-            <div className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+            <div className="nib divide-y divide-border overflow-hidden border border-border">
               {draft.map((d, i) => (
                 <div
                   key={i}

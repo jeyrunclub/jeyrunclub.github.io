@@ -46,7 +46,7 @@ export function TypeBadge({ workout, className }: { workout: string; className?:
 
 function Note({ text }: { text: string }) {
   return (
-    <div className="mt-3 rounded-xl bg-secondary/70 px-3.5 py-3">
+    <div className="nib-sm mt-3 bg-secondary/70 px-3.5 py-3">
       <div className="mb-1 text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">
         یادداشت
       </div>
@@ -63,11 +63,11 @@ export function DayCard({ day, index, weekStart, isToday }: {
   const c = typeClasses(sessionType(day.workout));
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+    <div className="nib relative overflow-hidden border border-border bg-card shadow-sm">
       {!empty && <span className={cn('absolute inset-y-0 start-0 w-1.5', c.rail)} />}
       <div className="p-6">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-xl font-extrabold tracking-tight">{DAYS_FA[index]}</h2>
+          <h2 className="display text-2xl">{DAYS_FA[index]}</h2>
           <span className="figures text-sm text-muted-foreground">
             {faDateShort(addDays(weekStart, index))}
           </span>
@@ -112,7 +112,7 @@ export function DayRow({ day, index, weekStart, isToday }: {
       )} />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className={cn('text-base font-extrabold', isToday && 'text-primary')}>
+          <h3 className={cn('display text-lg', isToday && 'text-primary')}>
             {DAYS_FA[index]}
           </h3>
           <span className="figures text-xs text-muted-foreground">

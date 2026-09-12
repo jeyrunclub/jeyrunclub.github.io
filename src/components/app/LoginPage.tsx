@@ -160,7 +160,7 @@ export function LoginPage() {
       <AppHeader hideNav />
       <main className="mx-auto flex max-w-md flex-col gap-6 px-5 pb-16 pt-10">
         <div className="text-center">
-          <h1 className="text-3xl font-extrabold tracking-tight">ورود اعضا</h1>
+          <h1 className="display text-4xl">ورود اعضا</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             وارد پنل تمرین جیران شو یا اگر تازه پیوسته‌ای، ثبت‌نام کن.
           </p>
@@ -411,7 +411,7 @@ function Message({ msg }: { msg: NonNullable<Msg> }) {
     <div
       className={cn(
         'rounded-xl border px-3.5 py-2.5 text-sm leading-relaxed',
-        msg.kind === 'ok' && 'border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+        msg.kind === 'ok' && 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700',
         msg.kind === 'error' && 'border-destructive/25 bg-destructive/10 text-destructive',
         msg.kind === 'info' && 'border-border bg-secondary text-muted-foreground',
       )}
