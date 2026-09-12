@@ -1,0 +1,100 @@
+<!--
+  Supabase → Authentication → Emails → "Reset Password" template.
+  Subject: بازیابی رمز عبور جیران
+
+  Paste the markup below into the template body. {{ .ConfirmationURL }} is the
+  only variable required; Supabase fills it with the recovery link, which lands
+  on /app/reset because that is the redirectTo the client sends.
+
+  Written as tables with inline styles on purpose — Gmail, Outlook and most
+  Iranian webmail strip <style> blocks, flexbox and CSS variables. Vazirmatn is
+  named first for anyone whose device has it, then Tahoma, which ships with
+  Windows and renders Persian correctly.
+-->
+<div dir="rtl" style="margin:0;padding:0;background:#f7f2e8;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+         style="background:#f7f2e8;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+               style="max-width:520px;background:#fffdf8;border:1px solid #e4dccc;border-radius:20px 20px 20px 5px;overflow:hidden;">
+
+          <!-- Crimson band -->
+          <tr>
+            <td style="background:#e00a2e;padding:20px 28px;">
+              <!-- The mark is crimson on transparent, so it needs paper behind
+                   it or it disappears into the band. -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="background:#fffdf8;border-radius:14px 14px 14px 4px;padding:9px 12px;">
+                    <img src="https://jeyrun.com/images/logo.png" width="46" height="37" alt="جیران"
+                         style="display:block;border:0;outline:none;" />
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:30px 28px 28px;font-family:Vazirmatn,Tahoma,Arial,sans-serif;">
+
+              <h1 style="margin:0 0 10px;font-size:24px;line-height:1.4;color:#17130f;font-weight:700;">
+                رمز عبورت را عوض کن
+              </h1>
+
+              <p style="margin:0 0 20px;font-size:15px;line-height:1.9;color:#5b5248;">
+                برای حساب جیرانت درخواست بازیابی رمز عبور ثبت شد.
+                روی دکمه‌ی زیر بزن تا یک رمز تازه انتخاب کنی.
+              </p>
+
+              <!-- Button -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;">
+                <tr>
+                  <td align="center" style="background:#e00a2e;border-radius:999px 999px 999px 5px;">
+                    <a href="{{ .ConfirmationURL }}"
+                       style="display:inline-block;padding:14px 34px;font-family:Vazirmatn,Tahoma,Arial,sans-serif;font-size:16px;font-weight:700;color:#fffdf8;text-decoration:none;">
+                      انتخاب رمز تازه
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 8px;font-size:13px;line-height:1.9;color:#8b8075;">
+                اگر دکمه کار نکرد، این نشانی را در مرورگرت کپی کن:
+              </p>
+              <p dir="ltr" style="margin:0 0 22px;font-size:12px;line-height:1.7;color:#1d3f77;word-break:break-all;">
+                {{ .ConfirmationURL }}
+              </p>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                     style="background:#efe7d8;border-radius:12px 12px 12px 4px;">
+                <tr>
+                  <td style="padding:14px 16px;font-family:Vazirmatn,Tahoma,Arial,sans-serif;font-size:13px;line-height:1.9;color:#5b5248;">
+                    این لینک تا یک ساعت معتبر است و فقط یک بار کار می‌کند.
+                    اگر تو این درخواست را نفرستاده‌ای، این ایمیل را نادیده بگیر —
+                    رمز عبورت عوض نمی‌شود.
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#17130f;padding:18px 28px;font-family:Vazirmatn,Tahoma,Arial,sans-serif;">
+              <p style="margin:0;font-size:13px;line-height:1.8;color:#f7f2e8;font-weight:700;">
+                جیران — باشگاه دو و کوهستان
+              </p>
+              <p style="margin:4px 0 0;font-size:12px;line-height:1.8;color:rgba(247,242,232,0.65);">
+                <a href="https://jeyrun.com" style="color:rgba(247,242,232,0.65);text-decoration:none;">jeyrun.com</a>
+                &nbsp;·&nbsp; تهران
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
