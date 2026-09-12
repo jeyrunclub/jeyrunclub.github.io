@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronRight, ChevronLeft, CalendarDays, Check, Target } from 'lucide-react';
+import { ChevronRight, ChevronLeft, CalendarDays, Check } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import {
   addDays, today, thisWeekStart, weekLabel, weekRelativeLabel, faDateLong,
@@ -13,6 +13,7 @@ import { Button } from '../ui/button';
 import { PlanText } from './PlanText';
 import { DayCard, WeekList, type Day } from './PlanWeek';
 import { DayLog, type Log } from './DayLog';
+import { TenK } from './TenK';
 import { cn } from '../../lib/utils';
 
 type Profile = {
@@ -136,13 +137,14 @@ export function StudentPage() {
           </div>
         </section>
 
-        {/* 10K — set by the coach, read-only here */}
-        {(profile.pr_10k || profile.goal_10k) && (
-          <div className="grid grid-cols-2 gap-3">
-            <StatBox label="رکورد ۱۰ کیلومتر" value={profile.pr_10k} />
-            <StatBox label="هدف ۱۰ کیلومتر" value={profile.goal_10k} goal />
-          </div>
-        )}
+        {/* 10K — the runner's own; the coach can also set it from the panel */}
+        <TenK
+          studentId={profile.id}
+          pr={profile.pr_10k}
+          goal={profile.goal_10k}
+          onSave={(pr_10k, goal_10k) =>
+            setProfile((p) => (p ? { ...p, pr_10k, goal_10k } : p))}
+        />
 
         {/* WEEK NAV — in RTL, the right chevron goes back */}
         <Card className="flex items-center justify-between gap-2 p-2">
@@ -277,27 +279,6 @@ export function StudentPage() {
           </>
         )}
       </main>
-    </div>
-  );
-}
-
-function StatBox({ label, value, goal }: { label: string; value: string | null; goal?: boolean }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-      <div className="flex items-center gap-1.5 text-[0.7rem] font-semibold text-muted-foreground">
-        {goal && <Target className="size-3.5" />}
-        {label}
-      </div>
-      <div
-        dir="ltr"
-        className={cn(
-          'figures mt-1 text-right text-2xl font-extrabold tabular-nums',
-          goal ? 'text-primary' : 'text-foreground',
-          !value && 'text-muted-foreground/50',
-        )}
-      >
-        {value || '—'}
-      </div>
     </div>
   );
 }
