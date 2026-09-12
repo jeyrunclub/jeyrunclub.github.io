@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import gallery from '../../data/gallery.json';
+import targetRaces from '../../data/target-races.json';
 
 const featured = gallery.photos.slice(0, 8).map((p, i) => ({
   ...p,
@@ -8,6 +9,7 @@ const featured = gallery.photos.slice(0, 8).map((p, i) => ({
   title: p.title_en || p.title,
   story: p.story_en || p.story,
 }));
+const targets = targetRaces.races;
 
 const sponsorMsg = encodeURIComponent("Hi Salar, I'd like to talk about introducing our brand with a custom Jeyrun event.");
 const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
@@ -63,6 +65,8 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
       </div>
     </div>
   </section>
+
+
 
   <!-- ABOUT -->
   <section id="about" class="section about">
@@ -122,6 +126,28 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
           <p>5K, 10K, half, marathon — with a bespoke plan to the finish line.</p>
         </a>
       </div>
+    </div>
+  </section>
+  <!-- TARGET RACES -->
+  <section id="target-races" class="section target-races">
+    <div class="container">
+      <p class="section-eyebrow">Target races</p>
+      <h2>What we are training for</h2>
+      <p class="section-sub">
+        The three marathons Jeyrun builds its season around and travels to as a group.
+      </p>
+      <div class="target-grid">
+        {targets.map((r, i) => (
+          <article class="target-card">
+            <span class="target-index" aria-hidden="true">{i + 1}</span>
+            <p class="target-when">{r.when_en}</p>
+            <h3>{r.name_en}</h3>
+            <p class="target-city">{r.city_en}</p>
+            <span class="target-dist" dir="ltr">{r.distance_en}</span>
+          </article>
+        ))}
+      </div>
+      <p style="margin-top: 28px;"><a href="/en/races" class="learn-more">All races and camps →</a></p>
     </div>
   </section>
 

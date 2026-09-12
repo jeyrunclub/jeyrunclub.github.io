@@ -1,16 +1,19 @@
 ---
 import Base from '../layouts/Base.astro';
+import targetRaces from '../data/target-races.json';
 
-// Team upcoming/planned races (Salar-provided)
+// The marathons the team is training for and travels to as a group.
+const targets = targetRaces.races;
+
+// Other things on the calendar — camps and home races.
 const upcoming = [
-  { name: 'ماراتن استانبول', date: '', city: 'استانبول، ترکیه', note: 'یکی از ماراتن‌های محبوب تیم — ثبت‌نام گروهی جیران.' },
   { name: 'ماهان کرمان', date: '', city: 'کرمان، ایران', note: 'مسابقه‌ی کویری — تجربه‌ی متفاوت دویدن در دل کویر.' },
   { name: 'صعود دماوند', date: '', city: 'مازندران، ایران', note: 'اردوی سالانه‌ی صعود بلندترین قله‌ی خاورمیانه.' },
 ];
 ---
 <Base
-  title="مسابقات جیران — ماراتن استانبول، ماهان، صعود دماوند"
-  description="برنامه‌ی مسابقات و اردوهای جیران: ماراتن استانبول، ماهان کرمان، صعود دماوند و برنامه‌های آینده."
+  title="مسابقات جیران — ماراتن استانبول، والنسیا، دبی"
+  description="مسابقات هدف تیم جیران: ماراتن استانبول، ماراتن والنسیا و ماراتن دبی — به همراه اردوی دماوند و ماهان کرمان."
 >
   <section class="page-hero">
     <div class="container">
@@ -25,7 +28,33 @@ const upcoming = [
 
   <section class="section">
     <div class="container">
-      <h2>در برنامه‌ی سال</h2>
+      <p class="section-eyebrow">مسابقات هدف</p>
+      <h2>برای این‌ها تمرین می‌کنیم</h2>
+      <p class="section-sub">
+        سه ماراتنی که تیم جیران برای‌شان برنامه می‌چیند و گروهی به آن‌ها سفر می‌کند.
+        برنامه‌ی تمرینی هر عضو روی تاریخ همین مسابقه‌ها بسته می‌شود.
+      </p>
+      <div class="target-grid">
+        {targets.map((r, i) => (
+          <article class="target-card">
+            <span class="target-index" aria-hidden="true">{['۱', '۲', '۳'][i]}</span>
+            <p class="target-when">{r.when}</p>
+            <h3>{r.name}</h3>
+            <p class="target-city">{r.city}</p>
+            <span class="target-dist" dir="ltr">{r.distance}</span>
+            <p class="target-blurb">{r.blurb}</p>
+          </article>
+        ))}
+      </div>
+      <p class="section-sub" style="margin-top: 28px;">
+        تاریخ دقیق و پنجره‌ی ثبت‌نام هر مسابقه در گروه واتس‌اپ اعلام می‌شود.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2>دیگر برنامه‌های تیم</h2>
       <div class="race-list">
         {upcoming.map((r) => (
           <div class="race-card">

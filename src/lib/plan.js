@@ -52,11 +52,20 @@ export function faDateShort(iso) {
   });
 }
 
+// "۱۰" — just the day of the month, for the day strip
+export function faDayNum(iso) {
+  return new Date(iso + 'T00:00:00').toLocaleDateString('fa-IR', { day: 'numeric' });
+}
+
 // "شنبه ۱۰ مرداد ۱۴۰۴"
+// Composed from parts: ICU's fa-IR pattern puts the year first and the
+// weekday last ("۱۴۰۵ شهریور ۲۱, شنبه"), which is not how anyone says it.
 export function faDateLong(iso) {
-  return new Date(iso + 'T00:00:00').toLocaleDateString('fa-IR', {
+  const parts = new Intl.DateTimeFormat('fa-IR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  });
+  }).formatToParts(new Date(iso + 'T00:00:00'));
+  const get = (type) => parts.find((p) => p.type === type)?.value || '';
+  return `${get('weekday')} ${get('day')} ${get('month')} ${get('year')}`.trim();
 }
 
 // Label for a whole week: "۱۰ تا ۱۶ مرداد ۱۴۰۴"

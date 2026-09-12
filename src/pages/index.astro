@@ -1,9 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
 import gallery from '../data/gallery.json';
+import targetRaces from '../data/target-races.json';
 import stats from '../data/stats.json';
 
 const featured = gallery.photos.slice(0, 8).map((p, i) => ({ ...p, id: i + 1 }));
+const targets = targetRaces.races;
 const heroFacts = stats.cards.slice(0, 3);
 const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
 
@@ -63,6 +65,8 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
     </div>
   </section>
 
+
+
   <!-- ABOUT (short) -->
   <section id="about" class="section about">
     <div class="container">
@@ -121,6 +125,28 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
           <p>۵، ۱۰، ۲۱ و ماراتن — با پلن اختصاصی تا خط پایان.</p>
         </a>
       </div>
+    </div>
+  </section>
+  <!-- TARGET RACES -->
+  <section id="target-races" class="section target-races">
+    <div class="container">
+      <p class="section-eyebrow">مسابقات هدف</p>
+      <h2>برای این‌ها تمرین می‌کنیم</h2>
+      <p class="section-sub">
+        سه ماراتنی که تیم جیران برای‌شان برنامه می‌چیند و گروهی به آن‌ها سفر می‌کند.
+      </p>
+      <div class="target-grid">
+        {targets.map((r, i) => (
+          <article class="target-card">
+            <span class="target-index" aria-hidden="true">{['۱', '۲', '۳'][i]}</span>
+            <p class="target-when">{r.when}</p>
+            <h3>{r.name}</h3>
+            <p class="target-city">{r.city}</p>
+            <span class="target-dist" dir="ltr">{r.distance}</span>
+          </article>
+        ))}
+      </div>
+      <p style="margin-top: 28px;"><a href="/races" class="learn-more">همه‌ی مسابقات و اردوها ←</a></p>
     </div>
   </section>
 

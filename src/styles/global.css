@@ -885,3 +885,67 @@ blockquote.values {
   h1 { font-size: 2.1rem; }
   .hero-facts { gap: 20px; }
 }
+
+/* ---------- Target races (the races the team travels to together) ---------- */
+.target-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.target-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 24px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.target-card::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 3px;
+  background: linear-gradient(to left, var(--accent), var(--accent-2));
+}
+.target-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+.target-when {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.target-card h3 { margin: 0; font-size: 1.35rem; letter-spacing: -0.02em; }
+.target-city { margin: 0; color: var(--text-dim); font-size: 0.9rem; }
+.target-dist {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.target-card p.target-blurb {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.92rem;
+  line-height: 1.75;
+}
+.target-index {
+  position: absolute;
+  inset-block-start: 18px;
+  inset-inline-end: 20px;
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+  opacity: 0.07;
+  font-variant-numeric: tabular-nums;
+}

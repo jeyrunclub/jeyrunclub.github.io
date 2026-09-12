@@ -53,24 +53,24 @@
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: 220 20% 8%;
+    --background: 218 24% 7%;
     --foreground: 40 15% 96%;
-    --card: 220 20% 12%;
+    --card: 218 20% 11%;
     --card-foreground: 40 15% 96%;
-    --popover: 220 20% 12%;
+    --popover: 218 20% 11%;
     --popover-foreground: 40 15% 96%;
     --primary: 349 74% 55%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 20% 15%;
+    --secondary: 218 18% 15%;
     --secondary-foreground: 40 15% 96%;
-    --muted: 220 20% 15%;
-    --muted-foreground: 220 10% 65%;
+    --muted: 218 18% 15%;
+    --muted-foreground: 218 10% 65%;
     --accent: 349 74% 20%;
     --accent-foreground: 349 74% 85%;
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 20% 20%;
-    --input: 220 20% 22%;
+    --border: 218 18% 19%;
+    --input: 218 18% 22%;
     --ring: 349 74% 55%;
   }
 }
@@ -99,3 +99,34 @@
 
 html, body { font-family: var(--font-sans); }
 body { background: hsl(var(--background)); color: hsl(var(--foreground)); }
+
+/* -------- App chrome -------- */
+
+/* A soft brand aura fixed behind the page, so cards read as lifted off it
+   rather than painted onto a flat fill. */
+body {
+  background-image:
+    radial-gradient(55rem 38rem at 85% -12%, hsl(var(--primary) / 0.10), transparent 62%),
+    radial-gradient(45rem 32rem at -5% 8%,  hsl(var(--primary) / 0.06), transparent 58%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* The day strip scrolls horizontally; a scrollbar under it would cut the row
+   in half on desktop. */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Latin figures inside Persian copy — paces, splits, distances. Tabular so
+   a column of 4:40 / 3:50 / 5:00 lines up. */
+.figures { font-feature-settings: 'tnum' 1, 'lnum' 1; letter-spacing: -0.01em; }
+
+@keyframes jr-rise {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to   { opacity: 1; transform: none; }
+}
+.rise { animation: jr-rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; }
+}

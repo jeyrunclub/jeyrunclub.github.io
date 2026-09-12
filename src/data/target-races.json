@@ -1,0 +1,44 @@
+{
+  "note": "Races the team trains for and travels to together. Months are reliable for these events; confirm exact dates and registration windows before publishing them.",
+  "races": [
+    {
+      "slug": "istanbul",
+      "name": "ماراتن استانبول",
+      "name_en": "Istanbul Marathon",
+      "city": "استانبول، ترکیه",
+      "city_en": "Istanbul, Türkiye",
+      "when": "نوامبر ۲۰۲۶",
+      "when_en": "November 2026",
+      "distance": "۴۲.۱۹۵ km",
+      "distance_en": "42.195 km",
+      "blurb": "تنها ماراتن دنیا که از دو قاره می‌گذرد. مسیر سریع و سرازیری‌های ابتدایی، گزینه‌ی خوبی برای اولین ماراتن.",
+      "blurb_en": "The only marathon that crosses two continents. A fast course with an early downhill — a good pick for a first marathon."
+    },
+    {
+      "slug": "valencia",
+      "name": "ماراتن والنسیا",
+      "name_en": "Valencia Marathon",
+      "city": "والنسیا، اسپانیا",
+      "city_en": "Valencia, Spain",
+      "when": "دسامبر ۲۰۲۶",
+      "when_en": "December 2026",
+      "distance": "۴۲.۱۹۵ km",
+      "distance_en": "42.195 km",
+      "blurb": "تخت‌ترین و سریع‌ترین ماراتن اروپا. اگر دنبال رکورد شخصی هستی، این مسابقه‌ی توست.",
+      "blurb_en": "The flattest and fastest marathon in Europe. If you are chasing a personal best, this is the one."
+    },
+    {
+      "slug": "dubai",
+      "name": "ماراتن دبی",
+      "name_en": "Dubai Marathon",
+      "city": "دبی، امارات",
+      "city_en": "Dubai, UAE",
+      "when": "ژانویه ۲۰۲۷",
+      "when_en": "January 2027",
+      "distance": "۴۲.۱۹۵ km",
+      "distance_en": "42.195 km",
+      "blurb": "نزدیک‌ترین ماراتن بین‌المللی به ایران — مسیر کاملاً تخت و هوای خنک زمستان.",
+      "blurb_en": "The closest international marathon to Iran — a pancake-flat course in cool winter air."
+    }
+  ]
+}

@@ -4,12 +4,12 @@ import { supabase } from '../../lib/supabase.js';
 import {
   addDays, today, thisWeekStart, weekLabel, weekRelativeLabel,
   faNum, faDateShort, DAYS_FA, dayIndexOf,
-  emptyDays, normalizeDays, daysAreEmpty,
+  emptyDays, normalizeDays, daysAreEmpty, trimDays,
   fetchWeekPlansForStudents, loadWeekPlan, saveWeekPlan,
 } from '../../lib/plan.js';
 import { AppHeader } from '../app/AppHeader';
 import { PlanText } from '../app/PlanText';
-import { WeekList, type Day } from '../app/PlanWeek';
+import { WeekList, TypeBadge, type Day } from '../app/PlanWeek';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
@@ -296,13 +296,14 @@ export function CoachPage() {
                     i === todayIndex && 'bg-accent/40',
                   )}
                 >
-                  <div className="flex items-baseline gap-2 sm:flex-col sm:gap-0.5 sm:pt-2">
+                  <div className="flex flex-wrap items-baseline gap-2 sm:flex-col sm:items-start sm:gap-1 sm:pt-2">
                     <span className={cn('text-sm font-bold', i === todayIndex && 'text-primary')}>
                       {DAYS_FA[i]}
                     </span>
-                    <span className="text-[0.68rem] text-muted-foreground">
+                    <span className="figures text-[0.68rem] text-muted-foreground">
                       {faDateShort(addDays(weekStart, i))}
                     </span>
+                    <TypeBadge workout={d.workout} />
                   </div>
                   <Textarea
                     value={d.workout}
@@ -395,11 +396,11 @@ export function CoachPage() {
   );
 }
 
-// Trimmed shape of a week, for the "unsaved changes" comparison.
+// Trimmed shape of a week, for the "unsaved changes" comparison. trimDays()
+// collapses an all-empty table to [], so clearing every cell of a week that
+// was already empty doesn't count as a change.
 function fingerprint(days: Day[]) {
-  return normalizeDays(days)
-    .map((d) => d.workout.trim() + ' ' + d.note.trim())
-    .join('');
+  return JSON.stringify(trimDays(days));
 }
 
 function StatCard({ n, label, accent }: { n: number; label: string; accent?: boolean }) {

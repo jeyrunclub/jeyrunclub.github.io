@@ -2,15 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { ChevronRight, ChevronLeft, CalendarDays } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import {
-  addDays, today, thisWeekStart, weekLabel, weekRelativeLabel,
+  addDays, today, thisWeekStart, weekLabel, weekRelativeLabel, faDateLong,
   loadWeekPlan, emptyDays, daysAreEmpty, dayIsEmpty, dayIndexOf,
-  DAYS_FA, faDateShort,
+  DAYS_FA, faDayNum, faNum,
 } from '../../lib/plan.js';
+import { sessionType, typeClasses } from '../../lib/session-type.js';
 import { AppHeader } from './AppHeader';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { PlanText } from './PlanText';
-import { DayBlock, WeekList, type Day } from './PlanWeek';
+import { DayCard, WeekList, type Day } from './PlanWeek';
 import { cn } from '../../lib/utils';
 
 type Profile = {
@@ -70,23 +71,28 @@ export function StudentPage() {
   }, [profile, weekStart]);
 
   const isThisWeek = weekStart === thisWeekStart();
+  const isFuture = weekStart > thisWeekStart();
   const todayIndex = isThisWeek ? dayIndexOf(today(), weekStart) : -1;
 
-  // Past weeks open on their first day; the current week opens on today.
+  // Other weeks open on their first day; the current week opens on today.
   useEffect(() => {
     setSelected(isThisWeek ? dayIndexOf(today(), weekStart) : 0);
   }, [weekStart, isThisWeek]);
 
   const empty = useMemo(() => daysAreEmpty(days) && !text.trim(), [days, text]);
   const legacy = daysAreEmpty(days) && !!text.trim();
+  const sessionCount = days.filter((d) => !dayIsEmpty(d)).length;
+  const firstName = (profile?.full_name || '').trim().split(/\s+/)[0] || '';
 
   if (loading) {
     return (
       <div className="min-h-screen">
         <AppHeader isCoach={false} />
-        <div className="flex justify-center py-16">
-          <div className="size-10 animate-spin rounded-full border-4 border-secondary border-t-primary" />
-        </div>
+        <main className="mx-auto flex max-w-2xl flex-col gap-5 px-5 pb-16 pt-6">
+          <div className="h-32 animate-pulse rounded-3xl bg-muted" />
+          <div className="h-16 animate-pulse rounded-2xl bg-muted" />
+          <div className="h-56 animate-pulse rounded-2xl bg-muted" />
+        </main>
       </div>
     );
   }
@@ -95,17 +101,29 @@ export function StudentPage() {
   return (
     <div className="min-h-screen">
       <AppHeader isCoach={false} />
-      <main className="mx-auto flex max-w-2xl flex-col gap-5 px-5 pb-16 pt-6">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">
-            سلام {profile.full_name || ''}
-          </h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            برنامه‌ای که سالار برایت نوشته.
-          </p>
-        </div>
+      <main className="mx-auto flex max-w-2xl flex-col gap-5 px-5 pb-20 pt-6">
+        {/* HERO */}
+        <section className="rise relative overflow-hidden rounded-3xl bg-gradient-to-bl from-brand-400 via-brand-500 to-brand-700 p-6 text-white shadow-lg shadow-brand-500/25">
+          <span aria-hidden className="pointer-events-none absolute -top-20 -start-12 size-52 rounded-full bg-white/15 blur-3xl" />
+          <span aria-hidden className="pointer-events-none absolute -bottom-24 -end-10 size-48 rounded-full bg-black/15 blur-3xl" />
+          <img
+            src="/images/logo.png" alt="" aria-hidden
+            className="pointer-events-none absolute -bottom-6 end-4 h-28 w-36 object-contain opacity-15 brightness-0 invert"
+          />
+          <div className="relative">
+            <p className="figures text-xs font-semibold text-white/75">{faDateLong(today())}</p>
+            <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight">سلام {firstName}</h1>
+            <p className="mt-1 text-sm text-white/85">
+              {isThisWeek
+                ? sessionCount > 0
+                  ? `این هفته ${faNum(sessionCount)} روز تمرین داری.`
+                  : 'برنامه‌ی این هفته هنوز نوشته نشده.'
+                : `${weekRelativeLabel(weekStart)} را می‌بینی.`}
+            </p>
+          </div>
+        </section>
 
-        {/* Week nav — in RTL, the right chevron goes back */}
+        {/* WEEK NAV — in RTL, the right chevron goes back */}
         <Card className="flex items-center justify-between gap-2 p-2">
           <Button
             variant="ghost" size="icon" className="rounded-full"
@@ -114,29 +132,39 @@ export function StudentPage() {
           >
             <ChevronRight className="size-5" />
           </Button>
-          <div className="text-center">
+          <button
+            type="button"
+            onClick={() => setWeekStart(thisWeekStart())}
+            disabled={isThisWeek}
+            title={isThisWeek ? undefined : 'برگشت به این هفته'}
+            className="rounded-xl px-3 py-1 text-center transition-colors enabled:hover:bg-accent disabled:cursor-default"
+          >
             <div className="text-sm font-bold leading-tight">{weekRelativeLabel(weekStart)}</div>
-            <div className="mt-0.5 text-xs text-muted-foreground">{weekLabel(weekStart)}</div>
-          </div>
+            <div className="figures mt-0.5 text-xs text-muted-foreground">{weekLabel(weekStart)}</div>
+          </button>
           <Button
             variant="ghost" size="icon" className="rounded-full"
             onClick={() => setWeekStart((w) => addDays(w, 7))}
             aria-label="هفته‌ی بعد"
-            disabled={isThisWeek}
           >
             <ChevronLeft className="size-5" />
           </Button>
         </Card>
 
         {loadingPlan ? (
-          <Card className="flex justify-center p-10">
-            <div className="size-7 animate-spin rounded-full border-4 border-secondary border-t-primary" />
-          </Card>
+          <>
+            <div className="h-20 animate-pulse rounded-2xl bg-muted" />
+            <div className="h-56 animate-pulse rounded-2xl bg-muted" />
+          </>
         ) : empty ? (
-          <Card className="flex flex-col items-center gap-3 p-10 text-center text-muted-foreground">
-            <CalendarDays className="size-10 text-muted-foreground/60" />
+          <Card className="flex flex-col items-center gap-3 p-12 text-center text-muted-foreground">
+            <CalendarDays className="size-10 text-muted-foreground/50" />
             <h3 className="text-base font-bold text-foreground">هنوز برنامه‌ای نیست</h3>
-            <p className="text-sm">برای این هفته چیزی ثبت نشده.</p>
+            <p className="text-sm">
+              {isFuture
+                ? 'سالار هنوز برنامه‌ی این هفته را ننوشته.'
+                : 'برای این هفته چیزی ثبت نشده.'}
+            </p>
           </Card>
         ) : legacy ? (
           // A week written before the day table existed
@@ -146,15 +174,17 @@ export function StudentPage() {
         ) : (
           <>
             {/* روزانه / هفتگی */}
-            <div className="flex gap-1 self-center rounded-full border border-border bg-card p-1">
+            <div className="flex gap-1 self-center rounded-full border border-border bg-card p-1 shadow-sm">
               {([['day', 'روزانه'], ['week', 'هفتگی']] as const).map(([v, label]) => (
                 <button
                   key={v}
                   type="button"
                   onClick={() => setView(v)}
                   className={cn(
-                    'rounded-full px-5 py-1.5 text-sm font-semibold transition-colors',
-                    view === v ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+                    'rounded-full px-6 py-1.5 text-sm font-bold transition-all',
+                    view === v
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
                   {label}
@@ -165,52 +195,55 @@ export function StudentPage() {
             {view === 'day' ? (
               <>
                 {/* Day strip */}
-                <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
-                  {days.map((d, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setSelected(i)}
-                      className={cn(
-                        'flex min-w-16 shrink-0 flex-col items-center gap-0.5 rounded-2xl border px-3 py-2 transition-colors',
-                        i === selected
-                          ? 'border-primary bg-accent text-primary'
-                          : 'border-border bg-card text-muted-foreground hover:bg-accent/50',
-                      )}
-                    >
-                      <span className="text-xs font-bold">{DAYS_FA[i]}</span>
-                      <span className="text-[0.68rem]">{faDateShort(addDays(weekStart, i))}</span>
-                      <span className={cn(
-                        'mt-0.5 size-1.5 rounded-full',
-                        dayIsEmpty(d) ? 'bg-transparent' : i === selected ? 'bg-primary' : 'bg-primary/40',
-                      )} />
-                    </button>
-                  ))}
+                <div className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 py-1">
+                  {days.map((d, i) => {
+                    const active = i === selected;
+                    const type = sessionType(d.workout);
+                    const c = typeClasses(type);
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setSelected(i)}
+                        aria-current={active ? 'true' : undefined}
+                        className={cn(
+                          'flex w-17 shrink-0 flex-col items-center gap-1 rounded-2xl border py-2.5 transition-all',
+                          active
+                            ? '-translate-y-0.5 border-primary bg-card shadow-md'
+                            : 'border-border bg-card/60 hover:bg-card',
+                          i === todayIndex && !active && 'border-primary/40',
+                        )}
+                      >
+                        <span className={cn(
+                          'text-[0.7rem] font-bold',
+                          active ? 'text-primary' : 'text-muted-foreground',
+                        )}>
+                          {DAYS_FA[i]}
+                        </span>
+                        <span className="figures text-base font-extrabold leading-none">
+                          {faDayNum(addDays(weekStart, i))}
+                        </span>
+                        <span className={cn('size-1.5 rounded-full', type ? c.dot : 'bg-transparent')} />
+                      </button>
+                    );
+                  })}
                 </div>
 
-                <Card className="p-6">
-                  <DayBlock
+                <div key={selected} className="rise">
+                  <DayCard
                     day={days[selected]}
                     index={selected}
                     weekStart={weekStart}
                     isToday={selected === todayIndex}
                   />
-                </Card>
+                </div>
               </>
             ) : (
-              <Card className="p-6">
+              <Card className="rise p-3 sm:p-4">
                 <WeekList days={days} weekStart={weekStart} todayIndex={todayIndex} />
               </Card>
             )}
           </>
-        )}
-
-        {!isThisWeek && (
-          <div className="flex justify-center">
-            <Button variant="outline" onClick={() => setWeekStart(thisWeekStart())}>
-              برگشت به این هفته
-            </Button>
-          </div>
         )}
       </main>
     </div>
