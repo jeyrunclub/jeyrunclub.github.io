@@ -206,10 +206,11 @@ export function LoginPage() {
                 <IconInputWrapper icon={<Mail className="size-4" />}>
                   <Input
                     id="signin-email"
+                    name="email"
                     type="email"
                     required
                     dir="ltr"
-                    autoComplete="email"
+                    autoComplete="username"
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -222,6 +223,7 @@ export function LoginPage() {
                 <Label htmlFor="signin-password">رمز عبور</Label>
                 <PasswordField
                   id="signin-password"
+                  name="password"
                   autoComplete="current-password"
                   value={password}
                   onChange={setPassword}
@@ -265,6 +267,7 @@ export function LoginPage() {
                   <Input
                     id="signup-name"
                     required
+                    name="full-name"
                     autoComplete="name"
                     placeholder="مثلاً: علی رضایی"
                     value={name}
@@ -283,6 +286,7 @@ export function LoginPage() {
                     id="signup-phone"
                     type="tel"
                     dir="ltr"
+                    name="phone"
                     autoComplete="tel"
                     placeholder="09xxxxxxxxx"
                     value={phone}
@@ -297,10 +301,11 @@ export function LoginPage() {
                 <IconInputWrapper icon={<Mail className="size-4" />}>
                   <Input
                     id="signup-email"
+                    name="email"
                     type="email"
                     required
                     dir="ltr"
-                    autoComplete="email"
+                    autoComplete="username"
                     placeholder="you@example.com"
                     value={signupEmail}
                     onChange={(e) => setSignupEmail(e.target.value)}
@@ -315,6 +320,7 @@ export function LoginPage() {
                 </Label>
                 <PasswordField
                   id="signup-password"
+                  name="new-password"
                   autoComplete="new-password"
                   value={signupPassword}
                   onChange={setSignupPassword}
@@ -370,6 +376,7 @@ function IconInputWrapper({ icon, children }: { icon: React.ReactNode; children:
 
 function PasswordField({
   id,
+  name,
   autoComplete,
   value,
   onChange,
@@ -378,6 +385,7 @@ function PasswordField({
   minLength,
 }: {
   id: string;
+  name: string;
   autoComplete: string;
   value: string;
   onChange: (v: string) => void;
@@ -392,6 +400,7 @@ function PasswordField({
       </span>
       <Input
         id={id}
+        name={name}
         type={show ? 'text' : 'password'}
         required
         dir="ltr"

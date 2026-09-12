@@ -29,6 +29,7 @@ export function ResetPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
     // The session may land either before this runs or a moment after, as the
@@ -37,12 +38,12 @@ export function ResetPage() {
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!alive) return;
-      if (session) { setReady(true); setChecking(false); }
+      if (session) { setReady(true); setEmail(session.user.email || ''); setChecking(false); }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!alive) return;
-      if (session) setReady(true);
+      if (session) { setReady(true); setEmail(session.user.email || ''); }
       setChecking(false);
     });
 
@@ -101,6 +102,16 @@ export function ResetPage() {
           </Card>
         ) : (
           <form onSubmit={submit}>
+            {/* Hidden identifier: password managers need to know which account
+                this new password belongs to before they will offer to update it. */}
+            <input
+              type="email"
+              name="email"
+              autoComplete="username"
+              value={email}
+              readOnly
+              hidden
+            />
             <Card className="mt-6 space-y-4 p-6">
               <p className="text-sm text-muted-foreground">
                 یک رمز تازه انتخاب کن. بعد از این با همین رمز وارد می‌شوی.
@@ -112,6 +123,7 @@ export function ResetPage() {
                   <Lock className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     type={show ? 'text' : 'password'}
+                    name="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     dir="ltr"
@@ -141,6 +153,7 @@ export function ResetPage() {
                   <Lock className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     type={show ? 'text' : 'password'}
+                    name="confirm-password"
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                     dir="ltr"
