@@ -24,27 +24,47 @@ import GazelleFigure from './GazelleFigure.astro';
 
 const INK = '#17130f';
 const SAND = '#efe7d8';
+const WHITE = '#fbf7ef';
 const NAVY = '#1d3f77';
 
 type Kit = {
   shirt: string; shorts: string; skin: string; hair: string; shoe: string;
   tights?: string;
-  head: 'short' | 'cap' | 'ponytail' | 'bun';
+  head: 'short' | 'cap' | 'ponytail' | 'bun' | 'long';
   stride: number;
 };
 
+/**
+ * Read off the club's own group photographs rather than invented, and corrected
+ * after a first pass that made everyone look like a stock athletics set:
+ *
+ *  - Hair is dark, near enough universally. There was a grey-haired runner in
+ *    here; there is nobody grey in the photographs.
+ *  - Caps are rare — one or two people across every group shot — so there is
+ *    one, not three.
+ *  - The kit is far brighter than black-and-navy: orange, white, turquoise,
+ *    pink, light blue and yellow are all over the group photographs, and white
+ *    tops are the single most common thing anybody wears.
+ *  - Six of the ten are women, which is about the ratio in the photographs.
+ */
 const kits: Kit[] = [
-  { shirt: INK,       shorts: SAND, skin: '#c98d5e', hair: '#8b8075', shoe: '#f7f2e8', head: 'short',    stride: 0.60 },
-  { shirt: '#4d7fa6', shorts: NAVY, skin: '#d9a677', hair: '#2b2018', shoe: INK,       head: 'cap',      stride: 0.66 },
-  { shirt: INK,       shorts: INK,  skin: '#e0b489', hair: INK,       shoe: '#e00a2e', head: 'short',    stride: 0.63 },
-  { shirt: SAND,      shorts: INK,  skin: '#c98d5e', hair: INK,       shoe: INK,       head: 'bun',      stride: 0.58, tights: INK },
-  { shirt: '#e00a2e', shorts: INK,  skin: '#d9a677', hair: '#2b2018', shoe: '#f7f2e8', head: 'ponytail', stride: 0.64, tights: INK },
-  { shirt: '#0d8f8b', shorts: INK,  skin: '#e0b489', hair: INK,       shoe: '#eda600', head: 'short',    stride: 0.61 },
-  { shirt: INK,       shorts: NAVY, skin: '#c98d5e', hair: INK,       shoe: '#0d8f8b', head: 'ponytail', stride: 0.67, tights: NAVY },
-  { shirt: '#eda600', shorts: INK,  skin: '#d9a677', hair: '#2b2018', shoe: INK,       head: 'cap',      stride: 0.59, tights: INK },
-  { shirt: NAVY,      shorts: INK,  skin: '#e0b489', hair: INK,       shoe: '#e00a2e', head: 'bun',      stride: 0.65, tights: INK },
-  { shirt: INK,       shorts: INK,  skin: '#d9a677', hair: '#2b2018', shoe: INK,       head: 'short',    stride: 0.62 },
+  // women — leggings, hair up or loose
+  { shirt: WHITE,     shorts: INK,  tights: INK,       skin: '#e8c49b', hair: '#1b120c', shoe: '#e00a2e', head: 'ponytail', stride: 0.60 },
+  { shirt: '#e2618f', shorts: INK,  tights: INK,       skin: '#d9a677', hair: '#241811', shoe: WHITE,     head: 'bun',      stride: 0.64 },
+  { shirt: '#0d8f8b', shorts: NAVY, tights: NAVY,      skin: '#c98d5e', hair: '#1b120c', shoe: WHITE,     head: 'ponytail', stride: 0.62 },
+  { shirt: '#7fb2d9', shorts: INK,  tights: INK,       skin: '#e8c49b', hair: '#2b1d14', shoe: '#0d8f8b', head: 'long',     stride: 0.66 },
+  { shirt: INK,       shorts: INK,  tights: '#0d8f8b', skin: '#d9a677', hair: '#1b120c', shoe: WHITE,     head: 'bun',      stride: 0.59 },
+  { shirt: '#e00a2e', shorts: INK,  tights: INK,       skin: '#c98d5e', hair: '#241811', shoe: INK,       head: 'ponytail', stride: 0.63 },
+  // men — shorts
+  { shirt: '#e8622a', shorts: INK,  skin: '#c98d5e', hair: '#1b120c', shoe: WHITE,     head: 'short', stride: 0.58 },
+  { shirt: WHITE,     shorts: NAVY, skin: '#d9a677', hair: '#241811', shoe: '#e00a2e', head: 'short', stride: 0.61 },
+  { shirt: '#eda600', shorts: INK,  skin: '#e8c49b', hair: '#1b120c', shoe: INK,       head: 'cap',   stride: 0.65 },
+  { shirt: INK,       shorts: SAND, skin: '#c98d5e', hair: '#1b120c', shoe: '#0d8f8b', head: 'short', stride: 0.62 },
 ];
+
+// Mix the two files so a rank isn't all women or all men, the way the group
+// photographs show people paired up however they happen to be running.
+const order = [0, 6, 1, 7, 2, 8, 3, 9, 4, 5];
 
 // Five ranks of two. More negative delay is further along the street, so the
 // leading pair is first. The far runner of each pair trails by a hair, because
@@ -58,7 +78,12 @@ const PAIRS = 5;
 const STEP = 0.38;
 const ranks = Array.from({ length: PAIRS }, (_, i) => {
   const d = -(2.4 - i * STEP);
-  return { near: kits[i * 2], far: kits[i * 2 + 1], nearDelay: d, farDelay: d + 0.05 };
+  return {
+    near: kits[order[i * 2]],
+    far: kits[order[i * 2 + 1]],
+    nearDelay: d,
+    farDelay: d + 0.05,
+  };
 });
 
 // Out in front of the whole group — but placed between the two files in depth

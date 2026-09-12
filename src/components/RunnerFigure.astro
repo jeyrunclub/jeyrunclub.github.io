@@ -30,8 +30,12 @@ interface Props {
    * than skin; leave it off for bare legs.
    */
   tights?: string;
-  /** Short hair, caps, ponytails and buns — all four are in the photographs. */
-  head?: 'short' | 'cap' | 'ponytail' | 'bun';
+  /**
+   * Short hair, a ponytail, a bun or hair worn loose. Caps exist in the club's
+   * photographs but are rare — one or two people across all of them — so they
+   * are not the default for anybody.
+   */
+  head?: 'short' | 'cap' | 'ponytail' | 'bun' | 'long';
   delay?: number;
   stride?: number;
   class?: string;
@@ -99,9 +103,18 @@ const {
       <path fill={hair} d="M36.8 15C36.4 9.6 40.6 5.8 45.6 5.8C50.4 5.8 54.4 9 54.8 13.6C51.4 10.6 41.6 11 36.8 15Z" />
     )}
     {head === 'ponytail' && (
-      <path fill={hair} d="M37.6 13.6C34 14.6 31.4 17.4 30.6 21C33.4 21.6 36.4 20.2 38.2 17.6Z" />
+      <path
+        fill={hair}
+        d="M38.4 12.8C34 12.6 29.6 15 27.2 19.4C25.8 22 25.6 24.8 26.6 26.6C28.6 25 30.4 22.6 32.4 20C34.2 17.6 36.2 15.6 38.8 14.6Z"
+      />
     )}
-    {head === 'bun' && <circle cx="35.4" cy="11.6" r="4.4" fill={hair} />}
+    {head === 'bun' && <circle cx="34.8" cy="11" r="4.8" fill={hair} />}
+    {head === 'long' && (
+      <path
+        fill={hair}
+        d="M38.6 12.4C34.6 12.6 31.6 15.2 30.4 19.2C29.4 22.6 29.8 26.4 31.2 29.6C33.6 28.4 35 25.8 35.8 22.6C36.6 19.2 37.2 15.6 38.8 14Z"
+      />
+    )}
 
     {/* ---- near side, in front ---- */}
     <g class="rf-thigh rf-thigh--near" style="transform-origin:35px 62px">
