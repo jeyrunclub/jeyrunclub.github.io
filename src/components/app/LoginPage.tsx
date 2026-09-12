@@ -8,11 +8,20 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { cn } from '../../lib/utils';
 
-// Cloudflare Turnstile site key. Paste the site key you generate in the
-// Cloudflare dashboard (challenges.cloudflare.com). Leave empty to disable
-// captcha in local dev. Also enable Turnstile in Supabase → Authentication →
-// Attack Protection, and paste the matching SECRET key there.
-const TURNSTILE_SITE_KEY = '0x4AAAAAAEAp3e5SLFmcLK5R';
+// Cloudflare Turnstile — DISABLED ON PURPOSE.
+//
+// The widget loads from challenges.cloudflare.com, which is blocked at the
+// network level for most users in Iran. The sign-in button is gated on holding
+// a Turnstile token, so when the script never loads the button never enables:
+// the whole club was locked out with no error message to explain it.
+//
+// Captcha must be turned off in Supabase → Authentication → Attack Protection
+// as well, or the server rejects every attempt with `captcha_failed`.
+//
+// Signup is still gated by Salar approving each account by hand, so nothing
+// reaches a plan unattended. Re-enable only with a captcha that is actually
+// reachable from Iran, and re-test from there before shipping it.
+const TURNSTILE_SITE_KEY = '';
 
 type Tab = 'signin' | 'signup';
 type Msg = { kind: 'ok' | 'error' | 'info'; text: string } | null;
@@ -145,7 +154,7 @@ export function LoginPage() {
     setBusy(true);
     setSigninMsg({ kind: 'info', text: 'در حال ارسال لینک بازیابی...' });
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/app`,
+      redirectTo: `${window.location.origin}/app/reset`,
       captchaToken: signinCaptcha || undefined,
     } as any);
     setBusy(false);
