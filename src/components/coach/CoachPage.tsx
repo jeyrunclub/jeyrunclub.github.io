@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Check, Camera, Target } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Camera, Target, Timer } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import {
   addDays, today, thisWeekStart, weekLabel, weekRelativeLabel,
@@ -26,6 +26,7 @@ type Profile = {
   training_goal?: string | null; pr_10k?: string | null;
 };
 type Log = { done: boolean; note: string | null; photo_path: string | null };
+type Runner = { training_goal: string | null; pr_10k: string | null };
 type Plan = { days: Day[]; text: string };
 
 const WORKOUT_PLACEHOLDER = '2k گرم کردن\n8*(6min @3:30 / 1min rest)\n2k سرد کردن';
@@ -46,9 +47,22 @@ export function CoachPage() {
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
   const [logsByStudent, setLogsByStudent] = useState<Record<string, Record<string, Log>>>({});
+  const [runners, setRunners] = useState<Record<string, Runner>>({});
   const [goal, setGoal] = useState('');
   const [pr, setPr] = useState('');
   const [savingGoal, setSavingGoal] = useState(false);
+
+  // The coach's "profiles: coach read" policy covers every row, so read the
+  // goal and record here rather than through list_all_users() — that function
+  // only carries them if it was dropped and recreated after the columns landed.
+  const refreshRunners = useCallback(async () => {
+    const { data, error: err } = await supabase.from('profiles')
+      .select('id, training_goal, pr_10k');
+    if (err) { console.error(err); return; }
+    setRunners(Object.fromEntries((data || []).map((r: any) => [
+      r.id, { training_goal: r.training_goal ?? null, pr_10k: r.pr_10k ?? null },
+    ])));
+  }, []);
 
   const refreshUsers = useCallback(async () => {
     const { data } = await supabase.rpc('list_all_users');
@@ -69,10 +83,10 @@ export function CoachPage() {
       const { data: p } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
       if (!p || p.role !== 'coach') { setDenied(true); setLoading(false); return; }
       setProfile(p);
-      await refreshUsers();
+      await Promise.all([refreshUsers(), refreshRunners()]);
       setLoading(false);
     })();
-  }, [refreshUsers]);
+  }, [refreshUsers, refreshRunners]);
 
   // Load every student's plan for the shown week
   const refreshWeek = useCallback(async () => {
@@ -92,9 +106,9 @@ export function CoachPage() {
     setError(null);
     setPreview(false);
     if (!currentStudentId) { setDraft(emptyDays()); setBaseline(''); setLegacyText(''); return; }
-    const st = allUsers.find((u) => u.id === currentStudentId);
-    setGoal(st?.training_goal || '');
-    setPr(st?.pr_10k || '');
+    const r = runners[currentStudentId];
+    setGoal(r?.training_goal || '');
+    setPr(r?.pr_10k || '');
     let alive = true;
     loadWeekPlan(supabase, currentStudentId, weekStart).then((plan) => {
       if (!alive) return;
@@ -103,7 +117,7 @@ export function CoachPage() {
       setLegacyText(daysAreEmpty(plan.days) ? plan.text : '');
     });
     return () => { alive = false; };
-  }, [currentStudentId, weekStart]);
+  }, [currentStudentId, weekStart, runners]);
 
   const students = useMemo(
     () => allUsers.filter((u) => u.status === 'approved' && u.role !== 'coach'),
@@ -136,9 +150,7 @@ export function CoachPage() {
       .update(next).eq('id', currentStudentId);
     setSavingGoal(false);
     if (err) { setError('خطا در ذخیره: ' + err.message); return; }
-    setAllUsers((prev) => prev.map((u) => (
-      u.id === currentStudentId ? { ...u, ...next } : u
-    )));
+    setRunners((prev) => ({ ...prev, [currentStudentId]: next }));
   }
 
   function setDay(i: number, field: 'workout' | 'note', value: string) {
@@ -326,8 +338,8 @@ export function CoachPage() {
               <Button
                 onClick={saveGoal}
                 disabled={savingGoal
-                  || (goal.trim() === (currentStudent.training_goal || '')
-                      && pr.trim() === (currentStudent.pr_10k || ''))}
+                  || (goal.trim() === (runners[currentStudent.id]?.training_goal || '')
+                      && pr.trim() === (runners[currentStudent.id]?.pr_10k || ''))}
               >
                 <Check className="size-4" />
                 {savingGoal ? 'در حال ذخیره…' : 'ذخیره'}
@@ -455,6 +467,25 @@ export function CoachPage() {
                       <div className="mt-0.5 truncate text-xs text-muted-foreground" dir="ltr">
                         {r.email}{r.phone ? ' · ' + r.phone : ''}
                       </div>
+                      {!isCoachRow && (runners[r.id]?.training_goal || runners[r.id]?.pr_10k) && (
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                          {runners[r.id]?.training_goal && (
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                              <Target className="size-3" />
+                              <span dir="auto">{runners[r.id]!.training_goal}</span>
+                            </span>
+                          )}
+                          {runners[r.id]?.pr_10k && (
+                            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                              <Timer className="size-3" />
+                              ۱۰k
+                              <span dir="ltr" className="figures font-bold text-foreground">
+                                {runners[r.id]!.pr_10k}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                     {!isCoachRow && r.status === 'approved' && (
                       <Button variant="outline" size="sm" onClick={() => {
