@@ -1,21 +1,36 @@
 ---
 import Base from '../../layouts/Base.astro';
-import gallery from '../../data/gallery.json';
+import { Image, getImage } from 'astro:assets';
+import { photos as all, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../../lib/gallery.js';
 
-const photos = gallery.photos.map((p, i) => ({
+const photos = all.map((p) => ({
   ...p,
-  id: i + 1,
   title: p.title_en || p.title,
   story: p.story_en || p.story,
 }));
 const PAGE_SIZE = 24;
 const firstPage = photos.slice(0, PAGE_SIZE);
+
+// The load-more button builds its markup in the browser, so the optimised URLs
+// have to be worked out here and handed over.
+const rest = await Promise.all(
+  photos.slice(PAGE_SIZE).map(async (p) => {
+    const [small, large] = await Promise.all(
+      THUMB_WIDTHS.map((w) => getImage({ src: p.image, width: w, format: 'webp', quality: THUMB_QUALITY })),
+    );
+    return {
+      id: p.id, title: p.title, story: p.story,
+      src: large.src,
+      srcset: `${small.src} ${THUMB_WIDTHS[0]}w, ${large.src} ${THUMB_WIDTHS[1]}w`,
+      w: p.image.width, h: p.image.height,
+    };
+  }),
+);
 ---
 <Base
   lang="en"
   title="Gallery — Jeyrun | Training, Racing, Mountains"
   description="The Jeyrun photo gallery — moments from training, races, mountain camps and summits."
-  ogImage="/images/gallery/new-img_3475.jpg"
 >
   <section class="page-hero">
     <div class="container">
@@ -33,7 +48,14 @@ const firstPage = photos.slice(0, PAGE_SIZE);
         {firstPage.map((p) => (
           <a href={`/en/photo/${p.id}`} class="gal-item">
             <span class="gal-badge">#{p.id}</span>
-            <img src={`/images/gallery/${p.file}`} alt={p.title || `Photo ${p.id}`} loading="lazy" />
+            <Image
+              src={p.image}
+              alt={p.title || `Photo ${p.id}`}
+              widths={THUMB_WIDTHS}
+              sizes={GRID_SIZES}
+              quality={THUMB_QUALITY}
+              loading="lazy"
+            />
             <span class="gal-caption">
               {p.title && <strong>{p.title}</strong>}
               {p.story && <span>{p.story}</span>}
@@ -52,16 +74,19 @@ const firstPage = photos.slice(0, PAGE_SIZE);
     </div>
   </section>
 
-  <script define:vars={{ photos, PAGE_SIZE }}>
+  <script define:vars={{ rest, PAGE_SIZE, total: photos.length }}>
     const btn = document.getElementById('load-more');
     const grid = document.getElementById('gallery-grid');
+    const SIZES = '(max-width: 640px) 92vw, (max-width: 1100px) 45vw, 290px';
     let shown = PAGE_SIZE;
     btn?.addEventListener('click', () => {
-      const next = photos.slice(shown, shown + PAGE_SIZE);
+      const next = rest.slice(shown - PAGE_SIZE, shown - PAGE_SIZE + PAGE_SIZE);
       const html = next.map((p) => `
         <a href="/en/photo/${p.id}" class="gal-item">
           <span class="gal-badge">#${p.id}</span>
-          <img src="/images/gallery/${p.file}" alt="${p.title || 'Photo ' + p.id}" loading="lazy" />
+          <img src="${p.src}" srcset="${p.srcset}" sizes="${SIZES}"
+               width="${p.w}" height="${p.h}"
+               alt="${p.title || 'Photo ' + p.id}" loading="lazy" decoding="async" />
           <span class="gal-caption">
             ${p.title ? `<strong>${p.title}</strong>` : ''}
             ${p.story ? `<span>${p.story}</span>` : ''}
@@ -69,10 +94,10 @@ const firstPage = photos.slice(0, PAGE_SIZE);
         </a>`).join('');
       grid.insertAdjacentHTML('beforeend', html);
       shown += PAGE_SIZE;
-      if (shown >= photos.length) {
+      if (shown >= total) {
         btn.remove();
       } else {
-        btn.textContent = `Show more photos (${photos.length - shown} remaining)`;
+        btn.textContent = `Show more photos (${total - shown} remaining)`;
       }
     });
   </script>

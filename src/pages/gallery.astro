@@ -1,16 +1,35 @@
 ---
 import Base from '../layouts/Base.astro';
-import gallery from '../data/gallery.json';
+import { Image, getImage } from 'astro:assets';
+import { photos, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
 
-const photos = gallery.photos.map((p, i) => ({ ...p, id: i + 1 }));
 const PAGE_SIZE = 24;
 const firstPage = photos.slice(0, PAGE_SIZE);
 const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+
+// The load-more button builds its markup in the browser, so the optimised URLs
+// have to be worked out here and handed over — otherwise everything past the
+// first page would quietly fall back to the unprocessed original.
+const rest = await Promise.all(
+  photos.slice(PAGE_SIZE).map(async (p) => {
+    const [small, large] = await Promise.all(
+      THUMB_WIDTHS.map((w) => getImage({ src: p.image, width: w, format: 'webp', quality: THUMB_QUALITY })),
+    );
+    return {
+      id: p.id,
+      title: p.title,
+      story: p.story,
+      src: large.src,
+      srcset: `${small.src} ${THUMB_WIDTHS[0]}w, ${large.src} ${THUMB_WIDTHS[1]}w`,
+      w: p.image.width,
+      h: p.image.height,
+    };
+  }),
+);
 ---
 <Base
   title="گالری جیران — عکس‌های تمرین، مسابقه و کوهستان"
   description="گالری تصاویر باشگاه جیران — لحظات تمرین، مسابقات، اردوهای کوهستان و صعودها."
-  ogImage="/images/gallery/new-img_3475.jpg"
 >
   <section class="page-hero">
     <div class="container">
@@ -28,7 +47,14 @@ const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d])
         {firstPage.map((p) => (
           <a href={`/photo/${p.id}`} class="gal-item">
             <span class="gal-badge">#{fa(p.id)}</span>
-            <img src={`/images/gallery/${p.file}`} alt={p.title || `عکس شماره ${p.id}`} loading="lazy" />
+            <Image
+              src={p.image}
+              alt={p.title || `عکس شماره ${p.id}`}
+              widths={THUMB_WIDTHS}
+              sizes={GRID_SIZES}
+              quality={THUMB_QUALITY}
+              loading="lazy"
+            />
             <span class="gal-caption">
               {p.title && <strong>{p.title}</strong>}
               {p.story && <span>{p.story}</span>}
@@ -47,17 +73,20 @@ const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d])
     </div>
   </section>
 
-  <script define:vars={{ photos, PAGE_SIZE }}>
+  <script define:vars={{ rest, PAGE_SIZE, total: photos.length }}>
     const btn = document.getElementById('load-more');
     const grid = document.getElementById('gallery-grid');
     const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+    const SIZES = '(max-width: 640px) 92vw, (max-width: 1100px) 45vw, 290px';
     let shown = PAGE_SIZE;
     btn?.addEventListener('click', () => {
-      const next = photos.slice(shown, shown + PAGE_SIZE);
+      const next = rest.slice(shown - PAGE_SIZE, shown - PAGE_SIZE + PAGE_SIZE);
       const html = next.map((p) => `
         <a href="/photo/${p.id}" class="gal-item">
           <span class="gal-badge">#${fa(p.id)}</span>
-          <img src="/images/gallery/${p.file}" alt="${p.title || 'عکس شماره ' + p.id}" loading="lazy" />
+          <img src="${p.src}" srcset="${p.srcset}" sizes="${SIZES}"
+               width="${p.w}" height="${p.h}"
+               alt="${p.title || 'عکس شماره ' + p.id}" loading="lazy" decoding="async" />
           <span class="gal-caption">
             ${p.title ? `<strong>${p.title}</strong>` : ''}
             ${p.story ? `<span>${p.story}</span>` : ''}
@@ -65,10 +94,10 @@ const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d])
         </a>`).join('');
       grid.insertAdjacentHTML('beforeend', html);
       shown += PAGE_SIZE;
-      if (shown >= photos.length) {
+      if (shown >= total) {
         btn.remove();
       } else {
-        btn.textContent = `نمایش عکس‌های بیشتر (${fa(photos.length - shown)} باقی‌مانده)`;
+        btn.textContent = `نمایش عکس‌های بیشتر (${fa(total - shown)} باقی‌مانده)`;
       }
     });
   </script>

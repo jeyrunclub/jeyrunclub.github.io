@@ -1,11 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
+import { Image } from 'astro:assets';
+import { photos as galleryPhotos, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
+import heroPortrait from '../assets/gallery/new-img_0169.jpg';
 import gallery from '../data/gallery.json';
 import targetRaces from '../data/target-races.json';
 import stats from '../data/stats.json';
 
-const featured = gallery.photos.slice(0, 8).map((p, i) => ({ ...p, id: i + 1 }));
+const featured = galleryPhotos.slice(0, 8);
 const targets = targetRaces.races;
 const heroFacts = stats.cards.slice(0, 3);
 const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
@@ -60,7 +63,15 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
       </div>
       <div class="hero-portrait" aria-hidden="true">
         <div class="portrait-frame">
-          <img src="/images/gallery/new-img_0169.jpg" alt="سالار پیری در دیوار قهرمانان مسابقه" />
+          <Image
+            src={heroPortrait}
+            alt="سالار پیری در دیوار قهرمانان مسابقه"
+            widths={[400, 760]}
+            sizes="(max-width: 900px) 90vw, 360px"
+            quality={78}
+            loading="eager"
+            fetchpriority="high"
+          />
         </div>
       </div>
     </div>
@@ -193,7 +204,14 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
         {featured.map((p) => (
           <a href={`/photo/${p.id}`} class="gal-item">
             <span class="gal-badge">#{fa(p.id)}</span>
-            <img src={`/images/gallery/${p.file}`} alt={p.title || `عکس شماره ${p.id}`} loading="lazy" />
+            <Image
+              src={p.image}
+              alt={p.title || `عکس شماره ${p.id}`}
+              widths={THUMB_WIDTHS}
+              sizes={GRID_SIZES}
+              quality={THUMB_QUALITY}
+              loading="lazy"
+            />
             <span class="gal-caption">
               {p.title && <strong>{p.title}</strong>}
               {p.story && <span>{p.story}</span>}
@@ -201,7 +219,7 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
           </a>
         ))}
       </div>
-      <p class="ig-follow"><a href="/gallery">دیدن همه‌ی عکس‌ها ({fa(gallery.photos.length)}) ←</a></p>
+      <p class="ig-follow"><a href="/gallery">دیدن همه‌ی عکس‌ها ({fa(galleryPhotos.length)}) ←</a></p>
     </div>
   </section>
 

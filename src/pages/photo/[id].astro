@@ -1,27 +1,33 @@
 ---
 import Base from '../../layouts/Base.astro';
-import gallery from '../../data/gallery.json';
+import { Image, getImage } from 'astro:assets';
+import { photos, FULL_WIDTHS, FULL_QUALITY, CARD_WIDTH, CARD_QUALITY } from '../../lib/gallery.js';
 
 export function getStaticPaths() {
-  return gallery.photos.map((photo, i) => ({
-    params: { id: String(i + 1) },
+  // params come from photo.id, not the array position — gallery.json has an
+  // entry whose file is missing, so the two diverge after it.
+  return photos.map((photo, i) => ({
+    params: { id: String(photo.id) },
     props: {
       photo,
-      number: i + 1,
-      prev: i > 0 ? i : null,
-      next: i < gallery.photos.length - 1 ? i + 2 : null,
-      total: gallery.photos.length,
+      number: photo.id,
+      prev: i > 0 ? photos[i - 1].id : null,
+      next: i < photos.length - 1 ? photos[i + 1].id : null,
+      total: photos.length,
     },
   }));
 }
 
 const { photo, number, prev, next, total } = Astro.props;
 const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+
+// Each photo gets its own social card, as a JPEG for crawler compatibility.
+const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDTH, quality: CARD_QUALITY });
 ---
 <Base
   title={`عکس #${fa(number)} — ${photo.title || 'گالری جیران'}`}
   description={photo.story || photo.title || `عکس شماره ${fa(number)} از گالری جیران`}
-  ogImage={`/images/gallery/${photo.file}`}
+  ogImage={card.src}
 >
   <section class="photo-page">
     <div class="container photo-inner">
@@ -31,7 +37,15 @@ const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d])
       </p>
 
       <figure class="photo-hero">
-        <img src={`/images/gallery/${photo.file}`} alt={photo.title || `عکس شماره ${number}`} />
+        <Image
+          src={photo.image}
+          alt={photo.title || `عکس شماره ${number}`}
+          widths={FULL_WIDTHS}
+          sizes="(max-width: 900px) 94vw, 860px"
+          quality={FULL_QUALITY}
+          loading="eager"
+          fetchpriority="high"
+        />
       </figure>
 
       <div class="photo-meta">

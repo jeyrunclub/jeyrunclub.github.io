@@ -1,31 +1,37 @@
 ---
 import Base from '../../../layouts/Base.astro';
-import gallery from '../../../data/gallery.json';
+import { Image, getImage } from 'astro:assets';
+import { photos, FULL_WIDTHS, FULL_QUALITY, CARD_WIDTH, CARD_QUALITY } from '../../../lib/gallery.js';
 
 export function getStaticPaths() {
-  return gallery.photos.map((photo, i) => ({
-    params: { id: String(i + 1) },
+  // params come from photo.id, not the array position — gallery.json has an
+  // entry whose file is missing, so the two diverge after it.
+  return photos.map((photo, i) => ({
+    params: { id: String(photo.id) },
     props: {
       photo: {
         ...photo,
         title: photo.title_en || photo.title,
         story: photo.story_en || photo.story,
       },
-      number: i + 1,
-      prev: i > 0 ? i : null,
-      next: i < gallery.photos.length - 1 ? i + 2 : null,
-      total: gallery.photos.length,
+      number: photo.id,
+      prev: i > 0 ? photos[i - 1].id : null,
+      next: i < photos.length - 1 ? photos[i + 1].id : null,
+      total: photos.length,
     },
   }));
 }
 
 const { photo, number, prev, next, total } = Astro.props;
+
+// Each photo gets its own social card, as a JPEG for crawler compatibility.
+const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDTH, quality: CARD_QUALITY });
 ---
 <Base
   lang="en"
   title={`Photo #${number} — ${photo.title || 'Jeyrun gallery'}`}
   description={photo.story || photo.title || `Photo ${number} from the Jeyrun gallery`}
-  ogImage={`/images/gallery/${photo.file}`}
+  ogImage={card.src}
 >
   <section class="photo-page">
     <div class="container photo-inner">
@@ -35,7 +41,15 @@ const { photo, number, prev, next, total } = Astro.props;
       </p>
 
       <figure class="photo-hero">
-        <img src={`/images/gallery/${photo.file}`} alt={photo.title || `Photo ${number}`} />
+        <Image
+          src={photo.image}
+          alt={photo.title || `Photo ${number}`}
+          widths={FULL_WIDTHS}
+          sizes="(max-width: 900px) 94vw, 860px"
+          quality={FULL_QUALITY}
+          loading="eager"
+          fetchpriority="high"
+        />
       </figure>
 
       <div class="photo-meta">
