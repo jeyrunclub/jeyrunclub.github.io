@@ -19,7 +19,7 @@ const rest = await Promise.all(
       THUMB_WIDTHS.map((w) => getImage({ src: p.image, width: w, format: 'webp', quality: THUMB_QUALITY })),
     );
     return {
-      id: p.id, title: p.title, story: p.story,
+      id: p.id, title: p.title, story: p.story, shape: p.shape,
       src: large.src,
       srcset: `${small.src} ${THUMB_WIDTHS[0]}w, ${large.src} ${THUMB_WIDTHS[1]}w`,
       w: p.image.width, h: p.image.height,
@@ -46,7 +46,7 @@ const rest = await Promise.all(
     <div class="container">
       <div class="gallery-grid" id="gallery-grid" data-page-size={PAGE_SIZE}>
         {firstPage.map((p) => (
-          <a href={`/en/photo/${p.id}`} class="gal-item">
+          <a href={`/en/photo/${p.id}`} class={`gal-item is-${p.shape}`}>
             <span class="gal-badge">#{p.id}</span>
             <Image
               src={p.image}
@@ -82,7 +82,7 @@ const rest = await Promise.all(
     btn?.addEventListener('click', () => {
       const next = rest.slice(shown - PAGE_SIZE, shown - PAGE_SIZE + PAGE_SIZE);
       const html = next.map((p) => `
-        <a href="/en/photo/${p.id}" class="gal-item">
+        <a href="/en/photo/${p.id}" class="gal-item is-${p.shape}">
           <span class="gal-badge">#${p.id}</span>
           <img src="${p.src}" srcset="${p.srcset}" sizes="${SIZES}"
                width="${p.w}" height="${p.h}"

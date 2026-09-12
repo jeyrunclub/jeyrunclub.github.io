@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import { Image } from 'astro:assets';
 import { photos as galleryPhotos, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
-import heroPortrait from '../assets/gallery/new-img_0169.jpg';
+import heroPhoto from '../assets/gallery/group-b.jpg';
 import gallery from '../data/gallery.json';
 import targetRaces from '../data/target-races.json';
 import stats from '../data/stats.json';
@@ -44,8 +44,18 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
   })} />
 
   <!-- HERO -->
-  <section class="hero">
-    <div class="hero-bg" aria-hidden="true"></div>
+  <section class="hero hero-photo">
+    <Image
+      src={heroPhoto}
+      alt="تیم جیران زیر قله‌ی دماوند"
+      class="hero-photo-img"
+      widths={[900, 1400, 1900]}
+      sizes="100vw"
+      quality={74}
+      loading="eager"
+      fetchpriority="high"
+    />
+    <div class="hero-scrim" aria-hidden="true"></div>
     <div class="container hero-inner">
       <div class="hero-text">
         <p class="eyebrow">باشگاه دویدن، تریل و کوهستان · تهران</p>
@@ -59,19 +69,6 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
         <div class="hero-ctas">
           <a href="/#join" class="btn btn-primary">عضویت در تیم</a>
           <a href="/services" class="btn btn-ghost">خدمات</a>
-        </div>
-      </div>
-      <div class="hero-portrait" aria-hidden="true">
-        <div class="portrait-frame">
-          <Image
-            src={heroPortrait}
-            alt="سالار پیری در دیوار قهرمانان مسابقه"
-            widths={[400, 760]}
-            sizes="(max-width: 900px) 90vw, 360px"
-            quality={78}
-            loading="eager"
-            fetchpriority="high"
-          />
         </div>
       </div>
     </div>
@@ -202,7 +199,7 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
       <h2>لحظه‌های جیران</h2>
       <div class="gallery-grid">
         {featured.map((p) => (
-          <a href={`/photo/${p.id}`} class="gal-item">
+          <a href={`/photo/${p.id}`} class={`gal-item is-${p.shape}`}>
             <span class="gal-badge">#{fa(p.id)}</span>
             <Image
               src={p.image}

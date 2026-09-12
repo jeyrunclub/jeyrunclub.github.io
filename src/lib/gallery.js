@@ -18,13 +18,23 @@ const byName = Object.fromEntries(
   Object.entries(files).map(([path, mod]) => [path.split('/').pop(), mod]),
 );
 
+// Let the photograph choose its own tile. A Damavand ascent wants to be tall,
+// a start line wants to be wide — cropping everything to one rectangle threw
+// that away and made 72 photos look like 72 of the same photo.
+function shapeOf(image) {
+  const r = image.width / image.height;
+  if (r >= 1.25) return 'wide';
+  if (r <= 0.8) return 'tall';
+  return 'square';
+}
+
 export const photos = gallery.photos.map((p, i) => {
   const image = byName[p.file];
   if (!image) {
     // Loud at build time rather than a silent hole in the grid.
     console.warn(`[gallery] no file in src/assets/gallery for "${p.file}"`);
   }
-  return { ...p, id: i + 1, image };
+  return { ...p, id: i + 1, image, shape: image ? shapeOf(image) : 'square' };
 }).filter((p) => p.image);
 
 // These are grainy outdoor photographs — mountains, foliage, gravel — and they
