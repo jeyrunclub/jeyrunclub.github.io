@@ -1,42 +1,81 @@
-/* ============================================
-   Jeyrun / Salar Piri — Persian Landing Page
-   ============================================ */
+/* ===================================================================
+   Jeyrun — «جهش» / The Leap
+   A poster system taken from the mark: the gazelle is one continuous
+   crimson ribbon caught mid-air, drawn with parallel tapered strokes
+   against open paper. So: warm paper ground, true-crimson ink, Persian
+   tile colours for the secondary voice, and one repeated structural
+   move — the diagonal cut, echoing the tapered tip of every stroke.
+   Committed to a single light look, the way a printed poster is.
+   =================================================================== */
 
 :root {
-  --bg: #0e1116;
-  --bg-alt: #151a22;
-  --surface: #1c222c;
-  --surface-2: #232a36;
-  --text: #eef1f6;
-  --text-dim: #a5adbb;
-  --muted: #6d7688;
-  --accent: #df2747;         /* jeyrun crimson (from logo) */
-  --accent-hover: #ff3a5c;
-  --accent-2: #ff7a90;
-  --brand: #df2747;
-  --brand-dark: #b81a37;
-  --border: rgba(255,255,255,0.08);
-  --border-strong: rgba(255,255,255,0.14);
-  --whatsapp: #25d366;
-  --radius: 14px;
-  --radius-sm: 8px;
-  --shadow: 0 10px 40px rgba(0,0,0,0.35);
-  --maxw: 1200px;
+  /* --- Paper & ink ------------------------------------------------ */
+  --ink:        #17130f;   /* warm near-black, never pure #000 */
+  --ink-soft:   #5b5248;
+  --ink-mute:   #8b8075;
+  --sand:       #f7f2e8;   /* the page */
+  --sand-2:     #efe7d8;   /* alternating bands */
+  --sand-3:     #e4d8c4;
+  --paper:      #fffdf8;   /* cards sit slightly above the page */
+
+  /* --- Sampled from the gazelle artwork (#e00a2e) ------------------ */
+  --crimson:      #e00a2e;
+  --crimson-deep: #ab0722;
+  --crimson-tint: #fce7eb;
+
+  /* --- Persian tile palette: the secondary voice ------------------- */
+  --turquoise:      #0d8f8b;   /* فیروزه */
+  --turquoise-deep: #086663;
+  --turquoise-tint: #dff1f0;
+  --saffron:        #eda600;   /* زعفران */
+  --saffron-tint:   #fdf0d4;
+  --lapis:          #1d3f77;   /* لاجورد */
+  --lapis-tint:     #e3e9f3;
+
+  /* --- Legacy aliases: every existing rule keeps working ----------- */
+  --bg:            var(--sand);
+  --bg-alt:        var(--sand-2);
+  --surface:       var(--paper);
+  --surface-2:     var(--sand-2);
+  --text:          var(--ink);
+  --text-dim:      var(--ink-soft);
+  --muted:         var(--ink-mute);
+  --accent:        var(--crimson);
+  --accent-hover:  var(--crimson-deep);
+  --accent-2:      var(--saffron);
+  --brand:         var(--crimson);
+  --brand-dark:    var(--crimson-deep);
+  --border:        rgba(23, 19, 15, 0.13);
+  --border-strong: rgba(23, 19, 15, 0.30);
+  --whatsapp:      #1faa52;
+
+  /* --- Form ------------------------------------------------------- */
+  --line:      2px;
+  --radius:    20px;
+  --radius-sm: 10px;
+  --radius-lg: 32px;
+  --nib:       5px;            /* the sharp corner — a tapered stroke tip */
+  --shadow:    0 18px 40px -24px rgba(23, 19, 15, 0.45);
+  --shadow-lift: 0 26px 50px -26px rgba(23, 19, 15, 0.5);
+  --maxw:      1200px;
+
+  /* Parallel tapered strokes, straight off the artwork. */
+  --strokes: repeating-linear-gradient(
+    -24deg,
+    transparent 0 9px,
+    rgba(224, 10, 46, 0.09) 9px 11px
+  );
+
+  --font-display: 'Lalezar', 'Vazirmatn', system-ui, sans-serif;
+  --font-body:    'Vazirmatn', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+  --font-figure:  'Space Grotesk', ui-monospace, 'Vazirmatn', monospace;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #fafaf7;
-    --bg-alt: #f2f2ee;
-    --surface: #ffffff;
-    --surface-2: #f6f6f2;
-    --text: #12161c;
-    --text-dim: #4b5361;
-    --muted: #7a8393;
-    --border: rgba(0,0,0,0.08);
-    --border-strong: rgba(0,0,0,0.14);
-    --shadow: 0 10px 30px rgba(0,0,0,0.08);
-  }
+/* English pages: Lalezar's Latin is decorative, so the display voice
+   there is Space Grotesk instead. */
+body.lang-en {
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 /* Reset */
@@ -44,15 +83,33 @@
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
-  font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+  font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
-  line-height: 1.7;
-  font-size: 16px;
+  line-height: 1.8;
+  font-size: 17px;
+  font-weight: 400;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
-body.lang-en {
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+/* Paper tooth. A poster is never perfectly flat. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0.28;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.2'/%3E%3C/svg%3E");
+}
+
+/* Latin runs — paces, splits, distances, years — get their own face so a
+   number reads as a number inside Persian copy. */
+.fig, time, .hl-num, .stat-value, .race-time, .target-dist, .photo-num {
+  font-family: var(--font-figure);
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
 }
 .nav-lang {
   display: inline-flex;
@@ -74,11 +131,29 @@ body.lang-en {
 img { max-width: 100%; height: auto; display: block; }
 a { color: inherit; text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--accent); }
-h1, h2, h3, h4 { font-weight: 700; line-height: 1.25; margin: 0 0 0.6em; letter-spacing: -0.01em; }
-h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); }
-h2 { font-size: clamp(1.6rem, 3vw, 2.4rem); }
-h3 { font-size: 1.15rem; }
-p  { margin: 0 0 1em; }
+/* Persian display type: Lalezar carries the poster voice. Arabic script is
+   cursive, so NO letter-spacing — tracking breaks the joins. Leading stays
+   above 1.15 to clear descenders and diacritics, which is why this can't
+   copy the sub-1.0 leading a Latin poster face would use. */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: normal;
+  margin: 0 0 0.5em;
+  text-wrap: balance;
+}
+body.lang-en h1, body.lang-en h2, body.lang-en h3, body.lang-en h4 {
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+}
+h1 { font-size: clamp(3rem, 8vw, 6rem); }
+h2 { font-size: clamp(2.1rem, 5vw, 3.6rem); }
+h3 { font-size: clamp(1.25rem, 2vw, 1.5rem); }
+h4 { font-size: 1.15rem; }
+p  { margin: 0 0 1em; text-wrap: pretty; }
 ul { margin: 0; padding: 0; list-style: none; }
 
 .container { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
@@ -948,4 +1023,280 @@ blockquote.values {
   color: var(--text);
   opacity: 0.07;
   font-variant-numeric: tabular-nums;
+}
+
+/* ===================================================================
+   THE LEAP — system layer
+   One structural move, repeated: the diagonal cut. Every surface that
+   is a "thing" keeps three soft corners and one tapered nib, the way
+   every stroke in the mark ends in a point.
+   =================================================================== */
+
+/* ---- Card material -------------------------------------------------- */
+.service-card,
+.cal-card,
+.race-card,
+.target-card,
+.testimonial-card,
+.post-card,
+.highlight,
+.loc-card,
+.stat-card,
+.calendar-note,
+.utmb-note,
+.service-detail {
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius) var(--radius) var(--radius) var(--nib);
+  box-shadow: 0 1px 0 rgba(23, 19, 15, 0.04);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.22s, box-shadow 0.22s;
+}
+
+/* The leap: lift and drift forward (in RTL, forward is leftwards). */
+.service-card:hover,
+.cal-card:hover,
+.race-card:hover,
+.target-card:hover,
+.testimonial-card:hover,
+.post-card:hover,
+.loc-card:hover,
+.stat-card:hover {
+  transform: translate(6px, -6px);
+  border-color: var(--crimson);
+  box-shadow: var(--shadow);
+}
+[dir='ltr'] .service-card:hover,
+[dir='ltr'] .cal-card:hover,
+[dir='ltr'] .race-card:hover,
+[dir='ltr'] .target-card:hover,
+[dir='ltr'] .testimonial-card:hover,
+[dir='ltr'] .post-card:hover,
+[dir='ltr'] .loc-card:hover,
+[dir='ltr'] .stat-card:hover {
+  transform: translate(-6px, -6px);
+}
+
+/* ---- Eyebrow: a slanted tag, not a caption -------------------------- */
+.eyebrow,
+.section-eyebrow {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink);
+  background: var(--saffron);
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px 999px 999px var(--nib);
+  margin: 0 0 1.1rem;
+}
+
+body.lang-en .eyebrow,
+body.lang-en .section-eyebrow {
+  font-family: var(--font-figure);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* ---- Section rhythm -------------------------------------------------- */
+.section { padding: clamp(4.5rem, 9vw, 8rem) 0; position: relative; }
+.section:nth-of-type(even) { background: var(--sand-2); }
+.section-sub {
+  color: var(--ink-soft);
+  max-width: 56ch;
+  margin-bottom: 2.4rem;
+  font-size: 1.08rem;
+}
+.lead {
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  color: var(--ink-soft);
+  font-weight: 300;
+  max-width: 58ch;
+}
+
+/* ---- Buttons: ink pills that press ---------------------------------- */
+.btn {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.85rem 1.7rem;
+  border: 1.5px solid transparent;
+  border-radius: 999px 999px 999px var(--nib);
+  transition: transform 0.16s ease, background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+.btn-primary { background: var(--crimson); color: #fff; }
+.btn-primary:hover { background: var(--crimson-deep); color: #fff; }
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.btn-ghost:hover { background: var(--ink); color: var(--sand); }
+.btn-whatsapp { background: var(--whatsapp); color: #fff; }
+.btn-whatsapp:hover { background: #17924a; color: #fff; }
+
+/* ---- Header ---------------------------------------------------------- */
+.site-header {
+  background: color-mix(in oklab, var(--sand) 88%, transparent);
+  border-bottom: 1.5px solid var(--border);
+}
+.brand-name { font-family: var(--font-display); font-size: 1.45rem; font-weight: 400; }
+.site-nav a { color: var(--ink-soft); font-weight: 500; }
+.site-nav a:hover { color: var(--crimson); }
+.site-nav .nav-cta {
+  background: var(--crimson);
+  border-radius: 999px 999px 999px var(--nib);
+}
+.nav-lang { border-color: var(--border-strong); }
+
+/* ---- Hero ------------------------------------------------------------ */
+.hero { padding: clamp(3.5rem, 7vw, 6.5rem) 0 clamp(4.5rem, 9vw, 8rem); }
+.hero-bg {
+  background: var(--strokes);
+  opacity: 0.9;
+}
+.hero h1 { color: var(--crimson); }
+.tagline {
+  font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+  color: var(--ink-soft);
+  font-weight: 300;
+  max-width: 34ch;
+}
+.hero-facts strong { font-family: var(--font-figure); font-weight: 700; color: var(--crimson); }
+.hero-facts li { color: var(--ink-soft); }
+.portrait-frame {
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--nib);
+  box-shadow: var(--shadow);
+  background: var(--sand-3);
+}
+
+/* ---- Accents in colour ----------------------------------------------- */
+.hl-num { color: var(--crimson); font-weight: 700; }
+.highlight:nth-child(2) .hl-num { color: var(--turquoise); }
+.highlight:nth-child(3) .hl-num { color: var(--lapis); }
+.highlight:nth-child(4) .hl-num { color: var(--saffron); }
+
+blockquote.values {
+  background: var(--turquoise-tint);
+  border: 0;
+  border-inline-start: 4px solid var(--turquoise);
+  border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) var(--nib);
+  padding: 1rem 1.2rem;
+  color: var(--turquoise-deep);
+}
+.learn-more { color: var(--crimson); font-weight: 700; }
+
+/* Target-race cards: the top rule becomes a tapered crimson stroke, and
+   each card takes one colour of the tile palette. */
+.target-card::before { background: var(--crimson); height: 4px; }
+.target-card:nth-child(2)::before { background: var(--turquoise); }
+.target-card:nth-child(3)::before { background: var(--lapis); }
+.target-card:nth-child(2) .target-when { color: var(--turquoise); }
+.target-card:nth-child(3) .target-when { color: var(--lapis); }
+.target-when { font-family: var(--font-figure); letter-spacing: normal; }
+body.lang-en .target-when { letter-spacing: 0.12em; }
+.target-card h3 { font-family: var(--font-display); font-weight: 400; }
+.target-dist { border-color: var(--border-strong); color: var(--ink-soft); }
+.target-index { opacity: 0.06; font-family: var(--font-display); }
+
+/* Calendar cards carry the day in the display face. */
+.cal-day { font-family: var(--font-display); font-weight: 400; color: var(--crimson); }
+.cal-time { font-family: var(--font-figure); }
+
+/* ---- Service cards: the emoji slot becomes a coloured tile ----------- */
+.service-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.1rem;
+  height: 3.1rem;
+  font-size: 1.5rem;
+  border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) var(--nib);
+  background: var(--crimson-tint);
+  margin-bottom: 0.9rem;
+}
+.service-grid > :nth-child(2) .service-emoji { background: var(--turquoise-tint); }
+.service-grid > :nth-child(3) .service-emoji { background: var(--saffron-tint); }
+.service-grid > :nth-child(4) .service-emoji { background: var(--lapis-tint); }
+.service-grid > :nth-child(5) .service-emoji { background: var(--crimson-tint); }
+
+.sd-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  font-size: 1.6rem;
+  border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) var(--nib);
+  background: var(--crimson-tint);
+}
+.service-detail-grid > :nth-child(2) .sd-icon { background: var(--turquoise-tint); }
+.service-detail-grid > :nth-child(3) .sd-icon { background: var(--saffron-tint); }
+.service-detail-grid > :nth-child(4) .sd-icon { background: var(--lapis-tint); }
+.service-detail-grid > :nth-child(5) .sd-icon { background: var(--crimson-tint); }
+.service-card h3 { font-size: 1.2rem; }
+
+/* ---- Join / sponsor bands: ink blocks with the stroke motif ---------- */
+.section.join, .section.sponsor {
+  position: relative;
+  background: var(--ink);
+  color: var(--sand);
+  overflow: hidden;
+}
+.section.join::before, .section.sponsor::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(-24deg, transparent 0 11px, rgba(247, 242, 232, 0.05) 11px 13px);
+  pointer-events: none;
+}
+.section.join .container, .section.sponsor .container { position: relative; }
+.section.join h2, .section.sponsor h2 { color: var(--sand); }
+.section.join p, .section.sponsor p,
+.section.sponsor li, .section.join .join-note { color: rgba(247, 242, 232, 0.75); }
+.section.join .btn-ghost, .section.sponsor .btn-ghost { color: var(--sand); border-color: var(--sand); }
+.section.join .btn-ghost:hover, .section.sponsor .btn-ghost:hover { background: var(--sand); color: var(--ink); }
+.section.join .eyebrow, .section.sponsor .eyebrow,
+.section.join .section-eyebrow, .section.sponsor .section-eyebrow { background: var(--saffron); color: var(--ink); }
+
+/* ---- Footer ---------------------------------------------------------- */
+.site-footer {
+  background: var(--ink);
+  color: rgba(247, 242, 232, 0.7);
+  border-top: 0;
+}
+.site-footer a { color: rgba(247, 242, 232, 0.7); }
+.site-footer a:hover { color: var(--crimson); }
+
+/* ---- Gallery --------------------------------------------------------- */
+.gal-item {
+  border-radius: var(--radius) var(--radius) var(--radius) var(--nib);
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+}
+.gal-item .gal-badge { background: var(--crimson); color: #fff; }
+
+/* ---- Reveal on scroll, progressively enhanced ------------------------ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .section > .container > * { animation: leap-in linear both; animation-timeline: view(); animation-range: entry 2% cover 20%; }
+  }
+}
+@keyframes leap-in {
+  from { opacity: 0; transform: translateY(1.75rem); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

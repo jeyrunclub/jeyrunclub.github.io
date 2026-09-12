@@ -1,12 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Persian font — kept from the marketing site */
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
+/* Fonts are <link>ed in ReactShell.astro. They used to be @import-ed here,
+   but bundling put the @import after Tailwind's rules, which makes it invalid
+   — it was silently dropped and the app fell back to system-ui. */
 
 /* -------- Design tokens (shadcn-compatible, mapped to Jeyrun brand) -------- */
 @theme {
   --font-sans: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+  --font-figure: 'Space Grotesk', ui-monospace, 'Vazirmatn', monospace;
   --radius: 0.75rem;
 
   /* Brand crimson */
@@ -119,7 +121,11 @@ body {
 
 /* Latin figures inside Persian copy — paces, splits, distances. Tabular so
    a column of 4:40 / 3:50 / 5:00 lines up. */
-.figures { font-feature-settings: 'tnum' 1, 'lnum' 1; letter-spacing: -0.01em; }
+.figures {
+  font-family: var(--font-figure);
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  letter-spacing: -0.01em;
+}
 
 @keyframes jr-rise {
   from { opacity: 0; transform: translateY(0.5rem); }
