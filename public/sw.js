@@ -2,7 +2,7 @@
 // Network-first for HTML (so members always get the latest UI),
 // cache-first for immutable static assets.
 
-const CACHE = 'jeyrun-v1';
+const CACHE = 'jeyrun-v2';
 const CORE = ['/', '/app', '/app/login', '/manifest.webmanifest',
               '/icons/icon-192.png', '/icons/icon-512.png'];
 
@@ -29,8 +29,20 @@ self.addEventListener('fetch', (event) => {
   // Never intercept Supabase, GA, or other cross-origin API calls.
   if (url.origin !== self.location.origin) return;
 
-  // Never cache the /app area — always fresh; needed for auth state.
-  if (url.pathname.startsWith('/app')) return;
+  // The /app area is never cached — auth state has to be live. But "not
+  // cached by us" still left it on the browser's HTTP cache, and GitHub Pages
+  // sends max-age=600 on the HTML. That pinned members to a ten-minute-old
+  // page pointing at a ten-minute-old bundle hash, so a shipped fix looked
+  // like it had not shipped. Go past the HTTP cache for the document itself;
+  // the hashed assets it references are immutable and safe to reuse.
+  if (url.pathname.startsWith('/app')) {
+    if (req.mode === 'navigate' || req.headers.get('accept')?.includes('text/html')) {
+      event.respondWith(
+        fetch(req, { cache: 'no-store' }).catch(() => fetch(req)),
+      );
+    }
+    return;
+  }
 
   // HTML: network-first, fall back to cache.
   if (req.headers.get('accept')?.includes('text/html')) {
