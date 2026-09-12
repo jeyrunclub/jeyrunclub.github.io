@@ -1,103 +1,116 @@
 ---
 /**
- * One articulated runner, side on, facing right.
+ * One articulated runner, side on, facing right — a body in kit, not a
+ * skeleton.
  *
- * The figure is a rig rather than a picture: hips, knees, ankles, shoulders
- * and elbows are separate groups that CSS rotates, so this is a real run cycle
- * instead of a bobbing image. Limbs are drawn hanging straight down in their
- * untransformed pose and every rotation is applied from there, which keeps the
- * joint coordinates readable.
+ * Still a rig: hips, knees, ankles, shoulders and elbows are groups the CSS
+ * rotates, so this is a real run cycle. What changed is that each limb is a
+ * thick round-capped stroke rather than a hairline, which reads as an arm or a
+ * leg with mass; a second, shorter stroke laid over the top of the upper arm
+ * and the thigh is the sleeve and the short. Torso, head and hair are filled
+ * shapes.
  *
- * `transform-box: view-box` is what makes that work — without it a
- * transform-origin resolves against each element's own bounding box, and every
+ * `transform-box: view-box` is what makes the joints work — without it a
+ * transform-origin resolves against each element's own bounding box and every
  * limb pivots around its own middle instead of its joint.
  *
- * One cycle is two footfalls, so the body bob runs at twice the leg rate. The
- * far-side limbs use their own mirrored keyframes rather than a 50% delay, so
- * `--delay` can phase a whole figure against its neighbours without pulling
- * its own limbs out of step.
+ * Kit colours come from the club's own palette rather than a generic athletic
+ * one, and each figure takes its own, so a pack doesn't read as a uniform.
  */
 
 interface Props {
-  /** Optional photographed head, clipped to the head circle. */
-  photo?: string;
-  /** Seconds. Negative values start the figure part-way through its stride. */
+  shirt?: string;
+  shorts?: string;
+  skin?: string;
+  hair?: string;
+  shoe?: string;
+  /** The club's photographs are mostly short hair, caps and ponytails. */
+  head?: 'short' | 'cap' | 'ponytail';
   delay?: number;
-  /** Stride duration; slightly different per figure stops the pack marching. */
   stride?: number;
   class?: string;
 }
 
-const { photo, delay = 0, stride = 0.62, class: className } = Astro.props;
-const uid = 'rf-' + Math.random().toString(36).slice(2, 8);
+const {
+  shirt = '#17130f',
+  shorts = '#1d3f77',
+  skin = '#d9a677',
+  hair = '#17130f',
+  shoe = '#e00a2e',
+  head = 'short',
+  delay = 0,
+  stride = 0.62,
+  class: className,
+} = Astro.props;
 ---
 
 <svg
   class:list={['runner-fig', className]}
-  viewBox="0 0 64 104"
+  viewBox="0 0 76 116"
   fill="none"
-  stroke="currentColor"
-  stroke-width="5"
   stroke-linecap="round"
   stroke-linejoin="round"
   style={`--delay:${delay}s;--stride:${stride}s`}
   aria-hidden="true"
 >
-  {photo && (
-    <defs>
-      <clipPath id={uid}><circle cx="40" cy="14" r="8.4" /></clipPath>
-    </defs>
-  )}
-
   <g class="rf-bob">
-    {/* Far side first, so it sits behind the torso. */}
-    <g class="rf-arm rf-arm--far" style="transform-origin:35px 28px">
-      <path d="M35 28 35 41" />
-      <g class="rf-forearm rf-forearm--far" style="transform-origin:35px 41px">
-        <path d="M35 41 35 52" />
+    {/* ---- far side, behind the body ---- */}
+    <g class="rf-arm rf-arm--far" style="transform-origin:38px 32px">
+      <path d="M38 32 38 49" stroke={skin} stroke-width="7" />
+      <path d="M38 32 38 41" stroke={shirt} stroke-width="9.6" />
+      <g class="rf-forearm rf-forearm--far" style="transform-origin:38px 49px">
+        <path d="M38 49 38 63" stroke={skin} stroke-width="6.4" />
       </g>
     </g>
-    <g class="rf-thigh rf-thigh--far" style="transform-origin:30px 54px">
-      <path d="M30 54 30 76" />
-      <g class="rf-shin rf-shin--far" style="transform-origin:30px 76px">
-        <path d="M30 76 30 96" />
-        <g class="rf-foot rf-foot--far" style="transform-origin:30px 96px">
-          <path d="M30 96 38 99" />
+    <g class="rf-thigh rf-thigh--far" style="transform-origin:35px 62px">
+      <path d="M35 62 35 85" stroke={skin} stroke-width="8.6" />
+      <path d="M35 62 35 73" stroke={shorts} stroke-width="11" />
+      <g class="rf-shin rf-shin--far" style="transform-origin:35px 85px">
+        <path d="M35 85 35 103" stroke={skin} stroke-width="7" />
+        <g class="rf-foot rf-foot--far" style="transform-origin:35px 103px">
+          <path d="M35 103 43 106" stroke={shoe} stroke-width="6.4" />
         </g>
       </g>
     </g>
 
-    {/* Torso and head */}
-    <path d="M30 54 35 28" />
-    {photo ? (
+    {/* ---- torso and head ---- */}
+    {/* The shirt: shoulders down to the hip, leaning forward with the run. */}
+    <path
+      fill={shirt}
+      d="M32.5 27C36 25 42 25 45 27.5C46.5 29 45.5 33 44 38C42.5 43.5 41 51 40.5 58C40.5 61 39 63 35 63C31 63 29.5 61 30 57.5C31 50 31.5 40 31 34C30.7 30.5 31 28 32.5 27Z"
+    />
+    <path d="M40 27 42.5 22" stroke={skin} stroke-width="6.4" />
+    <circle cx="46" cy="16" r="9.4" fill={skin} />
+
+    {/* Hair over the crown and back of the head. */}
+    {head === 'cap' ? (
       <>
-        <image
-          href={photo}
-          x="31.6" y="5.6" width="16.8" height="16.8"
-          preserveAspectRatio="xMidYMid slice"
-          clip-path={`url(#${uid})`}
-        />
-        <circle cx="40" cy="14" r="8.4" stroke-width="4" />
+        <path fill={hair} d="M36.8 14C37.8 8.4 42.4 5.6 47 6.2C51 6.8 54 9.6 54.4 13.4C50 11.8 41.4 12.2 36.8 14Z" />
+        <path fill={hair} d="M54.3 12.4C57.6 12.6 59.6 13.4 60.2 14.6C57.6 15.2 55 15.2 54.1 14.8Z" />
       </>
     ) : (
-      <circle cx="40" cy="14" r="8.4" />
+      <path fill={hair} d="M36.8 15C36.4 9.6 40.6 5.8 45.6 5.8C50.4 5.8 54.4 9 54.8 13.6C51.4 10.6 41.6 11 36.8 15Z" />
     )}
-    <path d="M35 28 38 21" />
+    {head === 'ponytail' && (
+      <path fill={hair} d="M37.6 13.6C34 14.6 31.4 17.4 30.6 21C33.4 21.6 36.4 20.2 38.2 17.6Z" />
+    )}
 
-    {/* Near side */}
-    <g class="rf-thigh rf-thigh--near" style="transform-origin:30px 54px">
-      <path d="M30 54 30 76" />
-      <g class="rf-shin rf-shin--near" style="transform-origin:30px 76px">
-        <path d="M30 76 30 96" />
-        <g class="rf-foot rf-foot--near" style="transform-origin:30px 96px">
-          <path d="M30 96 38 99" />
+    {/* ---- near side, in front ---- */}
+    <g class="rf-thigh rf-thigh--near" style="transform-origin:35px 62px">
+      <path d="M35 62 35 85" stroke={skin} stroke-width="8.6" />
+      <path d="M35 62 35 73" stroke={shorts} stroke-width="11" />
+      <g class="rf-shin rf-shin--near" style="transform-origin:35px 85px">
+        <path d="M35 85 35 103" stroke={skin} stroke-width="7" />
+        <g class="rf-foot rf-foot--near" style="transform-origin:35px 103px">
+          <path d="M35 103 43 106" stroke={shoe} stroke-width="6.4" />
         </g>
       </g>
     </g>
-    <g class="rf-arm rf-arm--near" style="transform-origin:35px 28px">
-      <path d="M35 28 35 41" />
-      <g class="rf-forearm rf-forearm--near" style="transform-origin:35px 41px">
-        <path d="M35 41 35 52" />
+    <g class="rf-arm rf-arm--near" style="transform-origin:38px 32px">
+      <path d="M38 32 38 49" stroke={skin} stroke-width="7" />
+      <path d="M38 32 38 41" stroke={shirt} stroke-width="9.6" />
+      <g class="rf-forearm rf-forearm--near" style="transform-origin:38px 49px">
+        <path d="M38 49 38 63" stroke={skin} stroke-width="6.4" />
       </g>
     </g>
   </g>
@@ -107,12 +120,12 @@ const uid = 'rf-' + Math.random().toString(36).slice(2, 8);
   .runner-fig { overflow: visible; }
   .runner-fig g { transform-box: view-box; }
 
-  /* The far arm and leg are the same stroke in the same place as the near
+  /* The far arm and leg are the same shapes in the same place as the near
      ones, so a mirrored swap between them was invisible — the figure looked
-     frozen even though every joint was moving. Fading the far side both reads
-     as depth and makes the cycle legible. */
+     frozen even though every joint was moving. Darkening the far side both
+     reads as depth and makes the cycle legible. */
   .runner-fig .rf-arm--far,
-  .runner-fig .rf-thigh--far { opacity: 0.42; }
+  .runner-fig .rf-thigh--far { filter: brightness(0.74); }
 
   .runner-fig .rf-bob,
   .runner-fig .rf-thigh,
@@ -151,70 +164,72 @@ const uid = 'rf-' + Math.random().toString(36).slice(2, 8);
   }
 
   @keyframes rf-thigh {
-    0%   { transform: rotate(-32deg); }
+    0%   { transform: rotate(-34deg); }
     25%  { transform: rotate(-8deg); }
-    50%  { transform: rotate(26deg); }
+    50%  { transform: rotate(28deg); }
     75%  { transform: rotate(4deg); }
-    100% { transform: rotate(-32deg); }
+    100% { transform: rotate(-34deg); }
   }
   @keyframes rf-thigh-far {
-    0%   { transform: rotate(26deg); }
+    0%   { transform: rotate(28deg); }
     25%  { transform: rotate(4deg); }
-    50%  { transform: rotate(-32deg); }
+    50%  { transform: rotate(-34deg); }
     75%  { transform: rotate(-8deg); }
-    100% { transform: rotate(26deg); }
+    100% { transform: rotate(28deg); }
   }
 
   /* The shin trails the thigh: nearly straight as the foot reaches out,
      folded right up as the heel comes through under the hip. */
   @keyframes rf-shin {
-    0%   { transform: rotate(22deg); }
+    0%   { transform: rotate(24deg); }
     20%  { transform: rotate(2deg); }
-    50%  { transform: rotate(48deg); }
-    72%  { transform: rotate(92deg); }
-    100% { transform: rotate(22deg); }
+    50%  { transform: rotate(50deg); }
+    72%  { transform: rotate(94deg); }
+    100% { transform: rotate(24deg); }
   }
   @keyframes rf-shin-far {
-    0%   { transform: rotate(48deg); }
-    22%  { transform: rotate(92deg); }
-    50%  { transform: rotate(22deg); }
+    0%   { transform: rotate(50deg); }
+    22%  { transform: rotate(94deg); }
+    50%  { transform: rotate(24deg); }
     70%  { transform: rotate(2deg); }
-    100% { transform: rotate(48deg); }
+    100% { transform: rotate(50deg); }
   }
 
   @keyframes rf-foot {
-    0%   { transform: rotate(-12deg); }
-    50%  { transform: rotate(14deg); }
-    100% { transform: rotate(-12deg); }
+    0%   { transform: rotate(-14deg); }
+    50%  { transform: rotate(16deg); }
+    100% { transform: rotate(-14deg); }
   }
   @keyframes rf-foot-far {
-    0%   { transform: rotate(14deg); }
-    50%  { transform: rotate(-12deg); }
-    100% { transform: rotate(14deg); }
+    0%   { transform: rotate(16deg); }
+    50%  { transform: rotate(-14deg); }
+    100% { transform: rotate(16deg); }
   }
 
   /* Arms oppose the legs. */
   @keyframes rf-arm {
-    0%   { transform: rotate(42deg); }
-    50%  { transform: rotate(-40deg); }
-    100% { transform: rotate(42deg); }
+    0%   { transform: rotate(40deg); }
+    50%  { transform: rotate(-38deg); }
+    100% { transform: rotate(40deg); }
   }
   @keyframes rf-arm-far {
-    0%   { transform: rotate(-40deg); }
-    50%  { transform: rotate(42deg); }
-    100% { transform: rotate(-40deg); }
+    0%   { transform: rotate(-38deg); }
+    50%  { transform: rotate(40deg); }
+    100% { transform: rotate(-38deg); }
   }
 
-  /* Held near a right angle throughout, opening a little at the back. */
+  /* The elbow closes as the hand comes up past the chest and opens as it
+     drives back past the hip. Holding it near a right angle the whole way
+     round left both forearms horizontal and the arms looked stiff. */
   @keyframes rf-forearm {
-    0%   { transform: rotate(-96deg); }
-    50%  { transform: rotate(-52deg); }
-    100% { transform: rotate(-96deg); }
+    0%   { transform: rotate(-108deg); }
+    50%  { transform: rotate(-46deg); }
+    100% { transform: rotate(-108deg); }
   }
   @keyframes rf-forearm-far {
-    0%   { transform: rotate(-52deg); }
-    50%  { transform: rotate(-96deg); }
-    100% { transform: rotate(-52deg); }
+    0%   { transform: rotate(-46deg); }
+    50%  { transform: rotate(-108deg); }
+    100% { transform: rotate(-46deg); }
   }
 
   @media (prefers-reduced-motion: reduce) {

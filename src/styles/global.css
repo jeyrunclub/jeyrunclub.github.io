@@ -1460,13 +1460,12 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
    percentage — a percentage margin resolves against the containing block's
    WIDTH, which here is the whole band, and dropped them 38px through the
    floor. */
-.runner--face {
-  color: var(--ink);
-  margin-bottom: -0.26rem;
+.runner--person {
+  margin-bottom: -0.5rem;
 }
-.runner--face .runner-fig {
+.runner--person .runner-fig {
   display: block;
-  height: clamp(3.6rem, 6.4vw, 5.4rem);
+  height: clamp(4rem, 7vw, 6rem);
   width: auto;
 }
 .runner--gazelle {

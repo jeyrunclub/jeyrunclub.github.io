@@ -1,11 +1,11 @@
 ---
-// The gazelle out in front, Salar behind it, the club behind him — all
-// articulated now rather than sliding images.
+// The gazelle out in front, the club strung out behind it.
 //
-// Each figure is a rig whose joints CSS rotates (see RunnerFigure.astro and
-// GazelleFigure.astro); this file only places them and carries them across.
-// The runners wear the club's own faces, clipped into the head circle, so the
-// pack is recognisably us and not a stock silhouette.
+// Every figure is a rig whose joints CSS rotates (RunnerFigure.astro and
+// GazelleFigure.astro); this file only dresses them, places them and carries
+// them across. Kit colours are read off the club's own photographs — the black
+// tee and white shorts, the blue tee, the all-black kit — rather than invented,
+// so the pack looks like a Friday morning on Farmanieh and not a stock set.
 //
 // Decorative, so the whole strip is aria-hidden. It also breaks the page's
 // rhythm on purpose: every other section is eyebrow → heading → grid inside
@@ -14,12 +14,22 @@
 import RunnerFigure from './RunnerFigure.astro';
 import GazelleFigure from './GazelleFigure.astro';
 
-// Only members photographed face-on: the fourth portrait we have is shot from
-// behind, which reads oddly on a figure running towards the right.
 const pack = [
-  { photo: '/images/runners/salar.jpg',    cls: 'runner--1', delay: -0.31, stride: 0.60 },
-  { photo: '/images/runners/member-1.jpg', cls: 'runner--2', delay: -0.08, stride: 0.66 },
-  { photo: '/images/runners/member-3.jpg', cls: 'runner--3', delay: -0.44, stride: 0.63 },
+  {
+    cls: 'runner--1', delay: -0.31, stride: 0.60,
+    shirt: '#17130f', shorts: '#efe7d8', skin: '#c98d5e',
+    hair: '#8b8075', shoe: '#f7f2e8', head: 'short' as const,
+  },
+  {
+    cls: 'runner--2', delay: -0.08, stride: 0.66,
+    shirt: '#4d7fa6', shorts: '#1d3f77', skin: '#d9a677',
+    hair: '#2b2018', shoe: '#17130f', head: 'cap' as const,
+  },
+  {
+    cls: 'runner--3', delay: -0.44, stride: 0.63,
+    shirt: '#17130f', shorts: '#17130f', skin: '#e0b489',
+    hair: '#17130f', shoe: '#e00a2e', head: 'ponytail' as const,
+  },
 ];
 ---
 <div class="runners-band" aria-hidden="true">
@@ -30,8 +40,12 @@ const pack = [
   </span>
 
   {pack.map((p) => (
-    <span class:list={['runner', 'runner--face', p.cls]}>
-      <RunnerFigure photo={p.photo} delay={p.delay} stride={p.stride} />
+    <span class:list={['runner', 'runner--person', p.cls]}>
+      <RunnerFigure
+        shirt={p.shirt} shorts={p.shorts} skin={p.skin}
+        hair={p.hair} shoe={p.shoe} head={p.head}
+        delay={p.delay} stride={p.stride}
+      />
     </span>
   ))}
 </div>
