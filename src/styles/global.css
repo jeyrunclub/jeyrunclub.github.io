@@ -1435,7 +1435,7 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 .runners-band {
   position: relative;
   overflow: hidden;
-  height: clamp(7rem, 13vw, 10.5rem);
+  height: clamp(7.5rem, 14vw, 11rem);
   background: var(--sand-2);
   border-block: 1.5px solid var(--border);
   background-image: var(--strokes);
@@ -1443,13 +1443,13 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 .runners-ground {
   position: absolute;
   inset-inline: 0;
-  bottom: 22%;
+  bottom: 24%;
   height: 1.5px;
   background: linear-gradient(to left, transparent, var(--border-strong) 15%, var(--border-strong) 85%, transparent);
 }
 .runner {
   position: absolute;
-  bottom: 22%;
+  bottom: 24%;
   left: 0;
   display: block;
   color: var(--ink);
@@ -1459,21 +1459,32 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
   display: block;
   animation: run-bob 0.42s ease-in-out infinite alternate;
 }
-.runner svg { display: block; height: clamp(3rem, 5.2vw, 4.1rem); width: auto; }
-.runner img { display: block; height: clamp(3.4rem, 6vw, 4.8rem); width: auto; }
+.runner img { display: block; }
+.runner--gazelle img { height: clamp(3.4rem, 6vw, 4.8rem); width: auto; }
+
+/* The club's own faces, each on a paper ring so it reads as a portrait
+   rather than a hole punched in the band. */
+.runner--face img {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--paper);
+  box-shadow: 0 6px 16px -6px rgba(23, 19, 15, 0.55);
+}
 
 /* Negative delays so the line is already strung out on arrival, rather than
    the gazelle setting off alone and the club trickling in afterwards. */
-.runner--gazelle { animation-delay: -3.9s; }
-.runner--1 { animation-delay: -2.8s; opacity: 0.88; }
-.runner--2 { animation-delay: -1.8s; opacity: 0.72; }
-.runner--3 { animation-delay: -0.9s; opacity: 0.58; }
+.runner--gazelle { animation-delay: -4.6s; }
+.runner--1 { animation-delay: -3.6s; }
+.runner--2 { animation-delay: -2.7s; }
+.runner--3 { animation-delay: -1.9s; }
+.runner--4 { animation-delay: -1.1s; }
 .runner--2 .runner-bob { animation-duration: 0.38s; }
-.runner--3 .runner-bob { animation-duration: 0.46s; }
+.runner--3 .runner-bob { animation-duration: 0.47s; }
+.runner--4 .runner-bob { animation-duration: 0.43s; }
 
 @keyframes run-across {
-  from { transform: translateX(-22vw); }
-  to   { transform: translateX(128vw); }
+  from { transform: translateX(-26vw); }
+  to   { transform: translateX(130vw); }
 }
 @keyframes run-bob {
   from { transform: translateY(0); }
@@ -1483,8 +1494,13 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 /* Still a composition, just a still one. */
 @media (prefers-reduced-motion: reduce) {
   .runner, .runner-bob { animation: none; }
-  .runner--gazelle { left: 66%; }
-  .runner--1 { left: 48%; }
-  .runner--2 { left: 32%; }
-  .runner--3 { left: 17%; }
+  .runner--gazelle { left: 72%; }
+  .runner--1 { left: 55%; }
+  .runner--2 { left: 41%; }
+  .runner--3 { left: 28%; }
+  .runner--4 { left: 16%; }
+}
+
+@media (max-width: 640px) {
+  .runner--face img { border-width: 2.5px; }
 }
