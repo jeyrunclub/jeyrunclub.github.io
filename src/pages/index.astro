@@ -3,13 +3,13 @@ import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import RunnersBand from '../components/RunnersBand.astro';
 import { Image } from 'astro:assets';
-import { photos as galleryPhotos, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
+import { photos as galleryPhotos, featured as groupShots, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
 import heroPhoto from '../assets/gallery/group-b.jpg';
 import gallery from '../data/gallery.json';
 import targetRaces from '../data/target-races.json';
 import stats from '../data/stats.json';
 
-const featured = galleryPhotos.slice(0, 8);
+const featured = groupShots;
 const targets = targetRaces.races;
 const heroFacts = stats.cards.slice(0, 3);
 const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);

@@ -37,6 +37,25 @@ export const photos = gallery.photos.map((p, i) => {
   return { ...p, id: i + 1, image, shape: image ? shapeOf(image) : 'square' };
 }).filter((p) => p.image);
 
+// The homepage strip, chosen by hand: group shots with the whole club in them.
+// The gallery's own order is roughly chronological and its first eight are
+// mostly landscape and single-runner frames, which made the homepage read as a
+// scenery page rather than a club page.
+const HOME_FILES = [
+  'new-img_6699.jpg',   // the road, whole squad
+  'group-c.jpg',        // under the plane trees
+  'team-group.jpg',     // the group class
+  'new-img_8227.jpg',   // the brick gate, arms up
+  'new-img_9688.jpg',   // under the willows
+  'new-img_8052.jpg',   // autumn, before Istanbul
+  'new-img_4122.jpg',   // the big willow
+  'new-img_3294.jpg',   // the car park, everyone gathering
+];
+
+export const featured = HOME_FILES
+  .map((f) => photos.find((p) => p.file === f))
+  .filter(Boolean);
+
 // These are grainy outdoor photographs — mountains, foliage, gravel — and they
 // barely respond to quality: the same frame is 543KB at q68 and 597KB at q76.
 // Width is the lever that actually moves the number, so each set is cut to what
