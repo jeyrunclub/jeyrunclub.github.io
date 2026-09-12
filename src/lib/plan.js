@@ -283,3 +283,14 @@ export async function fetchLeaderboard(supabase) {
   if (error) { console.error(error); return { rows: [], error }; }
   return { rows: data || [], error: null };
 }
+
+// Bare digits → a time, on blur. Typing "4620" and getting "46:20" is kinder
+// than rejecting it, and some phone keyboards make a colon genuinely awkward.
+// Anything that isn't 3–6 plain digits is left exactly as written.
+export function normalizePr(text) {
+  const raw = String(text || '').trim();
+  if (!/^[0-9۰-۹]{3,6}$/.test(raw)) return raw;
+  const d = raw.replace(/[۰-۹]/g, (c) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(c));
+  if (d.length <= 4) return `${d.slice(0, d.length - 2)}:${d.slice(-2)}`;
+  return `${d.slice(0, d.length - 4)}:${d.slice(-4, -2)}:${d.slice(-2)}`;
+}

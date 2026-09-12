@@ -6,7 +6,7 @@ import {
   faNum, faDateShort, DAYS_FA, dayIndexOf,
   emptyDays, normalizeDays, daysAreEmpty, trimDays,
   fetchWeekPlansForStudents, fetchWeekLogsForStudents, loadWeekPlan, saveWeekPlan,
-  signedPhotoUrl,
+  signedPhotoUrl, normalizePr,
 } from '../../lib/plan.js';
 import { AppHeader } from '../app/AppHeader';
 import { PlanText } from '../app/PlanText';
@@ -151,7 +151,7 @@ export function CoachPage() {
     setError(null);
     const next = {
       training_goal: goal.trim() || null,
-      pr_10k: pr.trim() || null,
+      pr_10k: normalizePr(pr) || null,
     };
     const { error: err } = await supabase.from('profiles')
       .update(next).eq('id', currentStudentId);
@@ -350,9 +350,9 @@ export function CoachPage() {
                 <Input
                   value={pr}
                   onChange={(e) => setPr(e.target.value)}
+                  onBlur={() => setPr((v) => normalizePr(v))}
                   dir="ltr"
-                  inputMode="numeric"
-                  placeholder="46:20"
+                      placeholder="46:20"
                   className="figures text-right"
                 />
               </div>

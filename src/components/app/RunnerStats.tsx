@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { Check, Pencil, Target, Timer, X, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
+import { normalizePr } from '../../lib/plan.js';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -37,7 +38,7 @@ export function RunnerStats({ studentId, goal, pr, onSave }: {
     setError(null);
     const next = {
       training_goal: goalDraft.trim() || null,
-      pr_10k: prDraft.trim() || null,
+      pr_10k: normalizePr(prDraft) || null,
     };
     const { error: err } = await supabase.from('profiles').update(next).eq('id', studentId);
     setSaving(false);
@@ -65,9 +66,9 @@ export function RunnerStats({ studentId, goal, pr, onSave }: {
             <Input
               value={prDraft}
               onChange={(e) => setPrDraft(e.target.value)}
+              onBlur={() => setPrDraft((v) => normalizePr(v))}
               onKeyDown={(e) => { if (e.key === 'Enter') save(); }}
               dir="ltr"
-              inputMode="numeric"
               placeholder="46:20"
               className="figures text-right"
             />
