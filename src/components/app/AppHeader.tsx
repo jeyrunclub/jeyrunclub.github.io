@@ -4,9 +4,12 @@ import { supabase } from '../../lib/supabase.js';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 
+// Salar has no plan of his own here — /app redirects him to the panel anyway,
+// so offering him "برنامه‌ی من" was a link to a bounce.
 const links = [
-  { href: '/app',       label: 'برنامه‌ی من' },
-  { href: '/app/coach', label: 'پنل مربی', coachOnly: true },
+  { href: '/app',             label: 'برنامه‌ی من',  studentOnly: true },
+  { href: '/app/coach',       label: 'پنل مربی',     coachOnly: true },
+  { href: '/app/leaderboard', label: 'جدول باشگاه' },
 ];
 
 export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: boolean; hideNav?: boolean }) {
@@ -31,7 +34,9 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
         </a>
         {!hideNav && (
           <nav className="flex items-center gap-1">
-            {links.filter((l) => !l.coachOnly || isCoach).map((l) => (
+            {links
+              .filter((l) => (!l.coachOnly || isCoach) && (!l.studentOnly || !isCoach))
+              .map((l) => (
               <a
                 key={l.href}
                 href={l.href}

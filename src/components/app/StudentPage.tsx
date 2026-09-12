@@ -14,6 +14,7 @@ import { PlanText } from './PlanText';
 import { DayCard, WeekList, type Day } from './PlanWeek';
 import { DayLog, type Log } from './DayLog';
 import { RunnerStats } from './RunnerStats';
+import { Avatar } from './Avatar';
 import { cn } from '../../lib/utils';
 
 type Profile = {
@@ -23,6 +24,7 @@ type Profile = {
   full_name: string | null;
   training_goal: string | null;
   pr_10k: string | null;
+  avatar_path: string | null;
 };
 
 export function StudentPage() {
@@ -122,7 +124,15 @@ export function StudentPage() {
             src="/images/logo.png" alt="" aria-hidden
             className="pointer-events-none absolute -bottom-6 end-4 h-28 w-36 object-contain opacity-15 brightness-0 invert"
           />
-          <div className="relative">
+          <div className="relative flex items-start gap-3">
+            <a
+              href="/app/leaderboard"
+              aria-label="عکس پروفایل — رفتن به جدول باشگاه"
+              className="mt-0.5 shrink-0 rounded-full ring-2 ring-white/30 transition hover:ring-white/70"
+            >
+              <Avatar name={profile.full_name} path={profile.avatar_path} size={52} className="bg-white/20 text-white" />
+            </a>
+            <div className="min-w-0 flex-1">
             <p className="figures text-xs font-semibold text-white/75">{faDateLong(today())}</p>
             <h1 className="display mt-1 text-3xl">سلام {firstName}</h1>
             <p className="mt-1 text-sm text-white/85">
@@ -154,6 +164,7 @@ export function StudentPage() {
                 ))}
               </div>
             )}
+            </div>
           </div>
         </section>
 

@@ -235,3 +235,51 @@ export async function fetchWeekLogsForStudents(supabase, weekStart) {
   }
   return out;
 }
+
+// ---------- Avatars ----------
+//
+// The avatars bucket is public, so a path resolves to a URL without a round
+// trip — which is what makes a leaderboard of 30 members cheap to render.
+
+export const AVATAR_BUCKET = 'avatars';
+
+export function avatarUrl(supabase, path) {
+  if (!path) return null;
+  return supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+export async function uploadAvatar(supabase, userId, file) {
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const path = `${userId}/${Date.now()}.${ext}`;
+  const { error } = await supabase.storage.from(AVATAR_BUCKET)
+    .upload(path, file, { upsert: true, contentType: file.type });
+  if (error) return { path: null, error };
+  const { error: profErr } = await supabase.from('profiles')
+    .update({ avatar_path: path }).eq('id', userId);
+  if (profErr) return { path: null, error: profErr };
+  return { path, error: null };
+}
+
+export async function removeAvatar(supabase, userId, path) {
+  await supabase.from('profiles').update({ avatar_path: null }).eq('id', userId);
+  if (path) await supabase.storage.from(AVATAR_BUCKET).remove([path]);
+}
+
+// ---------- Leaderboard ----------
+
+// "46:20" / "1:02:11" → seconds. Anything unparseable sorts last.
+export function prSeconds(text) {
+  const t = String(text || '').trim().replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+  const m = t.match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/);
+  if (!m) return null;
+  const [, a, b, c] = m;
+  return c === undefined
+    ? Number(a) * 60 + Number(b)             // mm:ss
+    : Number(a) * 3600 + Number(b) * 60 + Number(c); // h:mm:ss
+}
+
+export async function fetchLeaderboard(supabase) {
+  const { data, error } = await supabase.rpc('leaderboard');
+  if (error) { console.error(error); return { rows: [], error }; }
+  return { rows: data || [], error: null };
+}

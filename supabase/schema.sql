@@ -42,6 +42,7 @@ create table if not exists public.plans (
 -- more often than it is a time. pr_10k/goal_10k are the earlier 10k-specific
 -- pair, kept so nothing already typed is lost, but no longer shown anywhere.
 alter table public.profiles add column if not exists training_goal text;
+alter table public.profiles add column if not exists avatar_path   text;
 alter table public.profiles add column if not exists pr_10k   text;  -- legacy
 alter table public.profiles add column if not exists goal_10k text;  -- legacy
 
@@ -167,7 +168,7 @@ create policy "profiles: coach edit"
 -- Lock down which columns a normal user can UPDATE.
 -- (Coach still edits status/role via set_profile_status(), which is security-definer.)
 revoke update on public.profiles from authenticated;
-grant  update (full_name, phone, training_goal, pr_10k, goal_10k) on public.profiles to authenticated;
+grant  update (full_name, phone, training_goal, pr_10k, goal_10k, avatar_path) on public.profiles to authenticated;
 grant  select on public.profiles to authenticated;
 
 -- plans: student reads own (read-only); coach can CRUD everything.
@@ -271,9 +272,9 @@ update public.profiles p
    and public._is_bootstrap_coach(u.email)
    and (p.role <> 'coach' or p.status <> 'approved');
 
--- ---------- Storage bucket for session photos (legacy) ----------
--- No longer written to — the app has no photo upload. Kept so existing photos
--- stay reachable; drop the bucket by hand in the Supabase dashboard to delete them.
+-- ---------- Storage bucket for session photos ----------
+-- Private. Students upload a photo with a day's log; the coach reads them back.
+-- Every view mints a short-lived signed URL.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('session-photos', 'session-photos', false, 10485760,
         array['image/jpeg','image/png','image/webp'])
@@ -298,6 +299,71 @@ create policy "session-photos: coach read"
   on storage.objects for select
   to authenticated
   using (bucket_id = 'session-photos' and public.is_coach());
+
+-- ---------- Storage bucket for profile pictures ----------
+-- PUBLIC, unlike session photos. The leaderboard shows every member's picture
+-- at once; signing a URL per row would mean a round trip per member on every
+-- render. The trade is that an avatar URL works for anyone who has it — they
+-- are profile pictures in a members' app, not private documents.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('avatars', 'avatars', true, 3145728,
+        array['image/jpeg','image/png','image/webp'])
+on conflict (id) do update set
+  public             = excluded.public,
+  file_size_limit    = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+-- Anyone may read; you may only write inside your own user-id folder.
+drop policy if exists "avatars: public read" on storage.objects;
+create policy "avatars: public read"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
+drop policy if exists "avatars: own write" on storage.objects;
+create policy "avatars: own write"
+  on storage.objects for all
+  to authenticated
+  using  (bucket_id = 'avatars'
+      and auth.uid()::text = (storage.foldername(name))[1])
+  with check (bucket_id = 'avatars'
+      and auth.uid()::text = (storage.foldername(name))[1]);
+
+-- ---------- Leaderboard ----------
+-- Students may only select their OWN day_logs, so counting everybody has to
+-- happen inside a security-definer function. It exposes nothing beyond a name,
+-- a picture and two counts — no emails, no notes, no plans.
+drop function if exists public.leaderboard();
+create or replace function public.leaderboard()
+returns table (
+  id          uuid,
+  full_name   text,
+  avatar_path text,
+  pr_10k      text,
+  done_total  bigint,
+  done_week   bigint
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select p.id,
+         p.full_name,
+         p.avatar_path,
+         p.pr_10k,
+         count(dl.id) filter (where dl.done)                             as done_total,
+         count(dl.id) filter (where dl.done and dl.day >= (current_date - 6)) as done_week
+    from public.profiles p
+    left join public.day_logs dl on dl.student_id = p.id
+   where p.status = 'approved'
+     and p.role <> 'coach'
+   group by p.id, p.full_name, p.avatar_path, p.pr_10k
+   order by done_total desc, done_week desc, p.full_name nulls last;
+$$;
+
+-- Approved members and the coach can read the board; nobody anonymous can.
+revoke execute on function public.leaderboard() from public;
+grant execute on function public.leaderboard() to authenticated;
 
 -- ============================================================
 -- To grant coach access to ANY OTHER email later:

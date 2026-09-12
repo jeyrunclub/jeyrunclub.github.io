@@ -11,6 +11,7 @@ import {
 import { AppHeader } from '../app/AppHeader';
 import { PlanText } from '../app/PlanText';
 import { WeekList, TypeBadge, type Day } from '../app/PlanWeek';
+import { Avatar as Photo, AvatarPicker } from '../app/Avatar';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -26,7 +27,7 @@ type Profile = {
   training_goal?: string | null; pr_10k?: string | null;
 };
 type Log = { done: boolean; note: string | null; photo_path: string | null };
-type Runner = { training_goal: string | null; pr_10k: string | null };
+type Runner = { training_goal: string | null; pr_10k: string | null; avatar_path: string | null };
 type Plan = { days: Day[]; text: string };
 
 const WORKOUT_PLACEHOLDER = '2k گرم کردن\n8*(6min @3:30 / 1min rest)\n2k سرد کردن';
@@ -48,6 +49,7 @@ export function CoachPage() {
   const [preview, setPreview] = useState(false);
   const [logsByStudent, setLogsByStudent] = useState<Record<string, Record<string, Log>>>({});
   const [runners, setRunners] = useState<Record<string, Runner>>({});
+  const [coachAvatar, setCoachAvatar] = useState<string | null>(null);
   const [goal, setGoal] = useState('');
   const [pr, setPr] = useState('');
   const [savingGoal, setSavingGoal] = useState(false);
@@ -57,10 +59,14 @@ export function CoachPage() {
   // only carries them if it was dropped and recreated after the columns landed.
   const refreshRunners = useCallback(async () => {
     const { data, error: err } = await supabase.from('profiles')
-      .select('id, training_goal, pr_10k');
+      .select('id, training_goal, pr_10k, avatar_path');
     if (err) { console.error(err); return; }
     setRunners(Object.fromEntries((data || []).map((r: any) => [
-      r.id, { training_goal: r.training_goal ?? null, pr_10k: r.pr_10k ?? null },
+      r.id, {
+        training_goal: r.training_goal ?? null,
+        pr_10k: r.pr_10k ?? null,
+        avatar_path: r.avatar_path ?? null,
+      },
     ])));
   }, []);
 
@@ -83,6 +89,7 @@ export function CoachPage() {
       const { data: p } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
       if (!p || p.role !== 'coach') { setDenied(true); setLoading(false); return; }
       setProfile(p);
+      setCoachAvatar(p.avatar_path ?? null);
       await Promise.all([refreshUsers(), refreshRunners()]);
       setLoading(false);
     })();
@@ -215,11 +222,14 @@ export function CoachPage() {
       <AppHeader isCoach />
       <main className="mx-auto max-w-4xl space-y-5 px-5 py-8 pb-20">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="display text-3xl">پنل مربی</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {profile?.full_name ? `سلام ${profile.full_name}` : 'خوش آمدی'}
-            </p>
+          <div className="flex items-center gap-3">
+            {profile && <Photo name={profile.full_name || 'م'} path={coachAvatar} size={48} />}
+            <div>
+              <h1 className="display text-3xl">پنل مربی</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {profile?.full_name ? `سلام ${profile.full_name}` : 'خوش آمدی'}
+              </p>
+            </div>
           </div>
           <div className="flex gap-2">
             {pendingUsers.length > 0 && <StatCard n={pendingUsers.length} label="درخواست" accent />}
@@ -227,6 +237,17 @@ export function CoachPage() {
             <StatCard n={students.length} label="شاگرد" />
           </div>
         </div>
+
+        {profile && (
+          <Card className="p-4">
+            <AvatarPicker
+              userId={profile.id}
+              name={profile.full_name}
+              path={coachAvatar}
+              onChange={setCoachAvatar}
+            />
+          </Card>
+        )}
 
         {/* PENDING APPROVALS */}
         {pendingUsers.length > 0 && (
@@ -457,7 +478,7 @@ export function CoachPage() {
                 const isCoachRow = r.role === 'coach';
                 return (
                   <div key={r.id} className="flex items-center gap-3 py-3">
-                    <Avatar name={r.full_name || r.email || '?'} muted={isCoachRow} />
+                    <Avatar name={r.full_name || r.email || '?'} path={runners[r.id]?.avatar_path} muted={isCoachRow} />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5">
                         <span className="truncate text-sm font-semibold">{r.full_name || '(بدون نام)'}</span>
@@ -524,14 +545,14 @@ function StatCard({ n, label, accent }: { n: number; label: string; accent?: boo
   );
 }
 
-function Avatar({ name, muted }: { name: string; muted?: boolean }) {
+function Avatar({ name, path, muted }: { name: string; path?: string | null; muted?: boolean }) {
   return (
-    <div className={cn(
-      'flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold',
-      muted ? 'bg-muted text-muted-foreground' : 'bg-accent text-primary',
-    )}>
-      {name.trim().charAt(0) || '?'}
-    </div>
+    <Photo
+      name={name}
+      path={path}
+      size={36}
+      className={muted ? 'bg-muted text-muted-foreground' : undefined}
+    />
   );
 }
 

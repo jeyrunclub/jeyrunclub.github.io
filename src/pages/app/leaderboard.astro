@@ -1,0 +1,7 @@
+---
+import ReactShell from '../../layouts/ReactShell.astro';
+import { LeaderboardPage } from '../../components/app/LeaderboardPage';
+---
+<ReactShell title="جدول باشگاه">
+  <LeaderboardPage client:only="react" />
+</ReactShell>
