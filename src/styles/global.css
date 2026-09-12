@@ -1499,3 +1499,46 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
   .runner--2 { left: 36%; }
   .runner--3 { left: 21%; }
 }
+
+/* ---------- Quick links bar (phones) ---------- */
+/* The burger hid every link behind a tap. This strip keeps the pages people
+   actually come for on screen; it scrolls sideways rather than wrapping, so
+   the header keeps a fixed height whatever is in it.
+   Hidden above 640px, where the full nav is already visible — without this
+   rule it renders as a row of bare text under the header on desktop. */
+.nav-quick { display: none; }
+
+@media (max-width: 640px) {
+  .nav-quick {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0.6rem 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .nav-quick::-webkit-scrollbar { display: none; }
+  .nav-quick a {
+    flex: 0 0 auto;
+    padding: 0.35rem 0.8rem;
+    border: 1.5px solid var(--border);
+    border-radius: 999px 999px 999px var(--nib);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .nav-quick a.active {
+    border-color: var(--crimson);
+    color: var(--crimson);
+    background: var(--crimson-tint);
+  }
+  .nav-quick a.active::after { content: none; }
+  .nav-quick .nav-cta {
+    background: var(--crimson);
+    border-color: var(--crimson);
+    color: #fff;
+  }
+}
