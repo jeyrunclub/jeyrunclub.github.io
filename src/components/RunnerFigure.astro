@@ -24,8 +24,14 @@ interface Props {
   skin?: string;
   hair?: string;
   shoe?: string;
-  /** The club's photographs are mostly short hair, caps and ponytails. */
-  head?: 'short' | 'cap' | 'ponytail';
+  /**
+   * Full-length leggings, in the club's photographs worn by most of the women
+   * and by nobody in shorts. Set it and the legs are drawn in fabric rather
+   * than skin; leave it off for bare legs.
+   */
+  tights?: string;
+  /** Short hair, caps, ponytails and buns — all four are in the photographs. */
+  head?: 'short' | 'cap' | 'ponytail' | 'bun';
   delay?: number;
   stride?: number;
   class?: string;
@@ -37,6 +43,7 @@ const {
   skin = '#d9a677',
   hair = '#17130f',
   shoe = '#e00a2e',
+  tights,
   head = 'short',
   delay = 0,
   stride = 0.62,
@@ -63,10 +70,10 @@ const {
       </g>
     </g>
     <g class="rf-thigh rf-thigh--far" style="transform-origin:35px 62px">
-      <path d="M35 62 35 85" stroke={skin} stroke-width="8.6" />
+      <path d="M35 62 35 85" stroke={tights ?? skin} stroke-width="8.6" />
       <path d="M35 62 35 73" stroke={shorts} stroke-width="11" />
       <g class="rf-shin rf-shin--far" style="transform-origin:35px 85px">
-        <path d="M35 85 35 103" stroke={skin} stroke-width="7" />
+        <path d="M35 85 35 103" stroke={tights ?? skin} stroke-width="7" />
         <g class="rf-foot rf-foot--far" style="transform-origin:35px 103px">
           <path d="M35 103 43 106" stroke={shoe} stroke-width="6.4" />
         </g>
@@ -94,13 +101,14 @@ const {
     {head === 'ponytail' && (
       <path fill={hair} d="M37.6 13.6C34 14.6 31.4 17.4 30.6 21C33.4 21.6 36.4 20.2 38.2 17.6Z" />
     )}
+    {head === 'bun' && <circle cx="35.4" cy="11.6" r="4.4" fill={hair} />}
 
     {/* ---- near side, in front ---- */}
     <g class="rf-thigh rf-thigh--near" style="transform-origin:35px 62px">
-      <path d="M35 62 35 85" stroke={skin} stroke-width="8.6" />
+      <path d="M35 62 35 85" stroke={tights ?? skin} stroke-width="8.6" />
       <path d="M35 62 35 73" stroke={shorts} stroke-width="11" />
       <g class="rf-shin rf-shin--near" style="transform-origin:35px 85px">
-        <path d="M35 85 35 103" stroke={skin} stroke-width="7" />
+        <path d="M35 85 35 103" stroke={tights ?? skin} stroke-width="7" />
         <g class="rf-foot rf-foot--near" style="transform-origin:35px 103px">
           <path d="M35 103 43 106" stroke={shoe} stroke-width="6.4" />
         </g>
