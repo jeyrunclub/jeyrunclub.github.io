@@ -231,7 +231,7 @@ export function CoachPage() {
         {/* PENDING APPROVALS */}
         {pendingUsers.length > 0 && (
           <Card className="p-5">
-            <h2 className="mb-3 text-base font-bold">درخواست‌های در انتظار</h2>
+            <h2 className="display mb-3 text-xl">درخواست‌های در انتظار</h2>
             <div className="divide-y divide-border">
               {pendingUsers.map((u) => (
                 <div key={u.id} className="flex items-center gap-3 py-3">
@@ -309,7 +309,7 @@ export function CoachPage() {
           <Card className="p-5">
             <div className="mb-3 flex items-center gap-2">
               <Target className="size-4 text-primary" />
-              <h2 className="text-base font-bold">هدف و رکورد</h2>
+              <h2 className="display text-xl">هدف و رکورد</h2>
               <span className="text-xs text-muted-foreground">
                 شاگرد هم می‌تواند این را در صفحه‌ی خودش بنویسد
               </span>
@@ -352,7 +352,7 @@ export function CoachPage() {
         {currentStudent && (
           <Card className="space-y-3 p-5">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-base font-bold">
+              <h2 className="display text-xl">
                 برنامه‌ی {currentStudent.full_name || currentStudent.email}
               </h2>
               <span className="text-xs text-muted-foreground">{weekLabel(weekStart)}</span>
@@ -448,7 +448,7 @@ export function CoachPage() {
 
         {/* ALL USERS */}
         <Card className="p-5">
-          <h2 className="mb-3 text-base font-bold">همه‌ی شاگردان</h2>
+          <h2 className="display mb-3 text-xl">همه‌ی شاگردان</h2>
           {allUsers.filter((u) => u.status !== 'pending').length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">هنوز شاگردی نیست.</p>
           ) : (

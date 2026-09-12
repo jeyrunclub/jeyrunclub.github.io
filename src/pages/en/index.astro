@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
 import gallery from '../../data/gallery.json';
 import targetRaces from '../../data/target-races.json';
 
@@ -106,23 +107,23 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
       <h2>What you get from Jeyrun</h2>
       <div class="service-grid">
         <a href="/en/services#private" class="service-card">
-          <span class="service-emoji">🦌</span><h3>Private coaching</h3>
+          <span class="service-emoji"><Icon name="stopwatch" size={28} /></span><h3>Private coaching</h3>
           <p>One-to-one training, instant feedback — the fastest path to progress.</p>
         </a>
         <a href="/en/services#group" class="service-card">
-          <span class="service-emoji">🏃</span><h3>Group class</h3>
+          <span class="service-emoji"><Icon name="group" size={28} /></span><h3>Group class</h3>
           <p>Every day 6 AM — Keshvari, Enghelab, Lavasan, Darakeh, Qouchak, Velayat, Yas.</p>
         </a>
         <a href="/en/services#online" class="service-card">
-          <span class="service-emoji">💻</span><h3>Online program</h3>
+          <span class="service-emoji"><Icon name="screen" size={28} /></span><h3>Online program</h3>
           <p>Personalized weekly plans for runners outside Tehran, worldwide.</p>
         </a>
         <a href="/en/services#mountain" class="service-card">
-          <span class="service-emoji">🏔️</span><h3>Mountain camp</h3>
+          <span class="service-emoji"><Icon name="peak" size={28} /></span><h3>Mountain camp</h3>
           <p>Trail and summit programs — from Tochal to Damavand.</p>
         </a>
         <a href="/en/services#race-prep" class="service-card">
-          <span class="service-emoji">🏅</span><h3>Race prep</h3>
+          <span class="service-emoji"><Icon name="flag" size={28} /></span><h3>Race prep</h3>
           <p>5K, 10K, half, marathon — with a bespoke plan to the finish line.</p>
         </a>
       </div>

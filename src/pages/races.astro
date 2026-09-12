@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
 import targetRaces from '../data/target-races.json';
 
 // The marathons the team is training for and travels to as a group.
@@ -58,7 +59,7 @@ const upcoming = [
       <div class="race-list">
         {upcoming.map((r) => (
           <div class="race-card">
-            <div class="race-medal finish">📍</div>
+            <div class="race-medal finish"><Icon name="route" size={22} /></div>
             <div class="race-info">
               <h3>{r.name}</h3>
               <p>{[r.date, r.city].filter(Boolean).join(' · ') || 'تاریخ اعلام خواهد شد'}</p>

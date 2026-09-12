@@ -134,6 +134,26 @@ export function StudentPage() {
                   : 'برنامه‌ی این هفته هنوز نوشته نشده.'
                 : `${weekRelativeLabel(weekStart)} را می‌بینی.`}
             </p>
+
+            {/* The week at a glance: one segment per day — faint where nothing
+                is planned, half where there is a session, solid once ticked. */}
+            {sessionCount > 0 && (
+              <div className="mt-4 flex gap-1.5" aria-hidden>
+                {days.map((d, i) => (
+                  <span
+                    key={i}
+                    className={cn(
+                      'h-1.5 flex-1 rounded-full transition-colors',
+                      dayIsEmpty(d)
+                        ? 'bg-white/20'
+                        : logs[addDays(weekStart, i)]?.done
+                          ? 'bg-white'
+                          : 'bg-white/45',
+                    )}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

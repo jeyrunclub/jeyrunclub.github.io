@@ -1220,12 +1220,13 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
   font-size: 1.5rem;
   border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) var(--nib);
   background: var(--crimson-tint);
+  color: var(--crimson);
   margin-bottom: 0.9rem;
 }
-.service-grid > :nth-child(2) .service-emoji { background: var(--turquoise-tint); }
-.service-grid > :nth-child(3) .service-emoji { background: var(--saffron-tint); }
-.service-grid > :nth-child(4) .service-emoji { background: var(--lapis-tint); }
-.service-grid > :nth-child(5) .service-emoji { background: var(--crimson-tint); }
+.service-grid > :nth-child(2) .service-emoji { background: var(--turquoise-tint); color: var(--turquoise-deep); }
+.service-grid > :nth-child(3) .service-emoji { background: var(--saffron-tint);   color: #b57c00; }
+.service-grid > :nth-child(4) .service-emoji { background: var(--lapis-tint);     color: var(--lapis); }
+.service-grid > :nth-child(5) .service-emoji { background: var(--crimson-tint);   color: var(--crimson); }
 
 .sd-icon {
   display: inline-flex;
@@ -1236,11 +1237,12 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
   font-size: 1.6rem;
   border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) var(--nib);
   background: var(--crimson-tint);
+  color: var(--crimson);
 }
-.service-detail-grid > :nth-child(2) .sd-icon { background: var(--turquoise-tint); }
-.service-detail-grid > :nth-child(3) .sd-icon { background: var(--saffron-tint); }
-.service-detail-grid > :nth-child(4) .sd-icon { background: var(--lapis-tint); }
-.service-detail-grid > :nth-child(5) .sd-icon { background: var(--crimson-tint); }
+.service-detail-grid > :nth-child(2) .sd-icon { background: var(--turquoise-tint); color: var(--turquoise-deep); }
+.service-detail-grid > :nth-child(3) .sd-icon { background: var(--saffron-tint);   color: #b57c00; }
+.service-detail-grid > :nth-child(4) .sd-icon { background: var(--lapis-tint);     color: var(--lapis); }
+.service-detail-grid > :nth-child(5) .sd-icon { background: var(--crimson-tint);   color: var(--crimson); }
 .service-card h3 { font-size: 1.2rem; }
 
 /* ---- Join / sponsor bands: ink blocks with the stroke motif ---------- */

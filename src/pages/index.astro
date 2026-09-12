@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
 import gallery from '../data/gallery.json';
 import targetRaces from '../data/target-races.json';
 import stats from '../data/stats.json';
@@ -105,23 +106,23 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
       <h2>چه چیزی از جیران می‌گیری؟</h2>
       <div class="service-grid">
         <a href="/services#private" class="service-card">
-          <span class="service-emoji">🦌</span><h3>کلاس خصوصی</h3>
+          <span class="service-emoji"><Icon name="stopwatch" size={28} /></span><h3>کلاس خصوصی</h3>
           <p>تمرین یک‌به‌یک، بازخورد لحظه‌ای، سریع‌ترین راه پیشرفت.</p>
         </a>
         <a href="/services#group" class="service-card">
-          <span class="service-emoji">🏃</span><h3>کلاس گروهی</h3>
+          <span class="service-emoji"><Icon name="group" size={28} /></span><h3>کلاس گروهی</h3>
           <p>هر روز ۶ صبح — کشوری، انقلاب، لواسان، درکه، قوچک، ولایت، یاس فاطمی.</p>
         </a>
         <a href="/services#online" class="service-card">
-          <span class="service-emoji">💻</span><h3>برنامه‌ی آنلاین</h3>
+          <span class="service-emoji"><Icon name="screen" size={28} /></span><h3>برنامه‌ی آنلاین</h3>
           <p>برنامه‌ی اختصاصی هفتگی برای دوندگانی که خارج از تهران‌اند.</p>
         </a>
         <a href="/services#mountain" class="service-card">
-          <span class="service-emoji">🏔️</span><h3>اردوی کوهستان</h3>
+          <span class="service-emoji"><Icon name="peak" size={28} /></span><h3>اردوی کوهستان</h3>
           <p>برنامه‌های تریل و صعود — از توچال تا دماوند.</p>
         </a>
         <a href="/services#race-prep" class="service-card">
-          <span class="service-emoji">🏅</span><h3>آمادگی مسابقه</h3>
+          <span class="service-emoji"><Icon name="flag" size={28} /></span><h3>آمادگی مسابقه</h3>
           <p>۵، ۱۰، ۲۱ و ماراتن — با پلن اختصاصی تا خط پایان.</p>
         </a>
       </div>

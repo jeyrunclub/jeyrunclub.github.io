@@ -1,0 +1,73 @@
+---
+// Line icons drawn to match the mark: one weight throughout, round caps and
+// joins like the gazelle's ribbon, and a slight forward lean where a shape can
+// carry one. They inherit currentColor, so a tile's tint colours them.
+//
+// Emoji were standing in for these. They render differently on every OS, sit
+// on their own baseline, and can't take the brand colour — which is why the
+// cards looked like a template no matter what the rest of the page did.
+
+export interface Props {
+  name: 'stopwatch' | 'group' | 'screen' | 'peak' | 'flag' | 'route' | 'calendar';
+  size?: number;
+  class?: string;
+}
+const { name, size = 24, class: klass = '' } = Astro.props;
+
+const paths: Record<string, string> = {
+  // One-to-one coaching — a stopwatch, hand leaning forward
+  stopwatch: `
+    <circle cx="12" cy="14.2" r="7.3"/>
+    <path d="M9.4 2.4h5.2M12 4.3v2.6M12 14.2l3.4-3"/>`,
+
+  // Group class — a cluster, the middle runner ahead of the other two
+  group: `
+    <circle cx="12" cy="6.6" r="3.1"/>
+    <path d="M6.2 19.6c0-3.2 2.6-5.8 5.8-5.8s5.8 2.6 5.8 5.8"/>
+    <circle cx="4.3" cy="9.4" r="2.1"/>
+    <circle cx="19.7" cy="9.4" r="2.1"/>
+    <path d="M1.4 18.4c0-2.1 1.3-3.8 2.9-3.8M22.6 18.4c0-2.1-1.3-3.8-2.9-3.8"/>`,
+
+  // Online plan — a screen with a session traced across it
+  screen: `
+    <rect x="2.6" y="4.4" width="18.8" height="12.8" rx="2.2"/>
+    <path d="M1.4 20.4h21.2"/>
+    <path d="M6.4 13.4c1.8-3.6 3.1.9 4.6-2.3s2.7.5 5.8-3.2"/>`,
+
+  // Mountain camp — two peaks, the taller one capped
+  peak: `
+    <path d="M1.6 19.7 8.4 7.6l3.9 6.6"/>
+    <path d="M10.6 19.7 16 10l6.4 9.7z"/>
+    <path d="M14.2 13.9c.9.7 1.8.7 2.7 0s1.8-.7 2.7 0"/>`,
+
+  // Race prep — a finish flag on a planted pole
+  flag: `
+    <path d="M5.6 21.6V2.9"/>
+    <path d="M5.6 4.2h12.7l-3.1 4.1 3.1 4.1H5.6z"/>`,
+
+  // Routes / locations — a start, a run out to a destination pin
+  route: `
+    <circle cx="4.8" cy="19.2" r="2.1"/>
+    <path d="M4.8 17.1c0-5.2 4.3-5.8 7.4-5.8s6.4-.7 6.4-4.1"/>
+    <path d="M18.6 2.2c1.9 0 3.4 1.5 3.4 3.4 0 2.5-3.4 6-3.4 6s-3.4-3.5-3.4-6c0-1.9 1.5-3.4 3.4-3.4z"/>`,
+
+  calendar: `
+    <rect x="3" y="5.2" width="18" height="16.2" rx="2.4"/>
+    <path d="M3 10.2h18M8.2 2.6v4.6M15.8 2.6v4.6"/>`,
+
+};
+---
+<svg
+  class={klass}
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.7"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  set:html={paths[name]}
+/>
