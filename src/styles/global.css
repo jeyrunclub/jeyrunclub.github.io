@@ -1435,7 +1435,7 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 .runners-band {
   position: relative;
   overflow: hidden;
-  height: clamp(8rem, 15vw, 12rem);
+  height: clamp(9rem, 16vw, 13rem);
   background: var(--sand-2);
   border-block: 1.5px solid var(--border);
   background-image: var(--strokes);
@@ -1443,31 +1443,40 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 .runners-ground {
   position: absolute;
   inset-inline: 0;
-  bottom: 20%;
+  bottom: 16%;
   height: 1.5px;
   background: linear-gradient(to left, transparent, var(--border-strong) 15%, var(--border-strong) 85%, transparent);
 }
 .runner {
   position: absolute;
-  bottom: 20%;
+  bottom: 16%;
   left: 0;
   display: block;
   animation: run-across 15s linear infinite;
+  animation-delay: var(--d, 0s);
 }
 
-/* Figures stand ON the ground line: each viewBox leaves a little room under
-   the feet, so they are nudged down by exactly that much. In rem, not a
-   percentage — a percentage margin resolves against the containing block's
-   WIDTH, which here is the whole band, and dropped them 38px through the
-   floor. */
-.runner--person {
-  margin-bottom: -0.5rem;
-}
+/* Figures stand ON the ground line: each viewBox leaves room under the feet,
+   so they are nudged down by that much. In rem, not a percentage — a
+   percentage margin resolves against the containing block's WIDTH, which here
+   is the whole band. */
+.runner--person { margin-bottom: -0.5rem; }
 .runner--person .runner-fig {
   display: block;
-  height: clamp(4rem, 7vw, 6rem);
+  height: clamp(3.8rem, 6.6vw, 5.6rem);
   width: auto;
 }
+
+/* The far file of each pair: further up the band, smaller, and hazed back
+   towards the paper. That is the whole of the perspective here — there is no
+   vanishing point, just two ranks. */
+.runner--far {
+  bottom: calc(16% + 1.5rem);
+  filter: saturate(0.82) brightness(1.06);
+  opacity: 0.9;
+}
+.runner--far .runner-fig { height: clamp(3.1rem, 5.4vw, 4.6rem); }
+
 .runner--gazelle {
   color: var(--crimson);
   margin-bottom: -0.62rem;
@@ -1478,25 +1487,26 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
   width: auto;
 }
 
-/* Negative delays so the line is already strung out on arrival, rather than
-   the gazelle setting off alone and the club trickling in afterwards. */
-.runner--gazelle { animation-delay: -4.4s; }
-.runner--1 { animation-delay: -3.4s; }
-.runner--2 { animation-delay: -2.5s; }
-.runner--3 { animation-delay: -1.6s; }
-
 @keyframes run-across {
   from { transform: translateX(-26vw); }
-  to   { transform: translateX(130vw); }
+  to   { transform: translateX(132vw); }
 }
 
-/* Still a composition, just a still one. */
+/* Still a composition, just a still one: the pack parked in view rather than
+   standing still off-screen, which would just read as an empty strip. */
 @media (prefers-reduced-motion: reduce) {
   .runner { animation: none; }
-  .runner--gazelle { left: 70%; }
-  .runner--1 { left: 52%; }
-  .runner--2 { left: 36%; }
-  .runner--3 { left: 21%; }
+  .runner--gazelle { left: 74%; }
+  .runner--near:nth-of-type(6)  { left: 58%; }
+  .runner--near:nth-of-type(7)  { left: 46%; }
+  .runner--near:nth-of-type(8)  { left: 34%; }
+  .runner--near:nth-of-type(9)  { left: 22%; }
+  .runner--near:nth-of-type(10) { left: 10%; }
+  .runner--far:nth-of-type(1)   { left: 61%; }
+  .runner--far:nth-of-type(2)   { left: 49%; }
+  .runner--far:nth-of-type(3)   { left: 37%; }
+  .runner--far:nth-of-type(4)   { left: 25%; }
+  .runner--far:nth-of-type(5)   { left: 13%; }
 }
 
 /* ---------- Quick links bar (phones) ---------- */

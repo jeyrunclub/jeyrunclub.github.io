@@ -1,51 +1,76 @@
 ---
-// The gazelle out in front, the club strung out behind it.
+// The gazelle out in front, the club behind it — running two abreast, in file,
+// the way the group actually runs.
+//
+// Side on, "two abreast" is a depth problem rather than a horizontal one: the
+// pair share a position along the street, so the far one is drawn higher up the
+// band, a little smaller and slightly hazed, and every near figure is drawn
+// after every far one so the whole near file overlaps the whole far file.
 //
 // Every figure is a rig whose joints CSS rotates (RunnerFigure.astro and
-// GazelleFigure.astro); this file only dresses them, places them and carries
-// them across. Kit colours are read off the club's own photographs — the black
-// tee and white shorts, the blue tee, the all-black kit — rather than invented,
-// so the pack looks like a Friday morning on Farmanieh and not a stock set.
+// GazelleFigure.astro); this file dresses them, ranks them and carries them
+// across. Kit colours are read off the club's own photographs — the black tee
+// with white shorts, the blue tee, the all-black kit — so the pack looks like a
+// Friday morning on Farmanieh rather than a stock set.
 //
 // Decorative, so the whole strip is aria-hidden. It also breaks the page's
-// rhythm on purpose: every other section is eyebrow → heading → grid inside
-// the same container, and this one is edge to edge with nothing but movement.
+// rhythm on purpose: every other section is eyebrow → heading → grid inside the
+// same container, and this one is edge to edge with nothing but movement.
 
 import RunnerFigure from './RunnerFigure.astro';
 import GazelleFigure from './GazelleFigure.astro';
 
-const pack = [
-  {
-    cls: 'runner--1', delay: -0.31, stride: 0.60,
-    shirt: '#17130f', shorts: '#efe7d8', skin: '#c98d5e',
-    hair: '#8b8075', shoe: '#f7f2e8', head: 'short' as const,
-  },
-  {
-    cls: 'runner--2', delay: -0.08, stride: 0.66,
-    shirt: '#4d7fa6', shorts: '#1d3f77', skin: '#d9a677',
-    hair: '#2b2018', shoe: '#17130f', head: 'cap' as const,
-  },
-  {
-    cls: 'runner--3', delay: -0.44, stride: 0.63,
-    shirt: '#17130f', shorts: '#17130f', skin: '#e0b489',
-    hair: '#17130f', shoe: '#e00a2e', head: 'ponytail' as const,
-  },
+type Kit = {
+  shirt: string; shorts: string; skin: string;
+  hair: string; shoe: string; head: 'short' | 'cap' | 'ponytail';
+  stride: number;
+};
+
+const INK = '#17130f';
+const SAND = '#efe7d8';
+
+const kits: Kit[] = [
+  { shirt: INK,       shorts: SAND,      skin: '#c98d5e', hair: '#8b8075', shoe: '#f7f2e8', head: 'short',    stride: 0.60 },
+  { shirt: '#4d7fa6', shorts: '#1d3f77', skin: '#d9a677', hair: '#2b2018', shoe: INK,       head: 'cap',      stride: 0.66 },
+  { shirt: INK,       shorts: INK,       skin: '#e0b489', hair: INK,       shoe: '#e00a2e', head: 'ponytail', stride: 0.63 },
+  { shirt: '#0d8f8b', shorts: INK,       skin: '#c98d5e', hair: INK,       shoe: '#eda600', head: 'short',    stride: 0.58 },
+  { shirt: '#e00a2e', shorts: INK,       skin: '#d9a677', hair: '#2b2018', shoe: '#f7f2e8', head: 'cap',      stride: 0.64 },
+  { shirt: SAND,      shorts: '#1d3f77', skin: '#e0b489', hair: '#8b8075', shoe: INK,       head: 'short',    stride: 0.61 },
+  { shirt: INK,       shorts: '#1d3f77', skin: '#c98d5e', hair: INK,       shoe: '#0d8f8b', head: 'ponytail', stride: 0.67 },
+  { shirt: '#eda600', shorts: INK,       skin: '#d9a677', hair: '#2b2018', shoe: INK,       head: 'short',    stride: 0.59 },
+  { shirt: '#1d3f77', shorts: INK,       skin: '#e0b489', hair: INK,       shoe: '#e00a2e', head: 'cap',      stride: 0.65 },
+  { shirt: INK,       shorts: SAND,      skin: '#d9a677', hair: '#2b2018', shoe: INK,       head: 'ponytail', stride: 0.62 },
 ];
+
+// Five ranks of two. More negative delay is further along the street, so the
+// leading pair is listed first. The far runner of each pair trails by a hair,
+// because nobody holds a perfect line.
+const PAIRS = 5;
+const ranks = Array.from({ length: PAIRS }, (_, i) => ({
+  near: kits[i * 2],
+  far: kits[i * 2 + 1],
+  nearDelay: -(3.5 - i * 0.62),
+  farDelay: -(3.5 - i * 0.62) + 0.07,
+}));
 ---
 <div class="runners-band" aria-hidden="true">
   <span class="runners-ground"></span>
 
-  <span class="runner runner--gazelle">
-    <GazelleFigure delay={-0.2} stride={0.58} />
-  </span>
-
-  {pack.map((p) => (
-    <span class:list={['runner', 'runner--person', p.cls]}>
-      <RunnerFigure
-        shirt={p.shirt} shorts={p.shorts} skin={p.skin}
-        hair={p.hair} shoe={p.shoe} head={p.head}
-        delay={p.delay} stride={p.stride}
-      />
+  {/* Far file first, so the near file passes in front of all of it. */}
+  {ranks.map((r) => (
+    <span class="runner runner--person runner--far" style={`--d:${r.farDelay}s`}>
+      <RunnerFigure {...r.far} delay={r.farDelay} stride={r.far.stride} />
     </span>
   ))}
+
+  {ranks.map((r) => (
+    <span class="runner runner--person runner--near" style={`--d:${r.nearDelay}s`}>
+      <RunnerFigure {...r.near} delay={r.nearDelay} stride={r.near.stride} />
+    </span>
+  ))}
+
+  {/* Out in front of the lot of them. */}
+  <span class="runner runner--gazelle" style="--d:-4.5s">
+    <GazelleFigure delay={-0.2} stride={0.58} />
+  </span>
 </div>
