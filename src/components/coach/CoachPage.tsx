@@ -1,5 +1,17 @@
+// Salar's page. It is the only page in the product that *has* to be used every
+// week, and it was the plainest: an undifferentiated stack of cards with a
+// dense seven-row table in the middle and no answer to the question he
+// actually opens it with — who still needs a plan, and who has gone quiet.
+//
+// So: a hero that states the week's job, one roster where every student shows
+// their plan state and their week of ticks at a glance, and the editor below
+// it. The goal and record moved inside the editor's header, folded away, since
+// they are touched once a season and the table is touched every week.
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Check, Camera, Target, Timer } from 'lucide-react';
+import {
+  ChevronLeft, ChevronRight, Check, Camera, Target, Timer, ChevronDown,
+} from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import {
   addDays, today, thisWeekStart, weekLabel, weekRelativeLabel,
@@ -137,13 +149,20 @@ export function CoachPage() {
     () => allUsers.filter((u) => u.status === 'pending'),
     [allUsers],
   );
+  const rejectedUsers = useMemo(
+    () => allUsers.filter((u) => u.status === 'rejected'),
+    [allUsers],
+  );
   const currentStudent = students.find((s) => s.id === currentStudentId) || null;
   const studentLogs = logsByStudent[currentStudentId || ''] || {};
   const hasPlan = (id: string) => {
     const p = planByStudent[id];
     return !!p && (!daysAreEmpty(p.days) || !!p.text.trim());
   };
+  const doneCount = (id: string) =>
+    Object.values(logsByStudent[id] || {}).filter((l) => l.done).length;
   const writtenCount = students.filter((s) => hasPlan(s.id)).length;
+  const missing = students.length - writtenCount;
   const dirty = fingerprint(draft) !== baseline;
   const isThisWeek = weekStart === thisWeekStart();
   const todayIndex = isThisWeek ? dayIndexOf(today(), weekStart) : -1;
@@ -160,7 +179,10 @@ export function CoachPage() {
       .update(next).eq('id', currentStudentId);
     setSavingGoal(false);
     if (err) { setError('خطا در ذخیره: ' + err.message); return; }
-    setRunners((prev) => ({ ...prev, [currentStudentId]: next }));
+    setRunners((prev) => ({
+      ...prev,
+      [currentStudentId]: { ...prev[currentStudentId], ...next },
+    }));
   }
 
   function setDay(i: number, field: 'workout' | 'note', value: string) {
@@ -199,6 +221,18 @@ export function CoachPage() {
     setSavedAt(Date.now());
   }
 
+  // Jump to the next student who has no plan for this week — the loop the
+  // whole page exists for, which used to mean scrolling and hunting.
+  function nextUnwritten() {
+    const from = students.findIndex((s) => s.id === currentStudentId);
+    const order = [...students.slice(from + 1), ...students.slice(0, from + 1)];
+    const next = order.find((s) => !hasPlan(s.id));
+    if (next) {
+      setCurrentStudentId(next.id);
+      document.getElementById('editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen">
@@ -223,43 +257,77 @@ export function CoachPage() {
   return (
     <div className="min-h-screen">
       <AppHeader isCoach />
-      <main className="mx-auto max-w-4xl space-y-5 px-5 py-8 pb-20">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div className="flex items-center gap-3">
-            {profile && <Photo name={profile.full_name || 'م'} path={coachAvatar} size={48} />}
-            <div>
-              <h1 className="display text-3xl">پنل مربی</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {profile?.full_name ? `سلام ${profile.full_name}` : 'خوش آمدی'}
+      <main className="mx-auto flex max-w-4xl flex-col gap-5 px-5 pb-20 pt-6">
+
+        {/* HERO — the same material as the student's, so the two halves of the
+            product look like one product. */}
+        <section className="rise nib relative overflow-hidden bg-gradient-to-bl from-brand-500 via-brand-500 to-brand-700 p-6 text-white shadow-lg shadow-brand-600/25">
+          <span aria-hidden className="strokes pointer-events-none absolute inset-0" />
+          <span aria-hidden className="pointer-events-none absolute -top-20 -start-12 size-52 rounded-full bg-white/15 blur-3xl" />
+          <span aria-hidden className="pointer-events-none absolute -bottom-24 -end-10 size-48 rounded-full bg-black/15 blur-3xl" />
+          <img
+            src="/images/logo.png" alt="" aria-hidden
+            className="pointer-events-none absolute -bottom-6 end-4 h-28 w-36 object-contain opacity-15 brightness-0 invert"
+          />
+          <div className="relative flex items-start gap-3">
+            {profile && (
+              <Photo
+                name={profile.full_name || 'م'} path={coachAvatar} size={52}
+                className="mt-0.5 bg-white/20 text-white ring-2 ring-white/30"
+              />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-white/75">پنل مربی</p>
+              <h1 className="display mt-1 text-3xl">
+                {profile?.full_name ? `سلام ${profile.full_name.trim().split(/\s+/)[0]}` : 'خوش آمدی'}
+              </h1>
+              <p className="mt-1 text-sm text-white/85">
+                {students.length === 0
+                  ? 'هنوز شاگردی تأیید نشده.'
+                  : missing === 0
+                    ? `${weekRelativeLabel(weekStart)}: برنامه‌ی همه نوشته شده.`
+                    : `${weekRelativeLabel(weekStart)}: ${faNum(missing)} شاگرد هنوز برنامه ندارند.`}
               </p>
+
+              {/* One segment per student, solid once their week is written. */}
+              {students.length > 0 && (
+                <div className="mt-4 flex gap-1.5" aria-hidden>
+                  {students.map((s) => (
+                    <span
+                      key={s.id}
+                      className={cn(
+                        'h-1.5 flex-1 rounded-full transition-colors',
+                        hasPlan(s.id) ? 'bg-white' : 'bg-white/25',
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {missing > 0 && (
+                <button
+                  type="button"
+                  onClick={nextUnwritten}
+                  className="nib-pill mt-4 bg-white px-4 py-1.5 text-xs font-bold text-brand-600 shadow-sm transition hover:bg-white/90"
+                >
+                  شاگرد بعدی بدون برنامه
+                </button>
+              )}
             </div>
           </div>
-          <div className="flex gap-2">
-            {pendingUsers.length > 0 && <StatCard n={pendingUsers.length} label="درخواست" accent />}
-            <StatCard n={writtenCount} label="برنامه‌ی این هفته" />
-            <StatCard n={students.length} label="شاگرد" />
-          </div>
-        </div>
-
-        {profile && (
-          <Card className="p-4">
-            <AvatarPicker
-              userId={profile.id}
-              name={profile.full_name}
-              path={coachAvatar}
-              onChange={setCoachAvatar}
-            />
-          </Card>
-        )}
+        </section>
 
         {/* PENDING APPROVALS */}
         {pendingUsers.length > 0 && (
-          <Card className="p-5">
-            <h2 className="display mb-3 text-xl">درخواست‌های در انتظار</h2>
+          <Card className="border-primary/30 bg-accent/40 p-5">
+            <h2 className="display mb-3 text-xl">
+              درخواست‌های در انتظار
+              <span className="figures ms-2 text-base text-primary">{faNum(pendingUsers.length)}</span>
+            </h2>
             <div className="divide-y divide-border">
               {pendingUsers.map((u) => (
                 <div key={u.id} className="flex items-center gap-3 py-3">
-                  <Avatar name={u.full_name || u.email || '?'} />
+                  <Photo name={u.full_name || u.email || '?'} size={36} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-semibold">{u.full_name || '(بدون نام)'}</div>
                     <div className="truncate text-xs text-muted-foreground" dir="ltr">
@@ -275,20 +343,26 @@ export function CoachPage() {
         )}
 
         {/* WEEK NAV — in RTL, the right chevron goes back */}
-        <Card className="flex items-center justify-between gap-2 p-2">
+        <Card className="flex items-center gap-1 p-1.5">
           <Button
-            variant="ghost" size="icon" className="rounded-full"
+            variant="ghost" size="icon" className="size-9 rounded-full"
             onClick={() => setWeekStart((w) => addDays(w, -7))}
             aria-label="هفته‌ی قبل"
           >
             <ChevronRight className="size-5" />
           </Button>
-          <div className="text-center">
-            <div className="text-sm font-bold leading-tight">{weekRelativeLabel(weekStart)}</div>
-            <div className="mt-0.5 text-xs text-muted-foreground">{weekLabel(weekStart)}</div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setWeekStart(thisWeekStart())}
+            disabled={isThisWeek}
+            title={isThisWeek ? undefined : 'برگشت به این هفته'}
+            className="min-w-0 flex-1 rounded-xl px-2 py-1 text-center transition-colors enabled:hover:bg-accent disabled:cursor-default"
+          >
+            <div className="truncate text-sm font-bold leading-tight">{weekRelativeLabel(weekStart)}</div>
+            <div className="figures mt-0.5 truncate text-[0.7rem] text-muted-foreground">{weekLabel(weekStart)}</div>
+          </button>
           <Button
-            variant="ghost" size="icon" className="rounded-full"
+            variant="ghost" size="icon" className="size-9 rounded-full"
             onClick={() => setWeekStart((w) => addDays(w, 7))}
             aria-label="هفته‌ی بعد"
           >
@@ -296,31 +370,96 @@ export function CoachPage() {
           </Button>
         </Card>
 
-        {/* STUDENT PICKER */}
-        <Card className="p-4">
-          <Label className="mb-2 block">شاگرد</Label>
+        {/* ROSTER — picker and register in one. Every row carries the two
+            things worth knowing: is their week written, and are they showing
+            up. The old page had a flat row of name pills for the first and a
+            separate list at the bottom for neither. */}
+        <Card className="overflow-hidden">
+          <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
+            <h2 className="display text-xl">شاگردان</h2>
+            <span className="figures text-xs text-muted-foreground">
+              {faNum(writtenCount)} از {faNum(students.length)} برنامه دارند
+            </span>
+          </div>
+
           {students.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">
+            <p className="px-5 py-8 text-center text-sm text-muted-foreground">
               هنوز شاگردی تأیید نشده.
             </p>
           ) : (
-            <div className="flex flex-wrap gap-2">
+            <div className="divide-y divide-border">
               {students.map((s) => {
                 const active = s.id === currentStudentId;
+                const written = hasPlan(s.id);
+                const r = runners[s.id];
+                const logs = logsByStudent[s.id] || {};
                 return (
                   <button
                     key={s.id}
                     type="button"
-                    onClick={() => setCurrentStudentId(s.id)}
+                    onClick={() => {
+                      setCurrentStudentId(s.id);
+                      document.getElementById('editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    aria-current={active ? 'true' : undefined}
                     className={cn(
-                      'nib-pill flex items-center gap-1.5 border px-3.5 py-1.5 text-sm font-medium transition-colors',
-                      active
-                        ? 'border-primary bg-accent text-primary'
-                        : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground',
+                      'relative flex w-full items-center gap-3 px-5 py-3 text-start transition-colors',
+                      active ? 'bg-accent/60' : 'hover:bg-secondary/60',
                     )}
                   >
-                    {hasPlan(s.id) && <Check className="size-3.5 text-emerald-600" />}
-                    {s.full_name || s.email || '—'}
+                    {active && <span className="absolute inset-y-0 start-0 w-1 bg-primary" />}
+                    <Photo name={s.full_name || s.email || '?'} path={r?.avatar_path} size={38} />
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className={cn('truncate text-sm font-bold', active && 'text-primary')}>
+                          {s.full_name || s.email || '—'}
+                        </span>
+                        {written ? (
+                          <span className="inline-flex items-center gap-0.5 text-[0.65rem] font-bold text-easy">
+                            <Check className="size-3" strokeWidth={3} />
+                            برنامه دارد
+                          </span>
+                        ) : (
+                          <span className="text-[0.65rem] font-bold text-muted-foreground">
+                            بدون برنامه
+                          </span>
+                        )}
+                      </div>
+                      {(r?.training_goal || r?.pr_10k) && (
+                        <div className="mt-0.5 flex flex-wrap items-center gap-x-3 text-[0.68rem] text-muted-foreground">
+                          {r?.training_goal && (
+                            <span className="inline-flex min-w-0 items-center gap-1">
+                              <Target className="size-3 shrink-0" />
+                              <span dir="auto" className="truncate">{r.training_goal}</span>
+                            </span>
+                          )}
+                          {r?.pr_10k && (
+                            <span className="inline-flex items-center gap-1">
+                              <Timer className="size-3" />
+                              ۱۰k
+                              <span dir="ltr" className="figures font-bold text-foreground">{r.pr_10k}</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* The week as seven marks: solid where they ticked. */}
+                    <span className="flex shrink-0 gap-[3px]" aria-hidden>
+                      {Array.from({ length: 7 }, (_, i) => (
+                        <span
+                          key={i}
+                          className={cn(
+                            'h-4 w-[5px] rounded-full',
+                            logs[addDays(weekStart, i)]?.done ? 'bg-easy' : 'bg-muted',
+                          )}
+                        />
+                      ))}
+                    </span>
+                    <span className="figures w-4 shrink-0 text-end text-xs font-bold text-muted-foreground">
+                      {faNum(doneCount(s.id))}
+                    </span>
                   </button>
                 );
               })}
@@ -328,73 +467,75 @@ export function CoachPage() {
           )}
         </Card>
 
-        {/* TRAINING GOAL */}
+        {/* EDITOR */}
         {currentStudent && (
-          <Card className="p-5">
-            <div className="mb-3 flex items-center gap-2">
-              <Target className="size-4 text-primary" />
-              <h2 className="display text-xl">هدف و رکورد</h2>
-              <span className="text-xs text-muted-foreground">
-                شاگرد هم می‌تواند این را در صفحه‌ی خودش بنویسد
-              </span>
-            </div>
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="min-w-48 flex-1">
-                <Label className="mb-1.5 block">هدف</Label>
-                <Input
-                  value={goal}
-                  onChange={(e) => setGoal(e.target.value)}
-                  dir="auto"
-                  placeholder="مثلاً ماراتن استانبول ۲۰۲۶"
-                />
-              </div>
-              <div className="min-w-36">
-                <Label className="mb-1.5 block">رکورد ۱۰ کیلومتر</Label>
-                {/* Minutes and seconds separately — a numeric keypad has no colon. */}
-                <div className="flex items-center gap-1.5">
-                  <Input
-                    value={prMins}
-                    onChange={(e) => setPrMins(e.target.value.replace(/[^\d]/g, '').slice(0, 3))}
-                    dir="ltr" inputMode="numeric" placeholder="46"
-                    aria-label="دقیقه"
-                    className="figures text-center"
-                  />
-                  <span className="figures text-lg font-bold text-muted-foreground">:</span>
-                  <Input
-                    value={prSecs}
-                    onChange={(e) => setPrSecs(e.target.value.replace(/[^\d]/g, '').slice(0, 2))}
-                    dir="ltr" inputMode="numeric" placeholder="20"
-                    aria-label="ثانیه"
-                    className="figures text-center"
-                  />
-                </div>
-              </div>
-              <Button
-                onClick={saveGoal}
-                disabled={savingGoal
-                  || (goal.trim() === (runners[currentStudent.id]?.training_goal || '')
-                      && joinPr(prMins, prSecs) === (runners[currentStudent.id]?.pr_10k || ''))}
-              >
-                <Check className="size-4" />
-                {savingGoal ? 'در حال ذخیره…' : 'ذخیره'}
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {/* WEEK TABLE */}
-        {currentStudent && (
-          <Card className="space-y-3 p-5">
+          <Card id="editor" className="scroll-mt-4 space-y-3 p-5">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="display text-xl">
                 برنامه‌ی {currentStudent.full_name || currentStudent.email}
               </h2>
-              <span className="text-xs text-muted-foreground">{weekLabel(weekStart)}</span>
+              <span className="figures text-xs text-muted-foreground">{weekLabel(weekStart)}</span>
               {dirty && <Badge variant="warning" className="ms-auto">ذخیره نشده</Badge>}
               {!dirty && savedAt > 0 && (
                 <Badge className="ms-auto bg-emerald-500/15 text-emerald-700">ذخیره شد</Badge>
               )}
             </div>
+
+            {/* Touched once a season; folded away so the table owns the card. */}
+            <details className="group nib-sm border border-border bg-secondary/40">
+              <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-2.5 text-sm font-bold">
+                <Target className="size-4 text-primary" />
+                هدف و رکورد
+                <span className="truncate text-xs font-normal text-muted-foreground" dir="auto">
+                  {runners[currentStudent.id]?.training_goal || 'ثبت نشده'}
+                </span>
+                <ChevronDown className="ms-auto size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="flex flex-wrap items-end gap-3 border-t border-border px-4 pb-4 pt-3">
+                <div className="min-w-48 flex-1">
+                  <Label className="mb-1.5 block">هدف</Label>
+                  <Input
+                    value={goal}
+                    onChange={(e) => setGoal(e.target.value)}
+                    dir="auto"
+                    placeholder="مثلاً ماراتن استانبول ۲۰۲۶"
+                  />
+                </div>
+                <div className="min-w-36">
+                  <Label className="mb-1.5 block">رکورد ۱۰ کیلومتر</Label>
+                  {/* Minutes and seconds separately — a numeric keypad has no colon. */}
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      value={prMins}
+                      onChange={(e) => setPrMins(e.target.value.replace(/[^\d]/g, '').slice(0, 3))}
+                      dir="ltr" inputMode="numeric" placeholder="46"
+                      aria-label="دقیقه"
+                      className="figures text-center"
+                    />
+                    <span className="figures text-lg font-bold text-muted-foreground">:</span>
+                    <Input
+                      value={prSecs}
+                      onChange={(e) => setPrSecs(e.target.value.replace(/[^\d]/g, '').slice(0, 2))}
+                      dir="ltr" inputMode="numeric" placeholder="20"
+                      aria-label="ثانیه"
+                      className="figures text-center"
+                    />
+                  </div>
+                </div>
+                <Button
+                  onClick={saveGoal}
+                  disabled={savingGoal
+                    || (goal.trim() === (runners[currentStudent.id]?.training_goal || '')
+                        && joinPr(prMins, prSecs) === (runners[currentStudent.id]?.pr_10k || ''))}
+                >
+                  <Check className="size-4" />
+                  {savingGoal ? 'در حال ذخیره…' : 'ذخیره'}
+                </Button>
+                <p className="w-full text-xs text-muted-foreground">
+                  شاگرد هم می‌تواند این را در صفحه‌ی خودش بنویسد.
+                </p>
+              </div>
+            </details>
 
             {legacyText && (
               <div className="rounded-xl border border-border bg-secondary/50 p-4">
@@ -480,61 +621,40 @@ export function CoachPage() {
           </Card>
         )}
 
-        {/* ALL USERS */}
-        <Card className="p-5">
-          <h2 className="display mb-3 text-xl">همه‌ی شاگردان</h2>
-          {allUsers.filter((u) => u.status !== 'pending').length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">هنوز شاگردی نیست.</p>
-          ) : (
-            <div className="divide-y divide-border">
-              {allUsers.filter((u) => u.status !== 'pending').map((r) => {
-                const isCoachRow = r.role === 'coach';
-                return (
-                  <div key={r.id} className="flex items-center gap-3 py-3">
-                    <Avatar name={r.full_name || r.email || '?'} path={runners[r.id]?.avatar_path} muted={isCoachRow} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="truncate text-sm font-semibold">{r.full_name || '(بدون نام)'}</span>
-                        {isCoachRow && <Badge variant="destructive" className="bg-primary/15 text-primary">مربی</Badge>}
-                        {r.status === 'rejected' && <Badge variant="destructive">رد شده</Badge>}
-                      </div>
-                      <div className="mt-0.5 truncate text-xs text-muted-foreground" dir="ltr">
-                        {r.email}{r.phone ? ' · ' + r.phone : ''}
-                      </div>
-                      {!isCoachRow && (runners[r.id]?.training_goal || runners[r.id]?.pr_10k) && (
-                        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
-                          {runners[r.id]?.training_goal && (
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                              <Target className="size-3" />
-                              <span dir="auto">{runners[r.id]!.training_goal}</span>
-                            </span>
-                          )}
-                          {runners[r.id]?.pr_10k && (
-                            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                              <Timer className="size-3" />
-                              ۱۰k
-                              <span dir="ltr" className="figures font-bold text-foreground">
-                                {runners[r.id]!.pr_10k}
-                              </span>
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    {!isCoachRow && r.status === 'approved' && (
-                      <Button variant="outline" size="sm" onClick={() => {
-                        setCurrentStudentId(r.id);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }}>
-                        نوشتن برنامه
-                      </Button>
-                    )}
+        {/* The coach's own picture, and anyone who was turned away. Both are
+            housekeeping, so they sit at the far end of the page. */}
+        {profile && (
+          <Card className="p-4">
+            <AvatarPicker
+              userId={profile.id}
+              name={profile.full_name}
+              path={coachAvatar}
+              onChange={setCoachAvatar}
+            />
+          </Card>
+        )}
+
+        {rejectedUsers.length > 0 && (
+          <details className="nib border border-border bg-card/60 px-5 py-3 text-sm">
+            <summary className="cursor-pointer font-bold text-muted-foreground">
+              رد شده‌ها ({faNum(rejectedUsers.length)})
+            </summary>
+            <div className="mt-2 divide-y divide-border">
+              {rejectedUsers.map((u) => (
+                <div key={u.id} className="flex items-center gap-3 py-2.5">
+                  <Photo name={u.full_name || u.email || '?'} size={32} className="bg-muted text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm">{u.full_name || '(بدون نام)'}</div>
+                    <div className="truncate text-xs text-muted-foreground" dir="ltr">{u.email}</div>
                   </div>
-                );
-              })}
+                  <Button variant="outline" size="sm" onClick={() => approveOrReject(u.id, 'approved')}>
+                    تأیید
+                  </Button>
+                </div>
+              ))}
             </div>
-          )}
-        </Card>
+          </details>
+        )}
       </main>
     </div>
   );
@@ -545,28 +665,6 @@ export function CoachPage() {
 // was already empty doesn't count as a change.
 function fingerprint(days: Day[]) {
   return JSON.stringify(trimDays(days));
-}
-
-function StatCard({ n, label, accent }: { n: number; label: string; accent?: boolean }) {
-  return (
-    <div className="flex flex-col items-center rounded-2xl border border-border bg-card px-4 py-2 shadow-sm">
-      <span className={cn('font-mono text-lg font-extrabold tabular-nums', accent && 'text-primary')}>
-        {faNum(n)}
-      </span>
-      <span className="text-[0.68rem] font-medium text-muted-foreground">{label}</span>
-    </div>
-  );
-}
-
-function Avatar({ name, path, muted }: { name: string; path?: string | null; muted?: boolean }) {
-  return (
-    <Photo
-      name={name}
-      path={path}
-      size={36}
-      className={muted ? 'bg-muted text-muted-foreground' : undefined}
-    />
-  );
 }
 
 // Read-only: what the student recorded for this day. The coach cannot edit it.

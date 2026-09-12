@@ -14,6 +14,7 @@ import { PlanText } from './PlanText';
 import { DayCard, WeekList, type Day } from './PlanWeek';
 import { DayLog, type Log } from './DayLog';
 import { RunnerStats } from './RunnerStats';
+import { TrainingHistory } from './TrainingHistory';
 import { Avatar } from './Avatar';
 import { cn } from '../../lib/utils';
 
@@ -311,7 +312,10 @@ export function StudentPage() {
           </Card>
         )}
 
-        {/* Context rather than the main event, so it sits under the plan. */}
+        {/* What was actually done, then where it is heading: both are context
+            under the plan, and the record earns its place above the goal. */}
+        <TrainingHistory studentId={profile.id} />
+
         <RunnerStats
           studentId={profile.id}
           goal={profile.training_goal}

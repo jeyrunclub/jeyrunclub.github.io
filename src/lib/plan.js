@@ -314,3 +314,48 @@ export function joinPr(minutes, seconds) {
   const ss = Math.min(59, Number(s || 0));
   return `${mm}:${String(ss).padStart(2, '0')}`;
 }
+
+// ---------- History ----------
+//
+// The week pages only ever ask for seven days. A streak and a twelve-week grid
+// need a long, sparse read instead: just the ticked days, as a Set, so the
+// callers can ask `has(iso)` without building a second index.
+
+export async function loadDoneDays(supabase, studentId, fromIso, toIso) {
+  const { data, error } = await supabase.from('day_logs')
+    .select('day')
+    .eq('student_id', studentId)
+    .eq('done', true)
+    .gte('day', fromIso)
+    .lte('day', toIso);
+  if (error) { console.error(error); return new Set(); }
+  return new Set((data || []).map((r) => r.day));
+}
+
+// The last `count` weeks, newest first: [{ weekStart, days: ['YYYY-MM-DD' × 7] }].
+export function recentWeeks(count = 12, from = thisWeekStart()) {
+  return Array.from({ length: count }, (_, i) => {
+    const weekStart = addDays(from, -7 * i);
+    return {
+      weekStart,
+      days: Array.from({ length: 7 }, (_, d) => addDays(weekStart, d)),
+    };
+  });
+}
+
+// Consecutive weeks with at least one session ticked, counting back from now.
+//
+// The current week is only allowed to *extend* a streak, never to break one:
+// on a Saturday morning nobody has trained yet, and zeroing a nine-week streak
+// because the week is six hours old would be a lie about the runner.
+export function weekStreak(doneDays, max = 52) {
+  const weeks = recentWeeks(max);
+  const has = (w) => w.days.some((d) => doneDays.has(d));
+  let n = 0;
+  for (let i = 0; i < weeks.length; i++) {
+    if (has(weeks[i])) { n++; continue; }
+    if (i === 0) continue;   // this week is still young
+    break;
+  }
+  return n;
+}
