@@ -23,7 +23,7 @@ type Profile = {
   id: string; full_name: string | null; phone: string | null;
   role: 'coach' | 'student'; status: 'pending' | 'approved' | 'rejected';
   email?: string;
-  training_goal?: string | null;
+  training_goal?: string | null; pr_10k?: string | null;
 };
 type Log = { done: boolean; note: string | null; photo_path: string | null };
 type Plan = { days: Day[]; text: string };
@@ -47,6 +47,7 @@ export function CoachPage() {
   const [preview, setPreview] = useState(false);
   const [logsByStudent, setLogsByStudent] = useState<Record<string, Record<string, Log>>>({});
   const [goal, setGoal] = useState('');
+  const [pr, setPr] = useState('');
   const [savingGoal, setSavingGoal] = useState(false);
 
   const refreshUsers = useCallback(async () => {
@@ -93,6 +94,7 @@ export function CoachPage() {
     if (!currentStudentId) { setDraft(emptyDays()); setBaseline(''); setLegacyText(''); return; }
     const st = allUsers.find((u) => u.id === currentStudentId);
     setGoal(st?.training_goal || '');
+    setPr(st?.pr_10k || '');
     let alive = true;
     loadWeekPlan(supabase, currentStudentId, weekStart).then((plan) => {
       if (!alive) return;
@@ -126,13 +128,16 @@ export function CoachPage() {
     if (!currentStudentId) return;
     setSavingGoal(true);
     setError(null);
-    const next = goal.trim() || null;
+    const next = {
+      training_goal: goal.trim() || null,
+      pr_10k: pr.trim() || null,
+    };
     const { error: err } = await supabase.from('profiles')
-      .update({ training_goal: next }).eq('id', currentStudentId);
+      .update(next).eq('id', currentStudentId);
     setSavingGoal(false);
-    if (err) { setError('خطا در ذخیره‌ی هدف: ' + err.message); return; }
+    if (err) { setError('خطا در ذخیره: ' + err.message); return; }
     setAllUsers((prev) => prev.map((u) => (
-      u.id === currentStudentId ? { ...u, training_goal: next } : u
+      u.id === currentStudentId ? { ...u, ...next } : u
     )));
   }
 
@@ -292,13 +297,14 @@ export function CoachPage() {
           <Card className="p-5">
             <div className="mb-3 flex items-center gap-2">
               <Target className="size-4 text-primary" />
-              <h2 className="text-base font-bold">هدف تمرینی</h2>
+              <h2 className="text-base font-bold">هدف و رکورد</h2>
               <span className="text-xs text-muted-foreground">
                 شاگرد هم می‌تواند این را در صفحه‌ی خودش بنویسد
               </span>
             </div>
             <div className="flex flex-wrap items-end gap-3">
               <div className="min-w-48 flex-1">
+                <Label className="mb-1.5 block">هدف</Label>
                 <Input
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
@@ -306,9 +312,22 @@ export function CoachPage() {
                   placeholder="مثلاً ماراتن استانبول ۲۰۲۶"
                 />
               </div>
+              <div className="min-w-32">
+                <Label className="mb-1.5 block">رکورد ۱۰ کیلومتر</Label>
+                <Input
+                  value={pr}
+                  onChange={(e) => setPr(e.target.value)}
+                  dir="ltr"
+                  inputMode="numeric"
+                  placeholder="46:20"
+                  className="figures text-right"
+                />
+              </div>
               <Button
                 onClick={saveGoal}
-                disabled={savingGoal || goal.trim() === (currentStudent.training_goal || '')}
+                disabled={savingGoal
+                  || (goal.trim() === (currentStudent.training_goal || '')
+                      && pr.trim() === (currentStudent.pr_10k || ''))}
               >
                 <Check className="size-4" />
                 {savingGoal ? 'در حال ذخیره…' : 'ذخیره'}

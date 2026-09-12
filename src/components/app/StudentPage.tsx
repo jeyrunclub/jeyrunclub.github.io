@@ -13,7 +13,7 @@ import { Button } from '../ui/button';
 import { PlanText } from './PlanText';
 import { DayCard, WeekList, type Day } from './PlanWeek';
 import { DayLog, type Log } from './DayLog';
-import { TrainingGoal } from './TrainingGoal';
+import { RunnerStats } from './RunnerStats';
 import { cn } from '../../lib/utils';
 
 type Profile = {
@@ -22,6 +22,7 @@ type Profile = {
   status: string;
   full_name: string | null;
   training_goal: string | null;
+  pr_10k: string | null;
 };
 
 export function StudentPage() {
@@ -137,11 +138,12 @@ export function StudentPage() {
         </section>
 
         {/* The runner's own goal; the coach can also set it from the panel */}
-        <TrainingGoal
+        <RunnerStats
           studentId={profile.id}
           goal={profile.training_goal}
-          onSave={(training_goal) =>
-            setProfile((p) => (p ? { ...p, training_goal } : p))}
+          pr={profile.pr_10k}
+          onSave={(training_goal, pr_10k) =>
+            setProfile((p) => (p ? { ...p, training_goal, pr_10k } : p))}
         />
 
         {/* WEEK NAV — in RTL, the right chevron goes back */}
