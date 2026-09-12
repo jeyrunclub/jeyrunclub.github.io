@@ -6,7 +6,7 @@ import {
   faNum, faDateShort, DAYS_FA, dayIndexOf,
   emptyDays, normalizeDays, daysAreEmpty, trimDays,
   fetchWeekPlansForStudents, fetchWeekLogsForStudents, loadWeekPlan, saveWeekPlan,
-  signedPhotoUrl, normalizePr,
+  signedPhotoUrl, splitPr, joinPr,
 } from '../../lib/plan.js';
 import { AppHeader } from '../app/AppHeader';
 import { PlanText } from '../app/PlanText';
@@ -51,7 +51,8 @@ export function CoachPage() {
   const [runners, setRunners] = useState<Record<string, Runner>>({});
   const [coachAvatar, setCoachAvatar] = useState<string | null>(null);
   const [goal, setGoal] = useState('');
-  const [pr, setPr] = useState('');
+  const [prMins, setPrMins] = useState('');
+  const [prSecs, setPrSecs] = useState('');
   const [savingGoal, setSavingGoal] = useState(false);
 
   // The coach's "profiles: coach read" policy covers every row, so read the
@@ -115,7 +116,9 @@ export function CoachPage() {
     if (!currentStudentId) { setDraft(emptyDays()); setBaseline(''); setLegacyText(''); return; }
     const r = runners[currentStudentId];
     setGoal(r?.training_goal || '');
-    setPr(r?.pr_10k || '');
+    const { minutes, seconds } = splitPr(r?.pr_10k);
+    setPrMins(minutes);
+    setPrSecs(seconds);
     let alive = true;
     loadWeekPlan(supabase, currentStudentId, weekStart).then((plan) => {
       if (!alive) return;
@@ -151,7 +154,7 @@ export function CoachPage() {
     setError(null);
     const next = {
       training_goal: goal.trim() || null,
-      pr_10k: normalizePr(pr) || null,
+      pr_10k: joinPr(prMins, prSecs) || null,
     };
     const { error: err } = await supabase.from('profiles')
       .update(next).eq('id', currentStudentId);
@@ -345,22 +348,32 @@ export function CoachPage() {
                   placeholder="مثلاً ماراتن استانبول ۲۰۲۶"
                 />
               </div>
-              <div className="min-w-32">
+              <div className="min-w-36">
                 <Label className="mb-1.5 block">رکورد ۱۰ کیلومتر</Label>
-                <Input
-                  value={pr}
-                  onChange={(e) => setPr(e.target.value)}
-                  onBlur={() => setPr((v) => normalizePr(v))}
-                  dir="ltr"
-                      placeholder="46:20"
-                  className="figures text-right"
-                />
+                {/* Minutes and seconds separately — a numeric keypad has no colon. */}
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    value={prMins}
+                    onChange={(e) => setPrMins(e.target.value.replace(/[^\d]/g, '').slice(0, 3))}
+                    dir="ltr" inputMode="numeric" placeholder="46"
+                    aria-label="دقیقه"
+                    className="figures text-center"
+                  />
+                  <span className="figures text-lg font-bold text-muted-foreground">:</span>
+                  <Input
+                    value={prSecs}
+                    onChange={(e) => setPrSecs(e.target.value.replace(/[^\d]/g, '').slice(0, 2))}
+                    dir="ltr" inputMode="numeric" placeholder="20"
+                    aria-label="ثانیه"
+                    className="figures text-center"
+                  />
+                </div>
               </div>
               <Button
                 onClick={saveGoal}
                 disabled={savingGoal
                   || (goal.trim() === (runners[currentStudent.id]?.training_goal || '')
-                      && pr.trim() === (runners[currentStudent.id]?.pr_10k || ''))}
+                      && joinPr(prMins, prSecs) === (runners[currentStudent.id]?.pr_10k || ''))}
               >
                 <Check className="size-4" />
                 {savingGoal ? 'در حال ذخیره…' : 'ذخیره'}

@@ -294,3 +294,23 @@ export function normalizePr(text) {
   if (d.length <= 4) return `${d.slice(0, d.length - 2)}:${d.slice(-2)}`;
   return `${d.slice(0, d.length - 4)}:${d.slice(-4, -2)}:${d.slice(-2)}`;
 }
+
+// A time as two plain numbers, so no keyboard ever has to produce a colon.
+// Minutes may exceed 59 — a 10k can be 75:00 — so they are not clamped.
+export function splitPr(text) {
+  const sec = prSeconds(text);
+  if (sec === null) return { minutes: '', seconds: '' };
+  return {
+    minutes: String(Math.floor(sec / 60)),
+    seconds: String(sec % 60).padStart(2, '0'),
+  };
+}
+
+export function joinPr(minutes, seconds) {
+  const m = String(minutes || '').replace(/[^\d]/g, '');
+  const s = String(seconds || '').replace(/[^\d]/g, '');
+  if (!m && !s) return '';
+  const mm = Number(m || 0);
+  const ss = Math.min(59, Number(s || 0));
+  return `${mm}:${String(ss).padStart(2, '0')}`;
+}
