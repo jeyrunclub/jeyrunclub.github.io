@@ -1,0 +1,223 @@
+---
+/**
+ * One articulated runner, side on, facing right.
+ *
+ * The figure is a rig rather than a picture: hips, knees, ankles, shoulders
+ * and elbows are separate groups that CSS rotates, so this is a real run cycle
+ * instead of a bobbing image. Limbs are drawn hanging straight down in their
+ * untransformed pose and every rotation is applied from there, which keeps the
+ * joint coordinates readable.
+ *
+ * `transform-box: view-box` is what makes that work — without it a
+ * transform-origin resolves against each element's own bounding box, and every
+ * limb pivots around its own middle instead of its joint.
+ *
+ * One cycle is two footfalls, so the body bob runs at twice the leg rate. The
+ * far-side limbs use their own mirrored keyframes rather than a 50% delay, so
+ * `--delay` can phase a whole figure against its neighbours without pulling
+ * its own limbs out of step.
+ */
+
+interface Props {
+  /** Optional photographed head, clipped to the head circle. */
+  photo?: string;
+  /** Seconds. Negative values start the figure part-way through its stride. */
+  delay?: number;
+  /** Stride duration; slightly different per figure stops the pack marching. */
+  stride?: number;
+  class?: string;
+}
+
+const { photo, delay = 0, stride = 0.62, class: className } = Astro.props;
+const uid = 'rf-' + Math.random().toString(36).slice(2, 8);
+---
+
+<svg
+  class:list={['runner-fig', className]}
+  viewBox="0 0 64 104"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  style={`--delay:${delay}s;--stride:${stride}s`}
+  aria-hidden="true"
+>
+  {photo && (
+    <defs>
+      <clipPath id={uid}><circle cx="40" cy="14" r="8.4" /></clipPath>
+    </defs>
+  )}
+
+  <g class="rf-bob">
+    {/* Far side first, so it sits behind the torso. */}
+    <g class="rf-arm rf-arm--far" style="transform-origin:35px 28px">
+      <path d="M35 28 35 41" />
+      <g class="rf-forearm rf-forearm--far" style="transform-origin:35px 41px">
+        <path d="M35 41 35 52" />
+      </g>
+    </g>
+    <g class="rf-thigh rf-thigh--far" style="transform-origin:30px 54px">
+      <path d="M30 54 30 76" />
+      <g class="rf-shin rf-shin--far" style="transform-origin:30px 76px">
+        <path d="M30 76 30 96" />
+        <g class="rf-foot rf-foot--far" style="transform-origin:30px 96px">
+          <path d="M30 96 38 99" />
+        </g>
+      </g>
+    </g>
+
+    {/* Torso and head */}
+    <path d="M30 54 35 28" />
+    {photo ? (
+      <>
+        <image
+          href={photo}
+          x="31.6" y="5.6" width="16.8" height="16.8"
+          preserveAspectRatio="xMidYMid slice"
+          clip-path={`url(#${uid})`}
+        />
+        <circle cx="40" cy="14" r="8.4" stroke-width="4" />
+      </>
+    ) : (
+      <circle cx="40" cy="14" r="8.4" />
+    )}
+    <path d="M35 28 38 21" />
+
+    {/* Near side */}
+    <g class="rf-thigh rf-thigh--near" style="transform-origin:30px 54px">
+      <path d="M30 54 30 76" />
+      <g class="rf-shin rf-shin--near" style="transform-origin:30px 76px">
+        <path d="M30 76 30 96" />
+        <g class="rf-foot rf-foot--near" style="transform-origin:30px 96px">
+          <path d="M30 96 38 99" />
+        </g>
+      </g>
+    </g>
+    <g class="rf-arm rf-arm--near" style="transform-origin:35px 28px">
+      <path d="M35 28 35 41" />
+      <g class="rf-forearm rf-forearm--near" style="transform-origin:35px 41px">
+        <path d="M35 41 35 52" />
+      </g>
+    </g>
+  </g>
+</svg>
+
+<style is:global>
+  .runner-fig { overflow: visible; }
+  .runner-fig g { transform-box: view-box; }
+
+  /* The far arm and leg are the same stroke in the same place as the near
+     ones, so a mirrored swap between them was invisible — the figure looked
+     frozen even though every joint was moving. Fading the far side both reads
+     as depth and makes the cycle legible. */
+  .runner-fig .rf-arm--far,
+  .runner-fig .rf-thigh--far { opacity: 0.42; }
+
+  .runner-fig .rf-bob,
+  .runner-fig .rf-thigh,
+  .runner-fig .rf-shin,
+  .runner-fig .rf-foot,
+  .runner-fig .rf-arm,
+  .runner-fig .rf-forearm {
+    animation-duration: var(--stride);
+    animation-delay: var(--delay);
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+
+  /* Two footfalls per cycle, so the body rises and falls twice. */
+  .runner-fig .rf-bob {
+    animation-name: rf-bob;
+    animation-duration: calc(var(--stride) / 2);
+    transform-box: view-box;
+  }
+
+  .runner-fig .rf-thigh--near    { animation-name: rf-thigh; }
+  .runner-fig .rf-thigh--far     { animation-name: rf-thigh-far; }
+  .runner-fig .rf-shin--near     { animation-name: rf-shin; }
+  .runner-fig .rf-shin--far      { animation-name: rf-shin-far; }
+  .runner-fig .rf-foot--near     { animation-name: rf-foot; }
+  .runner-fig .rf-foot--far      { animation-name: rf-foot-far; }
+  .runner-fig .rf-arm--near      { animation-name: rf-arm; }
+  .runner-fig .rf-arm--far       { animation-name: rf-arm-far; }
+  .runner-fig .rf-forearm--near  { animation-name: rf-forearm; }
+  .runner-fig .rf-forearm--far   { animation-name: rf-forearm-far; }
+
+  /* Negative rotations swing a downward limb forwards, towards +x. */
+  @keyframes rf-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3px); }
+  }
+
+  @keyframes rf-thigh {
+    0%   { transform: rotate(-32deg); }
+    25%  { transform: rotate(-8deg); }
+    50%  { transform: rotate(26deg); }
+    75%  { transform: rotate(4deg); }
+    100% { transform: rotate(-32deg); }
+  }
+  @keyframes rf-thigh-far {
+    0%   { transform: rotate(26deg); }
+    25%  { transform: rotate(4deg); }
+    50%  { transform: rotate(-32deg); }
+    75%  { transform: rotate(-8deg); }
+    100% { transform: rotate(26deg); }
+  }
+
+  /* The shin trails the thigh: nearly straight as the foot reaches out,
+     folded right up as the heel comes through under the hip. */
+  @keyframes rf-shin {
+    0%   { transform: rotate(22deg); }
+    20%  { transform: rotate(2deg); }
+    50%  { transform: rotate(48deg); }
+    72%  { transform: rotate(92deg); }
+    100% { transform: rotate(22deg); }
+  }
+  @keyframes rf-shin-far {
+    0%   { transform: rotate(48deg); }
+    22%  { transform: rotate(92deg); }
+    50%  { transform: rotate(22deg); }
+    70%  { transform: rotate(2deg); }
+    100% { transform: rotate(48deg); }
+  }
+
+  @keyframes rf-foot {
+    0%   { transform: rotate(-12deg); }
+    50%  { transform: rotate(14deg); }
+    100% { transform: rotate(-12deg); }
+  }
+  @keyframes rf-foot-far {
+    0%   { transform: rotate(14deg); }
+    50%  { transform: rotate(-12deg); }
+    100% { transform: rotate(14deg); }
+  }
+
+  /* Arms oppose the legs. */
+  @keyframes rf-arm {
+    0%   { transform: rotate(42deg); }
+    50%  { transform: rotate(-40deg); }
+    100% { transform: rotate(42deg); }
+  }
+  @keyframes rf-arm-far {
+    0%   { transform: rotate(-40deg); }
+    50%  { transform: rotate(42deg); }
+    100% { transform: rotate(-40deg); }
+  }
+
+  /* Held near a right angle throughout, opening a little at the back. */
+  @keyframes rf-forearm {
+    0%   { transform: rotate(-96deg); }
+    50%  { transform: rotate(-52deg); }
+    100% { transform: rotate(-96deg); }
+  }
+  @keyframes rf-forearm-far {
+    0%   { transform: rotate(-52deg); }
+    50%  { transform: rotate(-96deg); }
+    100% { transform: rotate(-52deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .runner-fig * { animation: none !important; }
+  }
+</style>

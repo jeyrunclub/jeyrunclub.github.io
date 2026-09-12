@@ -1,51 +1,37 @@
 ---
-// The gazelle out in front, Salar behind it, the club behind him.
+// The gazelle out in front, Salar behind it, the club behind him — all
+// articulated now rather than sliding images.
 //
-// The followers were line figures to begin with; they are the club's own
-// photographs now, because generic stick figures could have been any club.
-// The portraits are cropped from the gallery and the team folder — the same
-// pictures that appear elsewhere on the site.
+// Each figure is a rig whose joints CSS rotates (see RunnerFigure.astro and
+// GazelleFigure.astro); this file only places them and carries them across.
+// The runners wear the club's own faces, clipped into the head circle, so the
+// pack is recognisably us and not a stock silhouette.
 //
 // Decorative, so the whole strip is aria-hidden. It also breaks the page's
 // rhythm on purpose: every other section is eyebrow → heading → grid inside
-// the same container, and this one is edge to edge with nothing in it but
-// movement.
+// the same container, and this one is edge to edge with nothing but movement.
 
-import { Image } from 'astro:assets';
-import salar from '../assets/runners/salar.jpg';
-import member1 from '../assets/runners/member-1.jpg';
-import member2 from '../assets/runners/member-2.jpg';
-import member3 from '../assets/runners/member-3.jpg';
+import RunnerFigure from './RunnerFigure.astro';
+import GazelleFigure from './GazelleFigure.astro';
 
+// Only members photographed face-on: the fourth portrait we have is shot from
+// behind, which reads oddly on a figure running towards the right.
 const pack = [
-  { src: salar,   alt: '', size: 76, cls: 'runner--1' },
-  { src: member1, alt: '', size: 66, cls: 'runner--2' },
-  { src: member2, alt: '', size: 62, cls: 'runner--3' },
-  { src: member3, alt: '', size: 58, cls: 'runner--4' },
+  { photo: '/images/runners/salar.jpg',    cls: 'runner--1', delay: -0.31, stride: 0.60 },
+  { photo: '/images/runners/member-1.jpg', cls: 'runner--2', delay: -0.08, stride: 0.66 },
+  { photo: '/images/runners/member-3.jpg', cls: 'runner--3', delay: -0.44, stride: 0.63 },
 ];
 ---
 <div class="runners-band" aria-hidden="true">
   <span class="runners-ground"></span>
 
   <span class="runner runner--gazelle">
-    <span class="runner-bob">
-      <img src="/images/logo.png" alt="" width="88" height="71" />
-    </span>
+    <GazelleFigure delay={-0.2} stride={0.58} />
   </span>
 
   {pack.map((p) => (
     <span class:list={['runner', 'runner--face', p.cls]}>
-      <span class="runner-bob">
-        <Image
-          src={p.src}
-          alt={p.alt}
-          width={p.size * 2}
-          height={p.size * 2}
-          quality={80}
-          loading="lazy"
-          style={`width:${p.size}px;height:${p.size}px`}
-        />
-      </span>
+      <RunnerFigure photo={p.photo} delay={p.delay} stride={p.stride} />
     </span>
   ))}
 </div>

@@ -1435,7 +1435,7 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 .runners-band {
   position: relative;
   overflow: hidden;
-  height: clamp(7.5rem, 14vw, 11rem);
+  height: clamp(8rem, 15vw, 12rem);
   background: var(--sand-2);
   border-block: 1.5px solid var(--border);
   background-image: var(--strokes);
@@ -1443,106 +1443,59 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 .runners-ground {
   position: absolute;
   inset-inline: 0;
-  bottom: 24%;
+  bottom: 20%;
   height: 1.5px;
   background: linear-gradient(to left, transparent, var(--border-strong) 15%, var(--border-strong) 85%, transparent);
 }
 .runner {
   position: absolute;
-  bottom: 24%;
+  bottom: 20%;
   left: 0;
   display: block;
-  color: var(--ink);
   animation: run-across 15s linear infinite;
 }
-.runner-bob {
-  display: block;
-  animation: run-bob 0.42s ease-in-out infinite alternate;
-}
-.runner img { display: block; }
-.runner--gazelle img { height: clamp(3.4rem, 6vw, 4.8rem); width: auto; }
 
-/* The club's own faces, each on a paper ring so it reads as a portrait
-   rather than a hole punched in the band. */
-.runner--face img {
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid var(--paper);
-  box-shadow: 0 6px 16px -6px rgba(23, 19, 15, 0.55);
+/* Figures stand ON the ground line: each viewBox leaves a little room under
+   the feet, so they are nudged down by exactly that much. In rem, not a
+   percentage — a percentage margin resolves against the containing block's
+   WIDTH, which here is the whole band, and dropped them 38px through the
+   floor. */
+.runner--face {
+  color: var(--ink);
+  margin-bottom: -0.26rem;
+}
+.runner--face .runner-fig {
+  display: block;
+  height: clamp(3.6rem, 6.4vw, 5.4rem);
+  width: auto;
+}
+.runner--gazelle {
+  color: var(--crimson);
+  margin-bottom: -0.62rem;
+}
+.runner--gazelle .gazelle-fig {
+  display: block;
+  height: clamp(3.2rem, 5.6vw, 4.8rem);
+  width: auto;
 }
 
 /* Negative delays so the line is already strung out on arrival, rather than
    the gazelle setting off alone and the club trickling in afterwards. */
-.runner--gazelle { animation-delay: -4.6s; }
-.runner--1 { animation-delay: -3.6s; }
-.runner--2 { animation-delay: -2.7s; }
-.runner--3 { animation-delay: -1.9s; }
-.runner--4 { animation-delay: -1.1s; }
-.runner--2 .runner-bob { animation-duration: 0.38s; }
-.runner--3 .runner-bob { animation-duration: 0.47s; }
-.runner--4 .runner-bob { animation-duration: 0.43s; }
+.runner--gazelle { animation-delay: -4.4s; }
+.runner--1 { animation-delay: -3.4s; }
+.runner--2 { animation-delay: -2.5s; }
+.runner--3 { animation-delay: -1.6s; }
 
 @keyframes run-across {
   from { transform: translateX(-26vw); }
   to   { transform: translateX(130vw); }
 }
-@keyframes run-bob {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-0.42rem); }
-}
 
 /* Still a composition, just a still one. */
 @media (prefers-reduced-motion: reduce) {
-  .runner, .runner-bob { animation: none; }
-  .runner--gazelle { left: 72%; }
-  .runner--1 { left: 55%; }
-  .runner--2 { left: 41%; }
-  .runner--3 { left: 28%; }
-  .runner--4 { left: 16%; }
-}
-
-@media (max-width: 640px) {
-  .runner--face img { border-width: 2.5px; }
-}
-
-/* ---------- Quick links bar (phones) ---------- */
-/* The burger hid every link behind a tap. This strip keeps the pages people
-   actually come for on screen; it scrolls sideways rather than wrapping, so
-   the header keeps a fixed height whatever is in it. */
-.nav-quick { display: none; }
-
-@media (max-width: 640px) {
-  .nav-quick {
-    display: flex;
-    gap: 0.45rem;
-    align-items: center;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    padding: 0 1rem 0.6rem;
-    border-top: 1px solid var(--border);
-    padding-top: 0.6rem;
-  }
-  .nav-quick::-webkit-scrollbar { display: none; }
-  .nav-quick a {
-    flex: 0 0 auto;
-    padding: 0.35rem 0.8rem;
-    border: 1.5px solid var(--border);
-    border-radius: 999px 999px 999px var(--nib);
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--ink-soft);
-    white-space: nowrap;
-  }
-  .nav-quick a.active {
-    border-color: var(--crimson);
-    color: var(--crimson);
-    background: var(--crimson-tint);
-  }
-  .nav-quick a.active::after { content: none; }
-  .nav-quick .nav-cta {
-    background: var(--crimson);
-    border-color: var(--crimson);
-    color: #fff;
-  }
+  .runner { animation: none; }
+  .runner--gazelle { left: 70%; }
+  .runner--1 { left: 52%; }
+  .runner--2 { left: 36%; }
+  .runner--3 { left: 21%; }
 }
