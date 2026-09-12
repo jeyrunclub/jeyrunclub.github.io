@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LogOut } from 'lucide-react';
+import { LogOut, Globe } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
@@ -50,7 +50,18 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
                 {l.label}
               </a>
             ))}
-            <Button variant="ghost" size="icon" onClick={signOut} title="خروج" aria-label="خروج" className="ms-1 size-9 text-muted-foreground hover:text-destructive">
+            {/* Back out to the public site — there was no way across from
+                inside the app except the browser's back button. */}
+            <a
+              href="/"
+              title="سایت جیران"
+              aria-label="رفتن به سایت جیران"
+              className="nib-pill ms-1 inline-flex h-9 items-center gap-1.5 px-3 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <Globe className="size-4" />
+              <span>سایت</span>
+            </a>
+            <Button variant="ghost" size="icon" onClick={signOut} title="خروج" aria-label="خروج" className="size-9 text-muted-foreground hover:text-destructive">
               <LogOut className="size-4" />
             </Button>
           </nav>

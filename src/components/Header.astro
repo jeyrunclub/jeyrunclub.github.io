@@ -37,4 +37,17 @@ const p = lang === 'fa'
       <span></span><span></span><span></span>
     </button>
   </div>
+
+  {/* On a phone the whole menu used to be behind the burger, so nothing but
+      the logo was reachable without opening it. These are the pages people
+      actually come for; the burger still holds the rest and the language
+      toggle. Hidden on wide screens, where the full nav is already visible. */}
+  <nav class="nav-quick" aria-label={t.menuLabel}>
+    <a href={p.calendar} class:list={[isActive(p.calendar) && 'active']}>{t.calendar}</a>
+    <a href={p.races} class:list={[isActive(p.races) && 'active']}>{t.races}</a>
+    <a href={p.services} class:list={[isActive(p.services) && 'active']}>{t.services}</a>
+    <a href={p.gallery} class:list={[isActive(p.gallery) && 'active']}>{t.gallery}</a>
+    <a href="/app" class:list={[path.startsWith('/app') && 'active']}>{t.app}</a>
+    <a href={p.join} class="nav-cta">{t.join}</a>
+  </nav>
 </header>
