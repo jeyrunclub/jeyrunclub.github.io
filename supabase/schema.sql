@@ -332,6 +332,12 @@ create policy "avatars: own write"
 -- Students may only select their OWN day_logs, so counting everybody has to
 -- happen inside a security-definer function. It exposes nothing beyond a name,
 -- a picture and two counts — no emails, no notes, no plans.
+--
+-- The membership check in the WHERE clause is the thing that actually protects
+-- it. A grant alone did not: the publishable key is in the client bundle, so
+-- "anyone authenticated" is close to "anyone", and an anonymous caller was
+-- getting the whole board back. Guarding inside the body is how
+-- list_all_users() does it too, and it holds no matter how the grants drift.
 drop function if exists public.leaderboard();
 create or replace function public.leaderboard()
 returns table (
@@ -357,12 +363,17 @@ as $$
     left join public.day_logs dl on dl.student_id = p.id
    where p.status = 'approved'
      and p.role <> 'coach'
+     and exists (
+       select 1 from public.profiles viewer
+        where viewer.id = auth.uid()
+          and (viewer.role = 'coach' or viewer.status = 'approved')
+     )
    group by p.id, p.full_name, p.avatar_path, p.pr_10k
    order by done_total desc, done_week desc, p.full_name nulls last;
 $$;
 
 -- Approved members and the coach can read the board; nobody anonymous can.
-revoke execute on function public.leaderboard() from public;
+revoke execute on function public.leaderboard() from public, anon;
 grant execute on function public.leaderboard() to authenticated;
 
 -- ============================================================
