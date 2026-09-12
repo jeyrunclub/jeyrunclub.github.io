@@ -56,14 +56,22 @@ function Note({ text }: { text: string }) {
 }
 
 // The big card under the day strip — one day, given room to breathe.
-export function DayCard({ day, index, weekStart, isToday }: {
-  day: Day; index: number; weekStart: string; isToday?: boolean;
+//
+// `bare` drops the card's own border and background so the student page can put
+// this and the day's log inside one shared card: "here is today's session" and
+// "did you do it" are the same thought, and as two boxes with a gap between
+// them they read as unrelated.
+export function DayCard({ day, index, weekStart, isToday, bare }: {
+  day: Day; index: number; weekStart: string; isToday?: boolean; bare?: boolean;
 }) {
   const empty = dayIsEmpty(day);
   const c = typeClasses(sessionType(day.workout));
 
   return (
-    <div className="nib relative overflow-hidden border border-border bg-card shadow-sm">
+    <div className={cn(
+      'relative overflow-hidden',
+      bare ? '' : 'nib border border-border bg-card shadow-sm',
+    )}>
       {!empty && <span className={cn('absolute inset-y-0 start-0 w-1.5', c.rail)} />}
       <div className="p-6">
         <div className="flex flex-wrap items-center gap-2">

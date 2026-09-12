@@ -23,11 +23,13 @@ export type Log = {
 
 const MAX_BYTES = 10 * 1024 * 1024; // matches the bucket's file_size_limit
 
-export function DayLog({ studentId, day, log, onChange }: {
+export function DayLog({ studentId, day, log, onChange, bare }: {
   studentId: string;
   day: string;
   log: Log | undefined;
   onChange: (day: string, log: Log) => void;
+  /** Drop the card chrome so this can sit inside the day's card. */
+  bare?: boolean;
 }) {
   const done = !!log?.done;
   const photoPath = log?.photo_path || null;
@@ -86,7 +88,11 @@ export function DayLog({ studentId, day, log, onChange }: {
   }
 
   return (
-    <div className="nib mt-4 border border-border bg-card p-4 shadow-sm">
+    <div className={cn(
+      bare
+        ? 'border-t border-border px-6 pb-5 pt-4'
+        : 'nib mt-4 border border-border bg-card p-4 shadow-sm',
+    )}>
       {/* Did it */}
       <button
         type="button"
@@ -102,7 +108,7 @@ export function DayLog({ studentId, day, log, onChange }: {
       >
         <span className={cn(
           'flex size-7 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
-          done ? 'border-easy bg-easy text-white' : 'border-muted-foreground/40',
+          done ? 'border-easy bg-easy text-white tick-pop' : 'border-muted-foreground/40',
         )}>
           {busy === 'done'
             ? <Loader2 className="size-4 animate-spin" />

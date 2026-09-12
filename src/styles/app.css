@@ -149,3 +149,25 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .rise { animation: none; }
 }
+
+/* The tick is the payoff for a 5am run and it was a colour change. Give it a
+   beat — it fires only when `done` flips, because the class only lands then. */
+@keyframes tick-pop {
+  0%   { transform: scale(0.55); }
+  55%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+.tick-pop { animation: tick-pop 0.34s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* The day strip scrolls, and with a hard edge there was nothing to say so.
+   Only the far end fades: the strip starts at Saturday and overflows leftwards
+   in RTL, so fading both ends dimmed the first day when there was nothing
+   before it to scroll back to. */
+.day-strip {
+  -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 3rem), transparent 100%);
+  mask-image: linear-gradient(to left, #000 calc(100% - 3rem), transparent 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tick-pop { animation: none; }
+}

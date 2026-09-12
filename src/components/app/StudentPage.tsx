@@ -168,19 +168,16 @@ export function StudentPage() {
           </div>
         </section>
 
-        {/* The runner's own goal; the coach can also set it from the panel */}
-        <RunnerStats
-          studentId={profile.id}
-          goal={profile.training_goal}
-          pr={profile.pr_10k}
-          onSave={(training_goal, pr_10k) =>
-            setProfile((p) => (p ? { ...p, training_goal, pr_10k } : p))}
-        />
-
-        {/* WEEK NAV — in RTL, the right chevron goes back */}
-        <Card className="flex items-center justify-between gap-2 p-2">
+        {/*
+          Order matters here. The plan is why the app gets opened; the goal is
+          context checked once a week, and it used to sit between the hero and
+          the plan. Week nav and the day/week switch now share one slim bar
+          rather than taking a card each — they were carrying the same visual
+          weight as the workout itself.
+        */}
+        <Card className="flex items-center gap-1 p-1.5">
           <Button
-            variant="ghost" size="icon" className="rounded-full"
+            variant="ghost" size="icon" className="size-9 rounded-full"
             onClick={() => setWeekStart((w) => addDays(w, -7))}
             aria-label="هفته‌ی قبل"
           >
@@ -191,18 +188,38 @@ export function StudentPage() {
             onClick={() => setWeekStart(thisWeekStart())}
             disabled={isThisWeek}
             title={isThisWeek ? undefined : 'برگشت به این هفته'}
-            className="rounded-xl px-3 py-1 text-center transition-colors enabled:hover:bg-accent disabled:cursor-default"
+            className="min-w-0 flex-1 rounded-xl px-2 py-1 text-center transition-colors enabled:hover:bg-accent disabled:cursor-default"
           >
-            <div className="text-sm font-bold leading-tight">{weekRelativeLabel(weekStart)}</div>
-            <div className="figures mt-0.5 text-xs text-muted-foreground">{weekLabel(weekStart)}</div>
+            <div className="truncate text-sm font-bold leading-tight">{weekRelativeLabel(weekStart)}</div>
+            <div className="figures mt-0.5 truncate text-[0.7rem] text-muted-foreground">{weekLabel(weekStart)}</div>
           </button>
           <Button
-            variant="ghost" size="icon" className="rounded-full"
+            variant="ghost" size="icon" className="size-9 rounded-full"
             onClick={() => setWeekStart((w) => addDays(w, 7))}
             aria-label="هفته‌ی بعد"
           >
             <ChevronLeft className="size-5" />
           </Button>
+
+          {!empty && !legacy && (
+            <div className="ms-1 flex shrink-0 gap-0.5 rounded-full bg-secondary p-1">
+              {([['day', 'روزانه'], ['week', 'هفتگی']] as const).map(([v, label]) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setView(v)}
+                  className={cn(
+                    'nib-pill px-3 py-1 text-xs font-bold transition-all',
+                    view === v
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
         </Card>
 
         {loadingPlan ? (
@@ -221,94 +238,88 @@ export function StudentPage() {
             </p>
           </Card>
         ) : legacy ? (
-          // A week written before the day table existed
           <Card className="p-6">
             <PlanText text={text} />
           </Card>
-        ) : (
+        ) : view === 'day' ? (
           <>
-            {/* روزانه / هفتگی */}
-            <div className="flex gap-1 self-center rounded-full border border-border bg-card p-1 shadow-sm">
-              {([['day', 'روزانه'], ['week', 'هفتگی']] as const).map(([v, label]) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setView(v)}
-                  className={cn(
-                    'nib-pill px-6 py-1.5 text-sm font-bold transition-all',
-                    view === v
-                      ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
+            {/* Day strip, masked at both edges so it is obvious it scrolls. */}
+            <div className="day-strip no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 py-1">
+              {days.map((d, i) => {
+                const active = i === selected;
+                const type = sessionType(d.workout);
+                const c = typeClasses(type);
+                const isDone = logs[addDays(weekStart, i)]?.done;
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSelected(i)}
+                    aria-current={active ? 'true' : undefined}
+                    className={cn(
+                      'nib-sm flex w-17 shrink-0 flex-col items-center gap-1 border py-2.5 transition-all',
+                      active
+                        ? '-translate-y-0.5 border-primary bg-card shadow-md'
+                        : 'border-border bg-card/60 hover:bg-card',
+                      i === todayIndex && !active && 'border-primary/40',
+                    )}
+                  >
+                    <span className={cn(
+                      'text-[0.7rem] font-bold',
+                      active ? 'text-primary' : 'text-muted-foreground',
+                    )}>
+                      {DAYS_FA[i]}
+                    </span>
+                    <span className="figures text-base font-extrabold leading-none">
+                      {faDayNum(addDays(weekStart, i))}
+                    </span>
+                    {isDone ? (
+                      <Check className="size-3 text-easy" strokeWidth={3} />
+                    ) : type ? (
+                      <span className={cn('size-1.5 rounded-full', c.dot)} />
+                    ) : (
+                      /* A day with nothing on it left a hole in the row; a dash
+                         says "nothing here" rather than nothing at all. */
+                      <span className="h-[2px] w-2 rounded-full bg-border" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            {view === 'day' ? (
-              <>
-                {/* Day strip */}
-                <div className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 py-1">
-                  {days.map((d, i) => {
-                    const active = i === selected;
-                    const type = sessionType(d.workout);
-                    const c = typeClasses(type);
-                    return (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setSelected(i)}
-                        aria-current={active ? 'true' : undefined}
-                        className={cn(
-                          'nib-sm flex w-17 shrink-0 flex-col items-center gap-1 border py-2.5 transition-all',
-                          active
-                            ? '-translate-y-0.5 border-primary bg-card shadow-md'
-                            : 'border-border bg-card/60 hover:bg-card',
-                          i === todayIndex && !active && 'border-primary/40',
-                        )}
-                      >
-                        <span className={cn(
-                          'text-[0.7rem] font-bold',
-                          active ? 'text-primary' : 'text-muted-foreground',
-                        )}>
-                          {DAYS_FA[i]}
-                        </span>
-                        <span className="figures text-base font-extrabold leading-none">
-                          {faDayNum(addDays(weekStart, i))}
-                        </span>
-                        {logs[addDays(weekStart, i)]?.done ? (
-                          <Check className="size-3 text-easy" strokeWidth={3} />
-                        ) : (
-                          <span className={cn('size-1.5 rounded-full', type ? c.dot : 'bg-transparent')} />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div key={selected} className="rise">
-                  <DayCard
-                    day={days[selected]}
-                    index={selected}
-                    weekStart={weekStart}
-                    isToday={selected === todayIndex}
-                  />
-                  <DayLog
-                    studentId={profile.id}
-                    day={selectedIso}
-                    log={logs[selectedIso]}
-                    onChange={(d, l) => setLogs((prev) => ({ ...prev, [d]: l }))}
-                  />
-                </div>
-              </>
-            ) : (
-              <Card className="rise p-3 sm:p-4">
-                <WeekList days={days} weekStart={weekStart} todayIndex={todayIndex} />
-              </Card>
-            )}
+            {/* The session and its log in one card. */}
+            <div key={selected} className="rise nib overflow-hidden border border-border bg-card shadow-sm">
+              <DayCard
+                day={days[selected]}
+                index={selected}
+                weekStart={weekStart}
+                isToday={selected === todayIndex}
+                bare
+              />
+              <DayLog
+                studentId={profile.id}
+                day={selectedIso}
+                log={logs[selectedIso]}
+                onChange={(d, l) => setLogs((prev) => ({ ...prev, [d]: l }))}
+                bare
+              />
+            </div>
           </>
+        ) : (
+          <Card className="rise p-3 sm:p-4">
+            <WeekList days={days} weekStart={weekStart} todayIndex={todayIndex} />
+          </Card>
         )}
+
+        {/* Context rather than the main event, so it sits under the plan. */}
+        <RunnerStats
+          studentId={profile.id}
+          goal={profile.training_goal}
+          pr={profile.pr_10k}
+          onSave={(training_goal, pr_10k) =>
+            setProfile((p) => (p ? { ...p, training_goal, pr_10k } : p))}
+        />
+
       </main>
     </div>
   );
