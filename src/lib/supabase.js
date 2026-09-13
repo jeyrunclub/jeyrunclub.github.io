@@ -3,8 +3,8 @@
 // The SECRET key never goes in this file (or anywhere in the client).
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = 'https://nkctjiylwdwyluvipegi.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_Wv_Wp27np6L0O2YE7exqeQ_qxA2OEfA';
+const SUPABASE_URL = 'https://uddcfcacobobsbswzkev.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable__d1biZ5rju3S7f38RYx4gA_aDz0xN7r';
 
 // Implicit flow: tokens land directly in the URL fragment on the callback.
 // Works across devices / webviews (iPhone Mail → Safari, desktop → phone, etc.)
