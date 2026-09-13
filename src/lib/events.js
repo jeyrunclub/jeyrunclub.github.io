@@ -43,6 +43,37 @@ export function paceOf(timeText, distanceM) {
   return fromSecs(Math.round(t / (distanceM / 1000)));
 }
 
+// When the gun actually goes.
+//
+// start_time is free text — «۶ صبح», «06:30», «۷» — because Salar types it.
+// Whatever can be read out of it becomes the hour; anything unreadable falls
+// back to six in the morning, which is when the club runs.
+export function eventStartAt(ev) {
+  const t = String(ev?.start_time || '').replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+  const m = t.match(/(\d{1,2})(?::(\d{1,2}))?/);
+  let hour = m ? Number(m[1]) : 6;
+  const min = m && m[2] ? Number(m[2]) : 0;
+  // «۸ شب» and the like.
+  if (/شب|عصر|بعدازظهر|pm/i.test(t) && hour < 12) hour += 12;
+  if (hour > 23) hour = 6;
+  const d = new Date(ev.event_date + 'T00:00:00');
+  d.setHours(hour, min, 0, 0);
+  return d;
+}
+
+// Days, hours, minutes, seconds left — or null once it has started.
+export function countdownParts(ev, now = Date.now()) {
+  const left = eventStartAt(ev).getTime() - now;
+  if (left <= 0) return null;
+  const s = Math.floor(left / 1000);
+  return {
+    days: Math.floor(s / 86400),
+    hours: Math.floor((s % 86400) / 3600),
+    minutes: Math.floor((s % 3600) / 60),
+    seconds: s % 60,
+  };
+}
+
 // "۱۲ روز مانده" / "امروز" / "برگزار شد"
 export function daysUntil(isoDate) {
   const then = new Date(isoDate + 'T00:00:00');

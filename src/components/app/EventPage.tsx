@@ -21,6 +21,7 @@ import {
   byDistance, totalImprovement,
 } from '../../lib/events.js';
 import { createPost } from '../../lib/feed.js';
+import { Countdown } from './Countdown';
 import { AppHeader } from './AppHeader';
 import { Avatar } from './Avatar';
 import { Card } from '../ui/card';
@@ -289,7 +290,7 @@ export function EventPage() {
                   )}
                 </div>
                 <div className="nib-pill mt-4 inline-block bg-white px-4 py-1.5 text-sm font-extrabold text-brand-600">
-                  {countdownLabel(ev.event_date)}
+                  <Countdown event={ev} />
                 </div>
               </div>
             </section>

@@ -12,6 +12,7 @@ import { faDateLong } from '../../lib/plan.js';
 import {
   fetchEvents, currentEvent, countdownLabel, daysUntil, distanceLabel,
 } from '../../lib/events.js';
+import { Countdown } from './Countdown';
 import { cn } from '../../lib/utils';
 
 type Ev = {
@@ -79,7 +80,7 @@ export function EventCard({ isCoach }: { isCoach?: boolean }) {
             'nib-pill px-2 py-0.5 text-[0.62rem] font-bold',
             soon ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground',
           )}>
-            {countdownLabel(ev.event_date)}
+            {soon ? <Countdown event={ev} /> : countdownLabel(ev.event_date)}
           </span>
         </span>
         <span className="mt-0.5 block truncate text-xs text-muted-foreground">
