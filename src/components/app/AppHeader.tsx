@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react';
 import { LogOut, Globe } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { Button } from '../ui/button';
 import { BottomNav } from './BottomNav';
+import { NotificationBell } from './NotificationBell';
 import { clearMemberData } from '../../lib/session.js';
 import { linksFor, useNavState, useIsPhone } from './nav';
 import { cn } from '../../lib/utils';
@@ -9,6 +11,13 @@ import { cn } from '../../lib/utils';
 export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: boolean; hideNav?: boolean }) {
   const { path, unread } = useNavState(!hideNav);
   const phone = useIsPhone();
+  const [uid, setUid] = useState<string | null>(null);
+
+  // The bell needs to know whose notifications to watch.
+  useEffect(() => {
+    if (hideNav) return;
+    supabase.auth.getSession().then(({ data }) => setUid(data.session?.user?.id ?? null));
+  }, [hideNav]);
 
   async function signOut() {
     clearMemberData();
@@ -61,6 +70,8 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
                 ))}
               </span>
               )}
+
+              {uid && <NotificationBell userId={uid} />}
 
               {/* Back out to the public site — there was no way across from
                   inside the app except the browser's back button. */}
