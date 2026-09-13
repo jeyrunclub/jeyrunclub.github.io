@@ -102,7 +102,7 @@ export function LeaderboardPage() {
         <section className="rise nib relative overflow-hidden bg-gradient-to-bl from-brand-500 via-brand-500 to-brand-700 p-6 text-white shadow-lg shadow-brand-600/25">
           <span aria-hidden className="strokes pointer-events-none absolute inset-0" />
           <div className="relative">
-            <p className="text-xs font-semibold text-white/75">رتبه‌بندی</p>
+            <p className="text-xs font-semibold text-white/75">امتیازات</p>
             <h1 className="display mt-1 text-3xl">قهرمان‌های جیران</h1>
             <p className="mt-1 text-sm text-white/85">
               {mode === 'sessions'
@@ -152,7 +152,7 @@ export function LeaderboardPage() {
         {ranked.length === 0 ? (
           <Card className="flex flex-col items-center gap-3 p-12 text-center text-muted-foreground">
             <Trophy className="size-10 text-muted-foreground/50" />
-            <h3 className="display text-xl text-foreground">هنوز کسی در رتبه‌بندی نیست</h3>
+            <h3 className="display text-xl text-foreground">هنوز کسی امتیازی ندارد</h3>
             <p className="text-sm">وقتی شاگردها تمرین‌هایشان را ثبت کنند، اینجا پر می‌شود.</p>
           </Card>
         ) : (

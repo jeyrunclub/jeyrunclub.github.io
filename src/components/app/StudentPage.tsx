@@ -129,7 +129,7 @@ export function StudentPage() {
           <div className="relative flex items-start gap-3">
             <a
               href="/app/leaderboard"
-              aria-label="عکس پروفایل — رفتن به رتبه‌بندی"
+              aria-label="عکس پروفایل — رفتن به امتیازات"
               className="mt-0.5 flex shrink-0 rounded-full ring-2 ring-white/30 transition hover:ring-white/70"
             >
               <Avatar name={profile.full_name} path={profile.avatar_path} size={52} className="bg-white/20 text-white" />

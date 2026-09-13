@@ -9,7 +9,7 @@ import { cn } from '../../lib/utils';
 const links = [
   { href: '/app',             label: 'برنامه‌ی من',  studentOnly: true },
   { href: '/app/coach',       label: 'پنل مربی',     coachOnly: true },
-  { href: '/app/leaderboard', label: 'رتبه‌بندی' },
+  { href: '/app/leaderboard', label: 'امتیازات' },
 ];
 
 export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: boolean; hideNav?: boolean }) {
