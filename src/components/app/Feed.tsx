@@ -7,12 +7,15 @@
 // receipts, and no push notifications, so nothing about it pretends to be
 // somewhere you wait for an answer.
 
-import { useCallback, useEffect, useState } from 'react';
-import { Heart, MessageCircle, Loader2, Trash2, Pencil, Send, Megaphone, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Heart, MessageCircle, Loader2, Trash2, Pencil, Send, Megaphone, X, Camera,
+} from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import {
   fetchFeed, fetchThread, createPost, editPost, deletePost,
   addComment, deleteComment, setLike, faSince, lastSeen, markSeen,
+  uploadFeedPhoto, removeFeedPhoto, signedFeedUrls,
 } from '../../lib/feed.js';
 import { Avatar } from './Avatar';
 import { Card } from '../ui/card';
@@ -21,7 +24,8 @@ import { Textarea } from '../ui/textarea';
 import { cn } from '../../lib/utils';
 
 type Post = {
-  id: string; body: string; created_at: string; updated_at: string;
+  id: string; body: string; photo_path: string | null;
+  created_at: string; updated_at: string;
   author_id: string; author_name: string | null; author_avatar: string | null;
   like_count: number; comment_count: number; liked_by_me: boolean;
 };
@@ -31,6 +35,7 @@ type Comment = {
 };
 
 const SHOW_AT_FIRST = 3;
+const MAX_BYTES = 10 * 1024 * 1024; // matches the bucket's file_size_limit
 
 function Lines({ text }: { text: string }) {
   return (
@@ -59,6 +64,10 @@ export function Feed({ me, isCoach }: {
   const [threads, setThreads] = useState<Record<string, Comment[]>>({});
   const [replies, setReplies] = useState<Record<string, string>>({});
   const [seen] = useState(() => lastSeen());
+  const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
+  const [pendingPhoto, setPendingPhoto] = useState<{ file: File; url: string } | null>(null);
+  const [lightbox, setLightbox] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     const { posts: rows } = await fetchFeed(supabase, 20);
@@ -67,6 +76,33 @@ export function Feed({ me, isCoach }: {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // The bucket is private, so every render needs fresh URLs — but one request
+  // for the whole feed, not one per post.
+  useEffect(() => {
+    let alive = true;
+    const paths = (posts || []).map((p) => p.photo_path).filter(Boolean) as string[];
+    if (!paths.length) return;
+    signedFeedUrls(supabase, paths).then((m) => { if (alive) setPhotoUrls(m); });
+    return () => { alive = false; };
+  }, [posts]);
+
+  function choosePhoto(file: File | undefined) {
+    if (!file) return;
+    if (file.size > MAX_BYTES) { setError('عکس باید کمتر از ۱۰ مگابایت باشد.'); return; }
+    setError(null);
+    setPendingPhoto((prev) => {
+      if (prev) URL.revokeObjectURL(prev.url);
+      return { file, url: URL.createObjectURL(file) };
+    });
+  }
+
+  function dropPending() {
+    setPendingPhoto((prev) => {
+      if (prev) URL.revokeObjectURL(prev.url);
+      return null;
+    });
+  }
 
   async function openThread(id: string) {
     if (openId === id) { setOpenId(null); return; }
@@ -78,12 +114,26 @@ export function Feed({ me, isCoach }: {
   }
 
   async function post() {
-    if (!draft.trim()) return;
+    if (!draft.trim() && !pendingPhoto) return;
     setBusy(true); setError(null);
-    const { error: err } = await createPost(supabase, me.id, draft);
+
+    let path: string | null = null;
+    if (pendingPhoto) {
+      const up = await uploadFeedPhoto(supabase, me.id, pendingPhoto.file);
+      if (up.error || !up.path) { setBusy(false); setError('آپلود عکس نشد.'); return; }
+      path = up.path;
+    }
+
+    const { error: err } = await createPost(supabase, me.id, draft, path);
     setBusy(false);
-    if (err) { setError('ارسال نشد. دوباره تلاش کن.'); return; }
+    if (err) {
+      // Don't leave the file behind when the row it belonged to never landed.
+      if (path) await removeFeedPhoto(supabase, path);
+      setError('ارسال نشد. دوباره تلاش کن.');
+      return;
+    }
     setDraft('');
+    dropPending();
     await load();
   }
 
@@ -98,8 +148,19 @@ export function Feed({ me, isCoach }: {
 
   async function removePost(id: string) {
     if (!window.confirm('این اطلاعیه حذف شود؟')) return;
+    const photo = (posts || []).find((p) => p.id === id)?.photo_path || null;
     const { error: err } = await deletePost(supabase, id);
     if (err) { setError('حذف نشد.'); return; }
+    if (photo) await removeFeedPhoto(supabase, photo);
+    await load();
+  }
+
+  // Editing only ever drops the picture — replacing one is a new post's job.
+  async function dropPhoto(p: Post) {
+    if (!p.photo_path) return;
+    const { error: err } = await editPost(supabase, p.id, p.body, null);
+    if (err) { setError('حذف عکس نشد.'); return; }
+    await removeFeedPhoto(supabase, p.photo_path);
     await load();
   }
 
@@ -163,8 +224,39 @@ export function Feed({ me, isCoach }: {
             placeholder="خبری برای باشگاه بنویس…"
             className="field-sizing-content min-h-16 text-sm leading-7"
           />
-          <div className="mt-2 flex justify-end">
-            <Button size="sm" onClick={post} disabled={busy || !draft.trim()}>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(e) => { choosePhoto(e.target.files?.[0]); e.target.value = ''; }}
+          />
+
+          {pendingPhoto && (
+            <div className="nib-sm relative mt-3 overflow-hidden border border-border">
+              <img src={pendingPhoto.url} alt="" className="max-h-64 w-full object-cover" />
+              <button
+                type="button"
+                onClick={dropPending}
+                aria-label="حذف عکس"
+                className="absolute end-2 top-2 rounded-full bg-black/60 p-1.5 text-white"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          )}
+
+          <div className="mt-2 flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+              <Camera className="size-4" />
+              {pendingPhoto ? 'تعویض عکس' : 'عکس'}
+            </Button>
+            <Button
+              size="sm"
+              onClick={post}
+              disabled={busy || (!draft.trim() && !pendingPhoto)}
+              className="ms-auto"
+            >
               {busy ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
               انتشار
             </Button>
@@ -248,7 +340,36 @@ export function Feed({ me, isCoach }: {
                 </div>
               ) : (
                 <div className="mt-3">
-                  <Lines text={p.body} />
+                  {p.body.trim() && <Lines text={p.body} />}
+                  {p.photo_path && (
+                    <div className={cn('relative', p.body.trim() && 'mt-3')}>
+                      {photoUrls[p.photo_path] ? (
+                        <button
+                          type="button"
+                          onClick={() => setLightbox(photoUrls[p.photo_path!])}
+                          className="nib-sm block w-full overflow-hidden border border-border"
+                        >
+                          <img
+                            src={photoUrls[p.photo_path]}
+                            alt=""
+                            className="max-h-96 w-full object-cover"
+                          />
+                        </button>
+                      ) : (
+                        <div className="nib-sm h-48 w-full animate-pulse bg-muted" />
+                      )}
+                      {isCoach && p.author_id === me.id && (
+                        <button
+                          type="button"
+                          onClick={() => dropPhoto(p)}
+                          aria-label="حذف عکس"
+                          className="absolute end-2 top-2 rounded-full bg-black/60 p-1.5 text-white"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -341,6 +462,22 @@ export function Feed({ me, isCoach }: {
           </Card>
         );
       })}
+
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-5"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            type="button"
+            aria-label="بستن"
+            className="absolute end-5 top-5 rounded-full bg-white/15 p-2 text-white"
+          >
+            <X className="size-5" />
+          </button>
+          <img src={lightbox} alt="" className="max-h-full max-w-full rounded-2xl object-contain" />
+        </div>
+      )}
 
       {posts.length > SHOW_AT_FIRST && (
         <button

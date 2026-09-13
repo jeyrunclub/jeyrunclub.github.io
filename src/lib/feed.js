@@ -18,16 +18,17 @@ export async function fetchThread(supabase, postId) {
   return { comments: data || [], error: null };
 }
 
-export async function createPost(supabase, authorId, body) {
+export async function createPost(supabase, authorId, body, photoPath = null) {
   return await supabase.from('announcements')
-    .insert({ author_id: authorId, body: body.trim() })
+    .insert({ author_id: authorId, body: body.trim(), photo_path: photoPath })
     .select().single();
 }
 
-export async function editPost(supabase, id, body) {
+export async function editPost(supabase, id, body, photoPath) {
+  const patch = { body: body.trim(), updated_at: new Date().toISOString() };
+  if (photoPath !== undefined) patch.photo_path = photoPath;
   return await supabase.from('announcements')
-    .update({ body: body.trim(), updated_at: new Date().toISOString() })
-    .eq('id', id).select().single();
+    .update(patch).eq('id', id).select().single();
 }
 
 export async function deletePost(supabase, id) {
@@ -54,6 +55,40 @@ export async function setLike(supabase, postId, userId, on) {
   }
   return await supabase.from('announcement_likes')
     .delete().eq('announcement_id', postId).eq('user_id', userId);
+}
+
+// ---------- Photos ----------
+//
+// Private bucket, like session photos. A feed of twenty posts signs all its
+// URLs in one call, so the round-trip-per-row problem that made the avatars
+// bucket public does not arise here.
+
+export const FEED_BUCKET = 'feed-photos';
+
+export async function uploadFeedPhoto(supabase, userId, file) {
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const path = `${userId}/${Date.now()}.${ext}`;
+  const { error } = await supabase.storage.from(FEED_BUCKET)
+    .upload(path, file, { upsert: true, contentType: file.type });
+  if (error) return { path: null, error };
+  return { path, error: null };
+}
+
+export async function removeFeedPhoto(supabase, path) {
+  if (!path) return;
+  await supabase.storage.from(FEED_BUCKET).remove([path]);
+}
+
+// { path: url } for every path given, in one request.
+export async function signedFeedUrls(supabase, paths, seconds = 3600) {
+  const wanted = [...new Set((paths || []).filter(Boolean))];
+  if (!wanted.length) return {};
+  const { data, error } = await supabase.storage.from(FEED_BUCKET)
+    .createSignedUrls(wanted, seconds);
+  if (error) { console.error(error); return {}; }
+  return Object.fromEntries((data || [])
+    .filter((d) => d.signedUrl)
+    .map((d) => [d.path, d.signedUrl]));
 }
 
 // ---------- When ----------

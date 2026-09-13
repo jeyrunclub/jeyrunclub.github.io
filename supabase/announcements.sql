@@ -180,3 +180,74 @@ as $$
 $$;
 revoke execute on function public.announcement_thread(uuid) from public, anon;
 grant  execute on function public.announcement_thread(uuid) to authenticated;
+
+-- ---------- Storage bucket for announcement photos ----------
+-- Private, like session photos: these are the club's own pictures, and a
+-- feed of twenty posts mints its signed URLs in one batched call, so the
+-- reason avatars are public (a round trip per row) does not apply here.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('feed-photos', 'feed-photos', false, 10485760,
+        array['image/jpeg','image/png','image/webp'])
+on conflict (id) do update set
+  public             = excluded.public,
+  file_size_limit    = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+-- Every member may read them; only the coach may write, and only inside their
+-- own user-id folder.
+drop policy if exists "feed-photos: member read" on storage.objects;
+create policy "feed-photos: member read"
+  on storage.objects for select
+  to authenticated
+  using (bucket_id = 'feed-photos' and public._is_member());
+
+drop policy if exists "feed-photos: coach write" on storage.objects;
+create policy "feed-photos: coach write"
+  on storage.objects for all
+  to authenticated
+  using  (bucket_id = 'feed-photos'
+      and public.is_coach()
+      and auth.uid()::text = (storage.foldername(name))[1])
+  with check (bucket_id = 'feed-photos'
+      and public.is_coach()
+      and auth.uid()::text = (storage.foldername(name))[1]);
+
+alter table public.announcements add column if not exists photo_path text;
+
+-- Recreated to carry photo_path. Same guard, same columns otherwise.
+drop function if exists public.announcement_feed(int);
+create or replace function public.announcement_feed(limit_n int default 20)
+returns table (
+  id            uuid,
+  body          text,
+  photo_path    text,
+  created_at    timestamptz,
+  updated_at    timestamptz,
+  author_id     uuid,
+  author_name   text,
+  author_avatar text,
+  like_count    bigint,
+  comment_count bigint,
+  liked_by_me   boolean
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select a.id, a.body, a.photo_path, a.created_at, a.updated_at,
+         a.author_id, p.full_name, p.avatar_path,
+         (select count(*) from public.announcement_likes l
+           where l.announcement_id = a.id),
+         (select count(*) from public.announcement_comments c
+           where c.announcement_id = a.id),
+         exists (select 1 from public.announcement_likes l
+                  where l.announcement_id = a.id and l.user_id = auth.uid())
+    from public.announcements a
+    join public.profiles p on p.id = a.author_id
+   where public._is_member()
+   order by a.created_at desc
+   limit greatest(1, least(coalesce(limit_n, 20), 100));
+$$;
+revoke execute on function public.announcement_feed(int) from public, anon;
+grant  execute on function public.announcement_feed(int) to authenticated;
