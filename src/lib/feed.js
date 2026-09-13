@@ -18,6 +18,14 @@ export async function fetchThread(supabase, postId) {
   return { comments: data || [], error: null };
 }
 
+// Who liked one post. Fetched when somebody asks rather than for every post
+// in the feed — thirty posts would otherwise be thirty queries nobody reads.
+export async function fetchLikers(supabase, postId) {
+  const { data, error } = await supabase.rpc('announcement_likers', { p_post: postId });
+  if (error) { console.error(error); return []; }
+  return data || [];
+}
+
 export async function createPost(supabase, authorId, body, photoPath = null) {
   return await supabase.from('announcements')
     .insert({ author_id: authorId, body: body.trim(), photo_path: photoPath })

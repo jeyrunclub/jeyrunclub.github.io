@@ -14,7 +14,7 @@ import {
 import { supabase } from '../../lib/supabase.js';
 import {
   fetchFeed, fetchThread, createPost, editPost, deletePost,
-  addComment, deleteComment, setLike, faSince, lastSeen, markSeen,
+  addComment, deleteComment, setLike, faSince, lastSeen, markSeen, fetchLikers,
   uploadFeedPhoto, removeFeedPhoto, signedFeedUrls,
 } from '../../lib/feed.js';
 import { swr, drop } from '../../lib/cache.js';
@@ -75,6 +75,8 @@ export function Feed({ me, isCoach, page }: {
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [pendingPhoto, setPendingPhoto] = useState<{ file: File; url: string } | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [likersOf, setLikersOf] = useState<string | null>(null);
+  const [likers, setLikers] = useState<any[] | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const apply = useCallback((rows: Post[]) => {
@@ -409,8 +411,20 @@ export function Feed({ me, isCoach, page }: {
                   )}
                 >
                   <Heart className={cn('size-4', p.liked_by_me && 'fill-current')} />
-                  {Number(p.like_count) > 0 && faNum(Number(p.like_count))}
                 </button>
+                {Number(p.like_count) > 0 && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setLikersOf(p.id);
+                      setLikers(null);
+                      setLikers(await fetchLikers(supabase, p.id));
+                    }}
+                    className="nib-pill px-2 py-1.5 text-xs font-bold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  >
+                    {faNum(Number(p.like_count))} نفر
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => openThread(p.id)}
@@ -485,6 +499,52 @@ export function Feed({ me, isCoach, page }: {
           </Card>
         );
       })}
+
+      {likersOf && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center"
+          onClick={() => setLikersOf(null)}
+        >
+          <div
+            className="nib m-3 max-h-[70vh] w-full max-w-sm overflow-y-auto border border-border bg-card p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center gap-2">
+              <Heart className="size-4 fill-current text-primary" />
+              <b className="text-sm">پسندیده‌اند</b>
+              <button
+                type="button" onClick={() => setLikersOf(null)} aria-label="بستن"
+                className="ms-auto text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            {!likers ? (
+              <div className="h-16 animate-pulse rounded-xl bg-muted" />
+            ) : (
+              <div className="divide-y divide-border">
+                {likers.map((l) => (
+                  <div key={l.id} className="flex items-center gap-2.5 py-2.5">
+                    <Avatar name={l.full_name} path={l.avatar_path} size={32} />
+                    <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+                      {l.full_name || '(بدون نام)'}
+                      {l.id === me.id && (
+                        <span className="ms-1.5 rounded-full bg-primary/12 px-1.5 py-0.5 text-[0.6rem] font-bold text-primary">
+                          تو
+                        </span>
+                      )}
+                    </span>
+                    <span className="shrink-0 text-[0.65rem] text-muted-foreground">
+                      {faSince(l.liked_at)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {lightbox && (
         <div
