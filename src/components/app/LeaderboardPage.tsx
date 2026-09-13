@@ -47,7 +47,15 @@ export function LeaderboardPage() {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.replace('/app/login'); return; }
-      const { data: p } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+
+      // Both of these need only the session, and waiting for the profile
+      // before asking for the board made every visit cost two round trips
+      // instead of one. On a slow connection that is the whole delay.
+      const [{ data: p }, { rows: r }] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', session.user.id).single(),
+        fetchLeaderboard(supabase),
+      ]);
+
       if (!p) { setLoading(false); return; }
       if (p.role !== 'coach' && p.status !== 'approved') {
         window.location.replace('/app/pending');
@@ -55,7 +63,6 @@ export function LeaderboardPage() {
       }
       setMe({ id: p.id, full_name: p.full_name, avatar_path: p.avatar_path ?? null });
       setIsCoach(p.role === 'coach');
-      const { rows: r } = await fetchLeaderboard(supabase);
       setRows(r);
       setLoading(false);
     })();

@@ -30,6 +30,7 @@ type Profile = {
 
 export function StudentPage() {
   const [loading, setLoading] = useState(true);
+  const [uid, setUid] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [weekStart, setWeekStart] = useState(() => thisWeekStart());
   const [days, setDays] = useState<Day[]>(() => emptyDays());
@@ -44,6 +45,10 @@ export function StudentPage() {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.replace('/app/login'); return; }
+      // Publishing the id here lets the week load in parallel with the
+      // profile: a student's own row is keyed by exactly this id, so there is
+      // nothing in the profile the plan query needs to wait for.
+      setUid(session.user.id);
       const { data: p } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
       if (!p) { setLoading(false); return; }
       // Backfill full_name from localStorage if missing
@@ -66,12 +71,12 @@ export function StudentPage() {
 
   // Load the week's plan
   useEffect(() => {
-    if (!profile) return;
+    if (!uid) return;
     let alive = true;
     setLoadingPlan(true);
     Promise.all([
-      loadWeekPlan(supabase, profile.id, weekStart),
-      loadWeekLogs(supabase, profile.id, weekStart),
+      loadWeekPlan(supabase, uid, weekStart),
+      loadWeekLogs(supabase, uid, weekStart),
     ]).then(([plan, weekLogs]) => {
       if (!alive) return;
       setDays(plan.days);
@@ -80,7 +85,7 @@ export function StudentPage() {
       setLoadingPlan(false);
     });
     return () => { alive = false; };
-  }, [profile, weekStart]);
+  }, [uid, weekStart]);
 
   const isThisWeek = weekStart === thisWeekStart();
   const isFuture = weekStart > thisWeekStart();
