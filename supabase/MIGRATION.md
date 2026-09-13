@@ -58,3 +58,55 @@ mid-session — not at 6am, and not on a رکوردگیری morning.
 ## Rollback
 
 Revert the commit from step 9 and deploy. The old project was never touched.
+
+---
+
+# Log — 2026-09-13
+
+Data moved from `nkctjiylwdwyluvipegi` (ap-south-1) to `uddcfcacobobsbswzkev`
+(eu-central-1). The old project was left running and untouched throughout.
+
+## What happened
+
+**Direct connections were unreachable.** `db.<ref>.supabase.co` resolves to
+IPv6 only now, and the machine doing the work had no IPv6 route. The session
+pooler is IPv4: `aws-1-ap-south-1` for the old project, `aws-0-eu-central-1`
+for the new one. Note the differing `aws-N` — the wrong one answers
+"tenant/user not found", which reads like a credentials problem and is not.
+
+**schema.sql had drifted.** `push.sql`, `push-rich.sql`,
+`notifications-clear.sql` and `likers.sql` had been written as standalone files
+and never folded in, so a project built from schema.sql came out with 10 tables
+where the source had 12. Applied separately at the time; now merged in, so the
+next project built from that file is whole.
+
+**One service key was a duplicate.** `SOURCE_SERVICE_KEY` held a second copy of
+the *new* project's key — both keys authenticated against the new project and
+neither against the old. The symptom was "signature verification failed" from
+the storage copy, which says nothing about which key is wrong. Testing each key
+against both projects is the quick way to see it.
+
+## Result
+
+    profiles 22 · auth users 22 · plans 22 · day_logs 15
+    announcements 4 · comments 1 · likes 12
+    events 1 · entries 2 · personal_records 2 · push_subscriptions 6
+    files: avatars 4 · session-photos 4 · feed-photos 1
+    buckets: avatars public, the other two private, limits identical
+
+`04-verify.mjs` reported every count matching.
+
+## Still to do
+
+The new project belongs to a different Supabase account, so the tooling here
+could reach its database but not its platform API.
+
+1. Deploy the Edge Function to the new ref and set the same four secrets,
+   choosing a fresh `PUSH_SECRET`.
+2. `select public.set_push_config('https://uddcfcacobobsbswzkev.functions.supabase.co/push', '<that secret>');`
+3. Put the new URL and publishable key into `src/lib/supabase.js` and deploy.
+
+Until step 3 the app is still talking to Mumbai, and anything written there
+after the dump will not be in Frankfurt. Re-running `01-dump.sh` and
+`02-restore.sh` is safe but would collide on primary keys — clear the target's
+public tables first, or accept the gap and move quickly.

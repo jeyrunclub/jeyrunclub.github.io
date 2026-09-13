@@ -1040,6 +1040,203 @@ begin
   end if;
 end $$;
 
+--
+-- One row per device per member. The endpoint is the push service's URL for
+-- that device; p256dh and auth are the keys it gave us to encrypt with. None
+-- of it is a secret that lets anyone read anything — it only lets whoever
+-- holds it send that device a message, which is why it still lives behind RLS.
+
+create table if not exists public.push_subscriptions (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references public.profiles(id) on delete cascade,
+  endpoint   text not null unique,
+  p256dh     text not null,
+  auth       text not null,
+  user_agent text,
+  created_at timestamptz not null default now(),
+  last_ok_at timestamptz
+);
+
+create index if not exists push_subs_user_idx on public.push_subscriptions(user_id);
+
+alter table public.push_subscriptions enable row level security;
+
+drop policy if exists "push: own all" on public.push_subscriptions;
+create policy "push: own all"
+  on public.push_subscriptions for all
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+grant select, insert, update, delete on public.push_subscriptions to authenticated;
+
+-- ---------- hand each new notification to the sender ----------
+-- pg_net posts it and does not wait, so a slow push service cannot hold up
+-- the insert that caused it.
+create extension if not exists pg_net with schema extensions;
+
+-- Where to send and what to prove. Set once, by you:
+--   select public.set_push_config('https://<ref>.functions.supabase.co/push', '<shared secret>');
+create table if not exists public.push_config (
+  id     int primary key default 1 check (id = 1),
+  url    text,
+  secret text
+);
+alter table public.push_config enable row level security;  -- no policy: nobody reads it but definers
+
+create or replace function public.set_push_config(p_url text, p_secret text)
+returns void language sql security definer set search_path = public as $$
+  insert into public.push_config (id, url, secret) values (1, p_url, p_secret)
+  on conflict (id) do update set url = excluded.url, secret = excluded.secret;
+$$;
+revoke execute on function public.set_push_config(text, text) from public, anon, authenticated;
+
+create or replace function public._on_notification_push() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  v public.push_config;
+begin
+  select * into v from public.push_config where id = 1;
+  if v.url is null then return new; end if;
+
+  perform net.http_post(
+    url     := v.url,
+    headers := jsonb_build_object(
+                 'Content-Type', 'application/json',
+                 'x-push-secret', coalesce(v.secret, '')),
+    body    := jsonb_build_object(
+                 'user_id', new.user_id,
+                 'title',   new.title,
+                 'body',    coalesce(new.body, ''),
+                 'href',    coalesce(new.href, '/app'))
+  );
+  return new;
+end;
+$$;
+
+drop trigger if exists push_notification on public.notifications;
+create trigger push_notification after insert on public.notifications
+  for each row execute function public._on_notification_push();
+
+alter table public.notifications add column if not exists image_path text;
+
+-- Same fan-out as before, plus a picture to carry.
+create or replace function public._notify_members(
+  p_kind text, p_title text, p_body text, p_href text, p_actor uuid,
+  p_image text default null
+) returns void
+language sql security definer set search_path = public as $$
+  insert into public.notifications (user_id, kind, title, body, href, actor_id, image_path)
+  select p.id, p_kind, p_title, left(coalesce(p_body, ''), 140), p_href, p_actor, p_image
+    from public.profiles p
+   where p.status = 'approved'
+     and (p_actor is null or p.id <> p_actor);
+$$;
+
+-- The poster's name is the title and the post itself is the body — the way a
+-- message from a person reads. A post that is only a photo says so, rather
+-- than arriving as a title with nothing under it.
+create or replace function public._on_announcement() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  v_name text;
+begin
+  select full_name into v_name from public.profiles where id = new.author_id;
+
+  perform public._notify_members(
+    'announcement',
+    coalesce(nullif(btrim(v_name), ''), 'جیران'),
+    case when btrim(coalesce(new.body, '')) <> '' then new.body
+         when new.photo_path is not null then 'یک عکس فرستاد'
+         else 'اطلاعیه‌ی تازه' end,
+    '/app/news',
+    new.author_id,
+    new.photo_path);
+  return new;
+end;
+$$;
+
+-- Carry the picture through to the sender.
+create or replace function public._on_notification_push() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  v public.push_config;
+begin
+  select * into v from public.push_config where id = 1;
+  if v.url is null then return new; end if;
+
+  perform net.http_post(
+    url     := v.url,
+    headers := jsonb_build_object(
+                 'Content-Type', 'application/json',
+                 'x-push-secret', coalesce(v.secret, '')),
+    body    := jsonb_build_object(
+                 'user_id',    new.user_id,
+                 'title',      new.title,
+                 'body',       coalesce(new.body, ''),
+                 'href',       coalesce(new.href, '/app'),
+                 'image_path', new.image_path)
+  );
+  return new;
+end;
+$$;
+
+-- plan the way every other notification names who caused it.
+-- Run once in the Supabase SQL editor. Idempotent.
+
+drop policy if exists "notifications: own delete" on public.notifications;
+create policy "notifications: own delete"
+  on public.notifications for delete
+  using (user_id = auth.uid());
+
+grant delete on public.notifications to authenticated;
+
+-- The list leads with the body now, so the body has to carry the news and the
+-- title is just who it came from.
+create or replace function public._on_plan() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  v_name text;
+begin
+  if new.plan_days is null or jsonb_array_length(new.plan_days) = 0 then
+    return new;
+  end if;
+  if tg_op = 'UPDATE' and old.plan_days is not distinct from new.plan_days then
+    return new;
+  end if;
+  if new.updated_by is not null and new.updated_by = new.student_id then
+    return new;
+  end if;
+
+  select full_name into v_name from public.profiles where id = new.updated_by;
+
+  insert into public.notifications (user_id, kind, title, body, href, actor_id)
+  values (new.student_id, 'plan',
+          coalesce(nullif(btrim(v_name), ''), 'مربی'),
+          'برنامه‌ی هفته‌ات نوشته شد.',
+          '/app', new.updated_by);
+  return new;
+end;
+$$;
+
+--
+-- A member cannot read anyone else's profiles row, so the names and pictures
+-- come back through a definer function that returns those two things and
+-- nothing else — the same shape as the leaderboard and the event board.
+
+drop function if exists public.announcement_likers(uuid);
+create or replace function public.announcement_likers(p_post uuid)
+returns table (id uuid, full_name text, avatar_path text, liked_at timestamptz)
+language sql stable security definer set search_path = public as $$
+  select p.id, p.full_name, p.avatar_path, l.created_at
+    from public.announcement_likes l
+    join public.profiles p on p.id = l.user_id
+   where l.announcement_id = p_post
+     and public._is_member()
+   order by l.created_at desc;
+$$;
+
+revoke execute on function public.announcement_likers(uuid) from public, anon;
+grant  execute on function public.announcement_likers(uuid) to authenticated;
+
 -- ============================================================
 -- To grant coach access to ANY OTHER email later:
 --   1. Add the email to _is_bootstrap_coach() above
