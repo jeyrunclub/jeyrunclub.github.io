@@ -1,0 +1,7 @@
+---
+import ReactShell from '../../layouts/ReactShell.astro';
+import { NewsPage } from '../../components/app/NewsPage';
+---
+<ReactShell title="اطلاعیه‌ها">
+  <NewsPage client:only="react" />
+</ReactShell>

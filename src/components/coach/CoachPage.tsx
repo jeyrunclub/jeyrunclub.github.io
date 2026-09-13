@@ -24,7 +24,6 @@ import { AppHeader } from '../app/AppHeader';
 import { PlanText } from '../app/PlanText';
 import { WeekList, TypeBadge, type Day } from '../app/PlanWeek';
 import { Avatar as Photo, AvatarPicker } from '../app/Avatar';
-import { Feed } from '../app/Feed';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -317,15 +316,6 @@ export function CoachPage() {
             </div>
           </div>
         </section>
-
-        {/* Salar is the only one who can post, and this is also where the
-            club's replies come back to him. */}
-        {profile && (
-          <Feed
-            me={{ id: profile.id, full_name: profile.full_name, avatar_path: coachAvatar }}
-            isCoach
-          />
-        )}
 
         {/* PENDING APPROVALS */}
         {pendingUsers.length > 0 && (

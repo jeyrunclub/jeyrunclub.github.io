@@ -15,7 +15,6 @@ import { DayCard, WeekList, type Day } from './PlanWeek';
 import { DayLog, type Log } from './DayLog';
 import { RunnerStats } from './RunnerStats';
 import { TrainingHistory } from './TrainingHistory';
-import { Feed } from './Feed';
 import { Avatar } from './Avatar';
 import { cn } from '../../lib/utils';
 
@@ -169,10 +168,6 @@ export function StudentPage() {
             </div>
           </div>
         </section>
-
-        {/* Club news first: it is the only thing here that can be time-critical
-            — a changed meeting point, a race entry closing. */}
-        <Feed me={profile} />
 
         {/* The goal sits under the hero: it is the reason the week exists, and
             at the foot of the page nobody scrolled to it. */}

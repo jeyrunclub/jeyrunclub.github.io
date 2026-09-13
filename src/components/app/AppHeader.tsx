@@ -1,22 +1,40 @@
 import { useEffect, useState } from 'react';
 import { LogOut, Globe } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
+import { fetchFeed, lastSeen } from '../../lib/feed.js';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 
 // Salar has no plan of his own here — /app redirects him to the panel anyway,
 // so offering him "برنامه‌ی من" was a link to a bounce.
+// `short` is what a phone shows. Three links plus two icons do not fit 360px
+// at full length — the sign-out button was pushed off the edge.
 const links = [
-  { href: '/app',             label: 'برنامه‌ی من',  studentOnly: true },
-  { href: '/app/coach',       label: 'پنل مربی',     coachOnly: true },
-  { href: '/app/leaderboard', label: 'امتیازات' },
+  { href: '/app',             label: 'برنامه‌ی من', short: 'برنامه', studentOnly: true },
+  { href: '/app/coach',       label: 'پنل مربی',    short: 'مربی',   coachOnly: true },
+  { href: '/app/leaderboard', label: 'امتیازات',    short: 'امتیازات' },
+  { href: '/app/news',        label: 'اطلاعیه‌ها',  short: 'اخبار', feed: true },
 ];
 
 export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: boolean; hideNav?: boolean }) {
   const [path, setPath] = useState('/');
+  const [unread, setUnread] = useState(false);
+
   useEffect(() => {
     setPath(window.location.pathname.replace(/\/$/, '') || '/');
   }, []);
+
+  // A dot on the news link is the only signal there is that something was
+  // posted — there are no push notifications, so without it an announcement
+  // waits until someone happens to look.
+  useEffect(() => {
+    if (hideNav) return;
+    let alive = true;
+    fetchFeed(supabase, 1).then(({ posts }) => {
+      if (alive && posts.length) setUnread(posts[0].created_at > lastSeen());
+    });
+    return () => { alive = false; };
+  }, [hideNav]);
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -46,13 +64,20 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
                 key={l.href}
                 href={l.href}
                 className={cn(
-                  'nib-pill whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors',
+                  'nib-pill relative whitespace-nowrap px-2.5 py-1.5 text-sm font-medium transition-colors sm:px-3',
                   path === l.href
                     ? 'bg-accent font-bold text-accent-foreground'
                     : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                 )}
               >
-                {l.label}
+                <span className="sm:hidden">{l.short}</span>
+                <span className="hidden sm:inline">{l.label}</span>
+                {l.feed && unread && path !== l.href && (
+                  <span
+                    aria-label="اطلاعیه‌ی جدید"
+                    className="absolute -end-0.5 -top-0.5 size-2 rounded-full bg-primary ring-2 ring-background"
+                  />
+                )}
               </a>
             ))}
             {/* Back out to the public site — there was no way across from

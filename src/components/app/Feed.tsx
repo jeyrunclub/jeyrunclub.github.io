@@ -49,9 +49,11 @@ function Lines({ text }: { text: string }) {
   );
 }
 
-export function Feed({ me, isCoach }: {
+export function Feed({ me, isCoach, page }: {
   me: { id: string; full_name: string | null; avatar_path: string | null };
   isCoach?: boolean;
+  /** On its own page: no section heading, and nothing collapsed. */
+  page?: boolean;
 }) {
   const [posts, setPosts] = useState<Post[] | null>(null);
   const [expanded, setExpanded] = useState(false);
@@ -203,16 +205,18 @@ export function Feed({ me, isCoach }: {
   }
 
   if (!posts) return <div className="h-24 animate-pulse rounded-2xl bg-muted" />;
-  if (!posts.length && !isCoach) return null;
+  if (!posts.length && !isCoach && !page) return null;
 
-  const shown = expanded ? posts : posts.slice(0, SHOW_AT_FIRST);
+  const shown = page || expanded ? posts : posts.slice(0, SHOW_AT_FIRST);
 
   return (
     <section className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 px-1">
-        <Megaphone className="size-4 text-primary" />
-        <h2 className="display text-xl">اطلاعیه‌ها</h2>
-      </div>
+      {!page && (
+        <div className="flex items-center gap-2 px-1">
+          <Megaphone className="size-4 text-primary" />
+          <h2 className="display text-xl">اطلاعیه‌ها</h2>
+        </div>
+      )}
 
       {isCoach && (
         <Card className="p-4">
@@ -479,7 +483,7 @@ export function Feed({ me, isCoach }: {
         </div>
       )}
 
-      {posts.length > SHOW_AT_FIRST && (
+      {!page && posts.length > SHOW_AT_FIRST && (
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
