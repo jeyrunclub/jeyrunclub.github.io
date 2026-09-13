@@ -16,6 +16,7 @@ import { PlanText } from './PlanText';
 import { DayCard, WeekList, type Day } from './PlanWeek';
 import { DayLog, type Log } from './DayLog';
 import { RunnerStats } from './RunnerStats';
+import { EventCard } from './EventCard';
 import { Avatar } from './Avatar';
 import { cn } from '../../lib/utils';
 
@@ -186,6 +187,8 @@ export function StudentPage() {
             </div>
           </div>
         </section>
+
+        <EventCard />
 
         {/* The goal sits under the hero: it is the reason the week exists, and
             at the foot of the page nobody scrolled to it. */}

@@ -1,0 +1,7 @@
+---
+import ReactShell from '../../layouts/ReactShell.astro';
+import { EventPage } from '../../components/app/EventPage';
+---
+<ReactShell title="رکوردگیری">
+  <EventPage client:only="react" />
+</ReactShell>

@@ -21,6 +21,7 @@ import {
   signedPhotoUrl, splitPr, joinPr,
 } from '../../lib/plan.js';
 import { getProfile } from '../../lib/session.js';
+import { EventCard } from '../app/EventCard';
 import { AppHeader } from '../app/AppHeader';
 import { PlanText } from '../app/PlanText';
 import { WeekList, TypeBadge, type Day } from '../app/PlanWeek';
@@ -317,6 +318,8 @@ export function CoachPage() {
             </div>
           </div>
         </section>
+
+        <EventCard />
 
         {/* PENDING APPROVALS */}
         {pendingUsers.length > 0 && (
