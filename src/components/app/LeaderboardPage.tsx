@@ -9,7 +9,7 @@
 // server-side in a security-definer function.
 
 import { useEffect, useMemo, useState } from 'react';
-import { Flame, Timer, Trophy } from 'lucide-react';
+import { Flame, Timer, Trophy, ChevronLeft } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { fetchLeaderboard, prSeconds, faNum } from '../../lib/plan.js';
 import { getProfile } from '../../lib/session.js';
@@ -120,6 +120,26 @@ export function LeaderboardPage() {
             </p>
           </div>
         </section>
+
+        {/* The record days live next to the record board — and this is the
+            one permanent way into them, since an event is temporary and the
+            bottom bar has no room for it. */}
+        <a
+          href="/app/event"
+          data-astro-prefetch="tap"
+          className="nib group flex items-center gap-3 border border-border bg-card p-4 shadow-sm transition-colors hover:bg-accent/40"
+        >
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary">
+            <Trophy className="size-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <b className="block text-sm">رکوردگیری‌ها</b>
+            <span className="mt-0.5 block text-xs text-muted-foreground">
+              روزهای رکورد، هدف‌ها و نتیجه‌ها
+            </span>
+          </span>
+          <ChevronLeft className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:-translate-x-0.5" />
+        </a>
 
         {/* Your own picture — the board is dull without faces */}
         {me && (

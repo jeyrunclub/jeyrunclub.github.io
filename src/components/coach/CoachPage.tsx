@@ -319,7 +319,7 @@ export function CoachPage() {
           </div>
         </section>
 
-        <EventCard />
+        <EventCard isCoach />
 
         {/* PENDING APPROVALS */}
         {pendingUsers.length > 0 && (

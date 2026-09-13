@@ -19,22 +19,48 @@ type Ev = {
   place: string | null; distances: number[];
 };
 
-export function EventCard() {
+export function EventCard({ isCoach }: { isCoach?: boolean }) {
   const [ev, setEv] = useState<Ev | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let alive = true;
     const pick = (list: Ev[]) => {
       const e = currentEvent(list || []);
       // Stays up for a week afterwards so the results get read.
-      if (alive) setEv(e && daysUntil(e.event_date) >= -7 ? e : null);
+      if (!alive) return;
+      setEv(e && daysUntil(e.event_date) >= -7 ? e : null);
+      setLoaded(true);
     };
     swr('events', () => fetchEvents(supabase), { maxAge: 60000, onFresh: pick })
       .then((list: Ev[]) => pick(list));
     return () => { alive = false; };
   }, []);
 
-  if (!ev) return null;
+  // Salar always gets a way in: with nothing scheduled this is how the first
+  // one gets made. Members see nothing until there is something to see.
+  if (!ev) {
+    if (!isCoach || !loaded) return null;
+    return (
+      <a
+        href="/app/event"
+        data-astro-prefetch="tap"
+        className="nib group flex items-center gap-3 border border-dashed border-border bg-card/60 p-4 transition-colors hover:border-primary/40 hover:bg-accent/40"
+      >
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground">
+          <Trophy className="size-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <b className="block text-sm">رکوردگیری</b>
+          <span className="mt-0.5 block text-xs text-muted-foreground">
+            روزی برای رکورد زدن اعلام کن؛ همه هدفشان را ثبت می‌کنند.
+          </span>
+        </span>
+        <ChevronLeft className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:-translate-x-0.5" />
+      </a>
+    );
+  }
+
   const soon = daysUntil(ev.event_date) >= 0;
 
   return (
