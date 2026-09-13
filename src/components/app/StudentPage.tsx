@@ -8,6 +8,7 @@ import {
 } from '../../lib/plan.js';
 import { sessionType, typeClasses } from '../../lib/session-type.js';
 import { getProfile, forgetProfile } from '../../lib/session.js';
+import { swr, drop } from '../../lib/cache.js';
 import { AppHeader } from './AppHeader';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -75,16 +76,27 @@ export function StudentPage() {
     if (!uid) return;
     let alive = true;
     setLoadingPlan(true);
-    Promise.all([
-      loadWeekPlan(supabase, uid, weekStart),
-      loadWeekLogs(supabase, uid, weekStart),
-    ]).then(([plan, weekLogs]) => {
-      if (!alive) return;
-      setDays(plan.days);
-      setText(plan.text);
-      setLogs(weekLogs);
+
+    // The week a student is looking at changes when the coach writes it, which
+    // is once a week — so show what we had and check behind them. Ticking a
+    // day drops the entry, so the reader never sees their own change undone.
+    const key = `week:${uid}:${weekStart}`;
+    const apply = (w: any) => {
+      if (!alive || !w) return;
+      setDays(w.days);
+      setText(w.text);
+      setLogs(w.logs);
       setLoadingPlan(false);
-    });
+    };
+
+    swr(key, async () => {
+      const [plan, weekLogs] = await Promise.all([
+        loadWeekPlan(supabase, uid, weekStart),
+        loadWeekLogs(supabase, uid, weekStart),
+      ]);
+      return { days: plan.days, text: plan.text, logs: weekLogs };
+    }, { maxAge: 30000, onFresh: apply }).then(apply);
+
     return () => { alive = false; };
   }, [uid, weekStart]);
 
@@ -313,7 +325,10 @@ export function StudentPage() {
                 studentId={profile.id}
                 day={selectedIso}
                 log={logs[selectedIso]}
-                onChange={(d, l) => setLogs((prev) => ({ ...prev, [d]: l }))}
+                onChange={(d, l) => {
+                  setLogs((prev) => ({ ...prev, [d]: l }));
+                  drop(`week:${profile.id}:${weekStart}`);
+                }}
                 bare
               />
             </div>
