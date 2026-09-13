@@ -178,12 +178,14 @@ export function LeaderboardPage() {
                   <Avatar name={row.full_name} path={row.avatar_path} size={42} />
 
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-bold">
-                      {row.full_name || '(بدون نام)'}
-                      {/* Set apart from the name: «جهاندیده تو» read as "your
-                          Jahandideh" rather than as a label. */}
+                    {/* The name truncates, the chip never does: inside the
+                        truncating span a long name pushed «تو» under the
+                        ellipsis and left half a letter showing. No gap before
+                        it — the chip's own padding is the only separation. */}
+                    <div className="flex min-w-0 items-center text-sm font-bold">
+                      <span className="truncate">{row.full_name || '(بدون نام)'}</span>
                       {isMe && (
-                        <span className="ms-1.5 rounded-full bg-primary/12 px-1.5 py-0.5 align-middle text-[0.65rem] font-bold text-primary">
+                        <span className="shrink-0 rounded-full bg-primary/12 px-1.5 py-0.5 text-[0.65rem] font-bold text-primary">
                           تو
                         </span>
                       )}
