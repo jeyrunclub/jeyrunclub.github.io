@@ -23,7 +23,7 @@ export const LINKS: NavLink[] = [
   { href: '/app',             label: 'برنامه‌ی من', short: 'برنامه',   Icon: CalendarCheck, studentOnly: true },
   { href: '/app/coach',       label: 'پنل مربی',    short: 'مربی',     Icon: Users,         coachOnly: true },
   { href: '/app/history',     label: 'استمرار',     short: 'استمرار',  Icon: Flame, studentOnly: true },
-  { href: '/app/leaderboard', label: 'امتیازات',    short: 'امتیازات', Icon: Medal },
+  { href: '/app/leaderboard', label: 'قهرمان‌ها',   short: 'قهرمان‌ها', Icon: Medal },
   { href: '/app/news',        label: 'اطلاعیه‌ها',  short: 'اخبار',    Icon: Bell,  feed: true },
 ];
 
