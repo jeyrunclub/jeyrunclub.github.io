@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     return new Response('forbidden', { status: 403 });
   }
 
-  const { user_id, title, body, href } = await req.json();
+  const { user_id, title, body, href, image_path } = await req.json();
   if (!user_id || !title) return new Response('bad request', { status: 400 });
 
   const { data: subs, error } = await admin
@@ -39,7 +39,17 @@ Deno.serve(async (req) => {
     .eq('user_id', user_id);
   if (error) return new Response(error.message, { status: 500 });
 
-  const payload = JSON.stringify({ title, body, href });
+  // The bucket is private, so the picture travels as a signed URL. A day is
+  // long enough for a notification that is read late and short enough that the
+  // link is not a lasting key to the file.
+  let image: string | undefined;
+  if (image_path) {
+    const { data } = await admin.storage.from('feed-photos')
+      .createSignedUrl(image_path, 60 * 60 * 24);
+    image = data?.signedUrl;
+  }
+
+  const payload = JSON.stringify({ title, body, href, image });
   let sent = 0;
   const dead: string[] = [];
 

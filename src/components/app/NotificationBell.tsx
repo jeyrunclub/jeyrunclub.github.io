@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Bell, BellOff, BellRing, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { faNum } from '../../lib/plan.js';
-import { faSince } from '../../lib/feed.js';
+import { faSince, signedFeedUrls } from '../../lib/feed.js';
 import {
   fetchNotifications, unreadCount, markAllRead, watchNotifications,
 } from '../../lib/notifications.js';
@@ -20,7 +20,8 @@ import { cn } from '../../lib/utils';
 
 type Note = {
   id: string; kind: string; title: string; body: string | null;
-  href: string | null; read_at: string | null; created_at: string;
+  href: string | null; image_path: string | null;
+  read_at: string | null; created_at: string;
 };
 
 export function NotificationBell({ userId }: { userId: string }) {
@@ -30,6 +31,7 @@ export function NotificationBell({ userId }: { userId: string }) {
   const [pushOn, setPushOn] = useState<boolean | null>(null);
   const [pushBusy, setPushBusy] = useState(false);
   const [pushErr, setPushErr] = useState<string | null>(null);
+  const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const panel = useRef<HTMLDivElement>(null);
 
   const refreshCount = useCallback(async () => {
@@ -84,7 +86,10 @@ export function NotificationBell({ userId }: { userId: string }) {
     const next = !open;
     setOpen(next);
     if (!next) return;
-    setNotes(await fetchNotifications(supabase) as Note[]);
+    const rows = await fetchNotifications(supabase) as Note[];
+    setNotes(rows);
+    const paths = rows.map((r) => r.image_path).filter(Boolean) as string[];
+    if (paths.length) setThumbs(await signedFeedUrls(supabase, paths));
     if (count > 0) {
       await markAllRead(supabase, userId);
       setCount(0);
@@ -170,11 +175,22 @@ export function NotificationBell({ userId }: { userId: string }) {
                         {faSince(n.created_at)}
                       </span>
                     </div>
-                    {n.body && (
-                      <p dir="auto" className="mt-0.5 line-clamp-2 text-right text-xs text-muted-foreground">
-                        {n.body}
-                      </p>
-                    )}
+                    <div className="mt-0.5 flex items-start gap-2">
+                      {n.image_path && thumbs[n.image_path] && (
+                        <img
+                          src={thumbs[n.image_path]}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className="nib-sm size-10 shrink-0 border border-border object-cover"
+                        />
+                      )}
+                      {n.body && (
+                        <p dir="auto" className="line-clamp-2 flex-1 text-right text-xs text-muted-foreground">
+                          {n.body}
+                        </p>
+                      )}
+                    </div>
                   </>
                 );
                 const cls = cn(

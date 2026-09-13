@@ -2,7 +2,7 @@
 // Network-first for HTML (so members always get the latest UI),
 // cache-first for immutable static assets.
 
-const CACHE = 'jeyrun-v4';
+const CACHE = 'jeyrun-v5';
 const CORE = ['/', '/app', '/app/login', '/manifest.webmanifest',
               '/icons/icon-192.png', '/icons/icon-512.png'];
 
@@ -92,6 +92,9 @@ self.addEventListener('push', (event) => {
     lang:  'fa',
     tag:   data.href || '/app',   // one per destination, so ten comments are one line
     renotify: true,
+    // Android shows this full width under the text; iOS ignores it, which is
+    // why nothing here depends on it.
+    image: data.image || undefined,
     data:  { href: data.href || '/app' },
   }));
 });

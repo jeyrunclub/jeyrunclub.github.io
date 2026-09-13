@@ -7,7 +7,7 @@
 
 export async function fetchNotifications(supabase, limit = 30) {
   const { data, error } = await supabase.from('notifications')
-    .select('id, kind, title, body, href, read_at, created_at')
+    .select('id, kind, title, body, href, image_path, read_at, created_at')
     .order('created_at', { ascending: false })
     .limit(limit);
   if (error) { console.error(error); return []; }
