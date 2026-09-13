@@ -42,7 +42,11 @@ function Lines({ text }: { text: string }) {
     <>
       {text.replace(/\r\n/g, '\n').split('\n').map((line, i) =>
         line.trim()
-          ? <p key={i} dir="auto" className="text-[0.95rem] leading-7">{line.trim()}</p>
+          // dir="auto" keeps a Latin phrase readable inside Persian, but a
+          // line of only emoji has no strong character in it and was being
+          // laid out left-to-right — so a row of gazelles jumped to the far
+          // side of the card. The alignment is stated rather than inferred.
+          ? <p key={i} dir="auto" className="text-right text-[0.95rem] leading-7">{line.trim()}</p>
           : <div key={i} className="h-2" />,
       )}
     </>
@@ -432,7 +436,7 @@ export function Feed({ me, isCoach, page }: {
                               </button>
                             )}
                           </div>
-                          <p dir="auto" className="mt-0.5 text-sm leading-6">{c.body}</p>
+                          <p dir="auto" className="mt-0.5 text-right text-sm leading-6">{c.body}</p>
                         </div>
                       </div>
                     ))}
