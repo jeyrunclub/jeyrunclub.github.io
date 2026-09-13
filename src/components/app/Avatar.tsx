@@ -96,7 +96,7 @@ export function AvatarPicker({ userId, name, path, size = 72, onChange }: {
         onClick={() => fileRef.current?.click()}
         disabled={busy}
         aria-label={path ? 'تغییر عکس پروفایل' : 'انتخاب عکس پروفایل'}
-        className="group relative rounded-full ring-2 ring-transparent transition-all hover:ring-primary"
+        className="group relative flex rounded-full ring-2 ring-transparent transition-all hover:ring-primary"
       >
         <Avatar name={name} path={path} size={size} />
         <span className="absolute -bottom-0.5 -end-0.5 flex size-7 items-center justify-center rounded-full border-2 border-card bg-primary text-white">
