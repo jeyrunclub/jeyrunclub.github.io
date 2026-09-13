@@ -39,3 +39,7 @@ pnpm-debug.log*
 /*.jpeg
 /team/
 
+
+# migration credentials — never committed
+scripts/migrate/.env
+scripts/migrate/out/
