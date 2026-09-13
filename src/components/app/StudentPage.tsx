@@ -169,13 +169,19 @@ export function StudentPage() {
           </div>
         </section>
 
-        {/*
-          Order matters here. The plan is why the app gets opened; the goal is
-          context checked once a week, and it used to sit between the hero and
-          the plan. Week nav and the day/week switch now share one slim bar
-          rather than taking a card each — they were carrying the same visual
-          weight as the workout itself.
-        */}
+        {/* The goal sits under the hero: it is the reason the week exists, and
+            at the foot of the page nobody scrolled to it. */}
+        <RunnerStats
+          studentId={profile.id}
+          goal={profile.training_goal}
+          pr={profile.pr_10k}
+          onSave={(training_goal, pr_10k) =>
+            setProfile((p) => (p ? { ...p, training_goal, pr_10k } : p))}
+        />
+
+        {/* Week nav and the day/week switch share one slim bar rather than
+            taking a card each — they were carrying the same visual weight as
+            the workout itself. */}
         <Card className="flex items-center gap-1 p-1.5">
           <Button
             variant="ghost" size="icon" className="size-9 rounded-full"
@@ -312,17 +318,8 @@ export function StudentPage() {
           </Card>
         )}
 
-        {/* What was actually done, then where it is heading: both are context
-            under the plan, and the record earns its place above the goal. */}
+        {/* The record of what was actually done, under the plan. */}
         <TrainingHistory studentId={profile.id} />
-
-        <RunnerStats
-          studentId={profile.id}
-          goal={profile.training_goal}
-          pr={profile.pr_10k}
-          onSave={(training_goal, pr_10k) =>
-            setProfile((p) => (p ? { ...p, training_goal, pr_10k } : p))}
-        />
 
       </main>
     </div>
