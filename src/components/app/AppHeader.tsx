@@ -39,6 +39,7 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
                   <a
                     key={l.href}
                     href={l.href}
+                    data-astro-prefetch="tap"
                     className={cn(
                       'nib-pill relative whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors',
                       path === l.href

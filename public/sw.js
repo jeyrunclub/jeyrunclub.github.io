@@ -36,7 +36,13 @@ self.addEventListener('fetch', (event) => {
   // like it had not shipped. Go past the HTTP cache for the document itself;
   // the hashed assets it references are immutable and safe to reuse.
   if (url.pathname.startsWith('/app')) {
-    if (req.mode === 'navigate' || req.headers.get('accept')?.includes('text/html')) {
+    // The client-side router fetches documents with a plain fetch(), which is
+    // neither mode 'navigate' nor Accept: text/html — so match on "this path
+    // has no file extension" instead, which is every page and no asset.
+    const isDocument = req.mode === 'navigate'
+      || req.headers.get('accept')?.includes('text/html')
+      || !/\.[a-z0-9]+$/i.test(url.pathname);
+    if (isDocument) {
       event.respondWith(
         fetch(req, { cache: 'no-store' }).catch(() => fetch(req)),
       );
