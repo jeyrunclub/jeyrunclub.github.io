@@ -11,8 +11,6 @@ import { cn } from '../../lib/utils';
 
 type Ev = { event_date: string; start_time: string | null };
 
-const pad = (n: number) => faNum(String(n).padStart(2, '0'));
-
 export function Countdown({ event, className }: { event: Ev; className?: string }) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -26,11 +24,14 @@ export function Countdown({ event, className }: { event: Ev; className?: string 
   const left = countdownParts(event, now);
   if (!left) return <span className={className}>{countdownLabel(event.event_date)}</span>;
 
-  const clock = `${pad(left.hours)}:${pad(left.minutes)}:${pad(left.seconds)}`;
-  return (
-    <span className={cn('figures tabular-nums', className)}>
-      {left.days > 0 && <span className="font-sans">{faNum(left.days)} روز و </span>}
-      <span dir="ltr">{clock}</span>
-    </span>
-  );
+  // Spelled out rather than a clock: «۱۰ روز و ۱۰ ساعت و ۵ دقیقه و ۴ ثانیه».
+  // A zero unit is dropped — «۱۰ روز و ۰ ساعت» is noise — but the seconds
+  // always stay, since watching them move is the point of a countdown.
+  const parts: string[] = [];
+  if (left.days) parts.push(`${faNum(left.days)} روز`);
+  if (left.hours) parts.push(`${faNum(left.hours)} ساعت`);
+  if (left.minutes) parts.push(`${faNum(left.minutes)} دقیقه`);
+  parts.push(`${faNum(left.seconds)} ثانیه`);
+
+  return <span className={cn('tabular-nums', className)}>{parts.join(' و ')}</span>;
 }

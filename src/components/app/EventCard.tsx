@@ -74,15 +74,14 @@ export function EventCard({ isCoach }: { isCoach?: boolean }) {
         <Trophy className="size-5" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <b className="truncate text-sm">{ev.title}</b>
-          <span className={cn(
-            'nib-pill px-2 py-0.5 text-[0.62rem] font-bold',
-            soon ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground',
-          )}>
-            {soon ? <Countdown event={ev} /> : countdownLabel(ev.event_date)}
+        <b className="block truncate text-sm">{ev.title}</b>
+        {soon ? (
+          <Countdown event={ev} className="mt-1 block text-[0.72rem] font-bold text-primary" />
+        ) : (
+          <span className="nib-pill mt-1 inline-block bg-secondary px-2 py-0.5 text-[0.62rem] font-bold text-muted-foreground">
+            {countdownLabel(ev.event_date)}
           </span>
-        </span>
+        )}
         <span className="mt-0.5 block truncate text-xs text-muted-foreground">
           {faDateLong(ev.event_date)}
           {ev.distances?.length ? ` — ${ev.distances.map(distanceLabel).join('، ')}` : ''}
