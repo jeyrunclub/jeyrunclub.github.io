@@ -30,7 +30,12 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
           <span className="nib-sm flex size-9 items-center justify-center bg-primary shadow-sm shadow-brand-600/30">
             <img src="/images/logo.png" alt="" className="h-4.5 w-6 object-contain brightness-0 invert" />
           </span>
-          <span className="display text-lg transition-colors group-hover:text-primary">پنل جیران</span>
+          {/* On a phone the mark carries the identity on its own: with the
+              words in, the row could not fit the links and every label broke
+              across two lines. */}
+          <span className="display hidden whitespace-nowrap text-lg transition-colors group-hover:text-primary sm:inline">
+            پنل جیران
+          </span>
         </a>
         {!hideNav && (
           <nav className="flex items-center gap-1">
@@ -41,7 +46,7 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
                 key={l.href}
                 href={l.href}
                 className={cn(
-                  'nib-pill px-3.5 py-1.5 text-sm font-medium transition-colors',
+                  'nib-pill whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors',
                   path === l.href
                     ? 'bg-accent font-bold text-accent-foreground'
                     : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
