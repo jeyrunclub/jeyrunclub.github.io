@@ -171,3 +171,33 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .tick-pop { animation: none; }
 }
+
+/* The navigation bar at the very top of the window.
+ *
+ * It crawls rather than completes: nothing knows how far along a page load is,
+ * so a bar that filled steadily to the end would be lying. It eases towards
+ * 90% and waits there, then snaps shut when the page actually arrives — which
+ * is the honest shape for progress you cannot measure. */
+@keyframes route-crawl {
+  0%   { transform: scaleX(0);    }
+  40%  { transform: scaleX(0.55); }
+  100% { transform: scaleX(0.9);  }
+}
+
+.route-bar {
+  height: 100%;
+  transform-origin: right center;   /* RTL: it grows from the right */
+  background: linear-gradient(to left, var(--primary), #ff6b81);
+  animation: route-crawl 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.route-bar--done {
+  animation: none;
+  transform: scaleX(1);
+  transition: opacity 0.3s ease 0.1s;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-bar { animation: none; transform: scaleX(0.9); }
+}

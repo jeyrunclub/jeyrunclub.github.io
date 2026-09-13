@@ -9,6 +9,7 @@
 // length here, where the header had to shorten «اطلاعیه‌ها» to «اخبار» to fit
 // a 360px screen.
 
+import { useState } from 'react';
 import { linksFor, useNavState, useIsPhone } from './nav';
 import { cn } from '../../lib/utils';
 
@@ -16,6 +17,10 @@ export function BottomNav({ isCoach = false }: { isCoach?: boolean }) {
   const { path, unread } = useNavState();
   const phone = useIsPhone();
   const links = linksFor(isCoach);
+  // The tap lights the tab up now, not when the page finishes arriving. Even
+  // a fast navigation has a gap, and a bar that does not react reads as a
+  // missed press — so people press it again.
+  const [pending, setPending] = useState<string | null>(null);
 
   if (!phone) return null;
 
@@ -27,12 +32,13 @@ export function BottomNav({ isCoach = false }: { isCoach?: boolean }) {
     >
       <div className="mx-auto flex max-w-md items-stretch">
         {links.map((l) => {
-          const active = path === l.href;
+          const active = (pending ?? path) === l.href;
           return (
             <a
               key={l.href}
               href={l.href}
               data-astro-prefetch="viewport"
+              onClick={() => setPending(l.href)}
               aria-current={active ? 'page' : undefined}
               className={cn(
                 'relative flex flex-1 flex-col items-center gap-1 py-2.5 transition-colors',
