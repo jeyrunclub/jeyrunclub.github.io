@@ -6,13 +6,16 @@
 // that happened since they last looked is in one place, with a count on it.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Bell, Check, X } from 'lucide-react';
+import { Bell, BellOff, BellRing, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { faNum } from '../../lib/plan.js';
 import { faSince } from '../../lib/feed.js';
 import {
   fetchNotifications, unreadCount, markAllRead, watchNotifications,
 } from '../../lib/notifications.js';
+import {
+  pushSupported, currentSubscription, enablePush, disablePush, isIOS, isInstalled,
+} from '../../lib/push.js';
 import { cn } from '../../lib/utils';
 
 type Note = {
@@ -24,6 +27,9 @@ export function NotificationBell({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
   const [notes, setNotes] = useState<Note[] | null>(null);
+  const [pushOn, setPushOn] = useState<boolean | null>(null);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushErr, setPushErr] = useState<string | null>(null);
   const panel = useRef<HTMLDivElement>(null);
 
   const refreshCount = useCallback(async () => {
@@ -31,6 +37,24 @@ export function NotificationBell({ userId }: { userId: string }) {
   }, []);
 
   useEffect(() => { refreshCount(); }, [refreshCount]);
+
+  useEffect(() => {
+    if (!pushSupported()) { setPushOn(false); return; }
+    currentSubscription().then((s) => setPushOn(!!s));
+  }, []);
+
+  async function togglePush() {
+    setPushBusy(true);
+    setPushErr(null);
+    if (pushOn) {
+      await disablePush(supabase);
+      setPushOn(false);
+    } else {
+      const { error } = await enablePush(supabase, userId);
+      if (error) setPushErr(error); else setPushOn(true);
+    }
+    setPushBusy(false);
+  }
 
   // Live: a new row bumps the count without a reload.
   useEffect(() => {
@@ -86,14 +110,47 @@ export function NotificationBell({ userId }: { userId: string }) {
 
       {open && (
         <div className="nib absolute end-0 top-11 z-40 max-h-[70vh] w-80 max-w-[calc(100vw-2rem)] overflow-y-auto border border-border bg-card shadow-xl">
-          <div className="sticky top-0 flex items-center gap-2 border-b border-border bg-card px-4 py-2.5">
-            <b className="text-sm">اعلان‌ها</b>
-            <button
-              type="button" onClick={() => setOpen(false)} aria-label="بستن"
-              className="ms-auto text-muted-foreground hover:text-foreground"
-            >
-              <X className="size-4" />
-            </button>
+          <div className="sticky top-0 border-b border-border bg-card px-4 py-2.5">
+            <div className="flex items-center gap-2">
+              <b className="text-sm">اعلان‌ها</b>
+              <button
+                type="button" onClick={() => setOpen(false)} aria-label="بستن"
+                className="ms-auto text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            {/* Notifications that arrive with the app shut. On iOS this only
+                works once the app is on the Home Screen, so say so rather than
+                fail silently. */}
+            {pushSupported() && (
+              <button
+                type="button"
+                onClick={togglePush}
+                disabled={pushBusy}
+                className={cn(
+                  'nib-sm mt-2 flex w-full items-center gap-2 border px-3 py-2 text-start text-xs transition-colors',
+                  pushOn
+                    ? 'border-easy/40 bg-easy/10 text-easy'
+                    : 'border-border hover:bg-secondary',
+                )}
+              >
+                {pushOn ? <BellRing className="size-4 shrink-0" /> : <BellOff className="size-4 shrink-0" />}
+                <span className="flex-1 font-bold">
+                  {pushOn ? 'اعلان روی این دستگاه روشن است' : 'اعلان روی این دستگاه'}
+                </span>
+                <span className="text-[0.65rem] text-muted-foreground">
+                  {pushBusy ? '…' : pushOn ? 'خاموش کن' : 'روشن کن'}
+                </span>
+              </button>
+            )}
+            {pushErr && <p className="mt-1.5 text-[0.68rem] text-destructive">{pushErr}</p>}
+            {!pushOn && pushSupported() && isIOS() && !isInstalled() && (
+              <p className="mt-1.5 text-[0.68rem] text-muted-foreground">
+                روی آیفون اول اپ را به صفحه‌ی اصلی اضافه کن.
+              </p>
+            )}
           </div>
 
           {!notes ? (

@@ -2,7 +2,7 @@
 // Network-first for HTML (so members always get the latest UI),
 // cache-first for immutable static assets.
 
-const CACHE = 'jeyrun-v3';
+const CACHE = 'jeyrun-v4';
 const CORE = ['/', '/app', '/app/login', '/manifest.webmanifest',
               '/icons/icon-192.png', '/icons/icon-512.png'];
 
@@ -75,4 +75,39 @@ self.addEventListener('fetch', (event) => {
       })
     )
   );
+});
+
+// ---------- Web Push ----------
+// The payload is encrypted end to end: the push service that carries it can
+// see the endpoint but not the words. Everything shown here comes out of the
+// message, not out of a fetch, so it works with the app closed and offline.
+self.addEventListener('push', (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch {}
+  event.waitUntil(self.registration.showNotification(data.title || 'جیران', {
+    body:  data.body || '',
+    icon:  '/icons/apple-touch-icon.png',
+    badge: '/images/favicon.png',
+    dir:   'rtl',
+    lang:  'fa',
+    tag:   data.href || '/app',   // one per destination, so ten comments are one line
+    renotify: true,
+    data:  { href: data.href || '/app' },
+  }));
+});
+
+// Focus a window that is already open rather than piling up new ones.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const href = (event.notification.data && event.notification.data.href) || '/app';
+  event.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of all) {
+      if (new URL(c.url).origin === self.location.origin) {
+        await c.focus();
+        return c.navigate(href).catch(() => {});
+      }
+    }
+    return self.clients.openWindow(href);
+  })());
 });
