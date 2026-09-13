@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { CalendarCheck, Medal, Bell, Users, Flame } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { fetchFeed, lastSeen } from '../../lib/feed.js';
+import { swr } from '../../lib/cache.js';
 
 export type NavLink = {
   href: string;
@@ -45,9 +46,11 @@ export function useNavState(enabled = true) {
   useEffect(() => {
     if (!enabled) return;
     let alive = true;
-    fetchFeed(supabase, 1).then(({ posts }) => {
-      if (alive && posts.length) setUnread(posts[0].created_at > lastSeen());
-    });
+    // Cached: this fires on every page, and "is there a new post" does not
+    // need to be asked again three seconds after it was answered.
+    swr('feed_latest', async () => (await fetchFeed(supabase, 1)).posts[0]?.created_at || '',
+        { maxAge: 60000, onFresh: (at: string) => setUnread(!!at && at > lastSeen()) })
+      .then((at: string) => { if (alive) setUnread(!!at && at > lastSeen()); });
     return () => { alive = false; };
   }, [enabled]);
 

@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Camera, Loader2, Trash2, ZoomIn } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { avatarUrl, uploadAvatar, removeAvatar } from '../../lib/plan.js';
+import { forgetProfile } from '../../lib/session.js';
 import { cn } from '../../lib/utils';
 
 const MAX_BYTES = 3 * 1024 * 1024; // matches the bucket's file_size_limit
@@ -67,6 +68,7 @@ export function AvatarPicker({ userId, name, path, size = 72, onChange }: {
     const { path: next, error: err } = await uploadAvatar(supabase, userId, file);
     setBusy(false);
     if (err || !next) { setError('آپلود نشد. دوباره تلاش کن.'); return; }
+    forgetProfile();
     onChange(next);
     // Only now is the old file unreferenced.
     if (old && old !== next) {
@@ -77,6 +79,7 @@ export function AvatarPicker({ userId, name, path, size = 72, onChange }: {
   async function drop() {
     setBusy(true);
     await removeAvatar(supabase, userId, path);
+    forgetProfile();
     setBusy(false);
     onChange(null);
   }

@@ -7,6 +7,7 @@ import {
   DAYS_FA, faDayNum, faNum,
 } from '../../lib/plan.js';
 import { sessionType, typeClasses } from '../../lib/session-type.js';
+import { getProfile, forgetProfile } from '../../lib/session.js';
 import { AppHeader } from './AppHeader';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -48,7 +49,7 @@ export function StudentPage() {
       // profile: a student's own row is keyed by exactly this id, so there is
       // nothing in the profile the plan query needs to wait for.
       setUid(session.user.id);
-      const { data: p } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+      const p = await getProfile(supabase, session.user.id);
       if (!p) { setLoading(false); return; }
       // Backfill full_name from localStorage if missing
       let profileFull = p as Profile;
@@ -57,6 +58,7 @@ export function StudentPage() {
         try { pending = localStorage.getItem('jeyrun.pending_full_name'); } catch {}
         if (pending) {
           await supabase.from('profiles').update({ full_name: pending }).eq('id', profileFull.id);
+          forgetProfile();
           try { localStorage.removeItem('jeyrun.pending_full_name'); } catch {}
           profileFull = { ...profileFull, full_name: pending };
         }

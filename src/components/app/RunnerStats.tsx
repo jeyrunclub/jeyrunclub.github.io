@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { Check, Pencil, Target, Timer, X, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
+import { forgetProfile } from '../../lib/session.js';
 import { splitPr, joinPr } from '../../lib/plan.js';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -44,6 +45,7 @@ export function RunnerStats({ studentId, goal, pr, onSave }: {
       pr_10k: joinPr(mins, secs) || null,
     };
     const { error: err } = await supabase.from('profiles').update(next).eq('id', studentId);
+    forgetProfile();
     setSaving(false);
     if (err) { setError('ذخیره نشد. دوباره تلاش کن.'); return; }
     onSave(next.training_goal, next.pr_10k);

@@ -12,6 +12,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Flame, Timer, Trophy } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { fetchLeaderboard, prSeconds, faNum } from '../../lib/plan.js';
+import { getProfile } from '../../lib/session.js';
+import { swr } from '../../lib/cache.js';
 import { AppHeader } from './AppHeader';
 import { Avatar, AvatarPicker } from './Avatar';
 import { Card } from '../ui/card';
@@ -51,9 +53,10 @@ export function LeaderboardPage() {
       // Both of these need only the session, and waiting for the profile
       // before asking for the board made every visit cost two round trips
       // instead of one. On a slow connection that is the whole delay.
-      const [{ data: p }, { rows: r }] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', session.user.id).single(),
-        fetchLeaderboard(supabase),
+      const [p, r] = await Promise.all([
+        getProfile(supabase, session.user.id),
+        swr('leaderboard', async () => (await fetchLeaderboard(supabase)).rows,
+            { maxAge: 30000, onFresh: (rows: any) => setRows(rows) }),
       ]);
 
       if (!p) { setLoading(false); return; }

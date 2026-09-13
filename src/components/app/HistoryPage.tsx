@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { Flame } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
+import { getProfile } from '../../lib/session.js';
 import { AppHeader } from './AppHeader';
 import { TrainingHistory } from './TrainingHistory';
 
@@ -18,7 +19,7 @@ export function HistoryPage() {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.replace('/app/login'); return; }
-      const { data: p } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+      const p = await getProfile(supabase, session.user.id);
       if (!p) { setLoading(false); return; }
       if (p.role === 'coach') { window.location.replace('/app/coach'); return; }
       if (p.status !== 'approved') { window.location.replace('/app/pending'); return; }

@@ -20,6 +20,7 @@ import {
   fetchWeekPlansForStudents, fetchWeekLogsForStudents, loadWeekPlan, saveWeekPlan,
   signedPhotoUrl, splitPr, joinPr,
 } from '../../lib/plan.js';
+import { getProfile } from '../../lib/session.js';
 import { AppHeader } from '../app/AppHeader';
 import { PlanText } from '../app/PlanText';
 import { WeekList, TypeBadge, type Day } from '../app/PlanWeek';
@@ -99,7 +100,7 @@ export function CoachPage() {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.replace('/app/login'); return; }
-      const { data: p } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+      const p = await getProfile(supabase, session.user.id);
       if (!p || p.role !== 'coach') { setDenied(true); setLoading(false); return; }
       setProfile(p);
       setCoachAvatar(p.avatar_path ?? null);
