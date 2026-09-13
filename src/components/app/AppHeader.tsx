@@ -2,6 +2,7 @@ import { LogOut, Globe } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { Button } from '../ui/button';
 import { BottomNav } from './BottomNav';
+import { clearMemberData } from '../../lib/session.js';
 import { linksFor, useNavState, useIsPhone } from './nav';
 import { cn } from '../../lib/utils';
 
@@ -10,6 +11,7 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
   const phone = useIsPhone();
 
   async function signOut() {
+    clearMemberData();
     await supabase.auth.signOut();
     window.location.replace('/app/login');
   }

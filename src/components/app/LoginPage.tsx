@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Mail, User, Phone, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
+import { clearMemberData } from '../../lib/session.js';
 import { AppHeader } from './AppHeader';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -80,6 +81,8 @@ export function LoginPage() {
       return;
     }
     if (data.session) {
+      // Whoever used this browser last does not get to leave anything behind.
+      clearMemberData();
       window.location.replace('/app');
     } else {
       setSigninMsg({ kind: 'error', text: 'ورود انجام نشد. دوباره تلاش کن.' });
@@ -128,6 +131,8 @@ export function LoginPage() {
 
     // With "Confirm email" OFF in Supabase → session is returned immediately.
     if (data.session) {
+      // Whoever used this browser last does not get to leave anything behind.
+      clearMemberData();
       window.location.replace('/app');
       return;
     }

@@ -11,20 +11,48 @@
 
 const mem = new Map();
 
+// Whose data is in here.
+//
+// Without this, signing out and signing in as someone else left the previous
+// member's profile, week, streak and feed sitting in sessionStorage under the
+// same key names — and the next person to use the phone read them. Every
+// entry is stamped, every read checks, and both sign-in and sign-out wipe the
+// lot. Three defences because one of them being wrong is somebody seeing
+// another member's training.
+let owner = '';
+
+export function setCacheOwner(id) {
+  const next = String(id || '');
+  if (next === owner) return;
+  owner = next;
+  mem.clear();
+}
+
+export function clearAll() {
+  owner = '';
+  mem.clear();
+  try {
+    for (const k of Object.keys(sessionStorage)) {
+      if (k.startsWith('jeyrun.c.')) sessionStorage.removeItem(k);
+    }
+  } catch {}
+}
+
 function read(key) {
   const hit = mem.get(key);
-  if (hit) return hit;
+  if (hit) return hit.owner === owner ? hit : null;
   try {
     const raw = sessionStorage.getItem('jeyrun.c.' + key);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
+    if (parsed.owner !== owner) return null;   // somebody else's
     mem.set(key, parsed);
     return parsed;
   } catch { return null; }
 }
 
 function write(key, value) {
-  const entry = { at: Date.now(), value };
+  const entry = { at: Date.now(), owner, value };
   mem.set(key, entry);
   try { sessionStorage.setItem('jeyrun.c.' + key, JSON.stringify(entry)); } catch {}
 }
