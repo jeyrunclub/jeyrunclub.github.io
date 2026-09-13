@@ -56,10 +56,9 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
               href="/"
               title="سایت جیران"
               aria-label="رفتن به سایت جیران"
-              className="nib-pill ms-1 inline-flex h-9 items-center gap-1.5 px-3 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="ms-1 inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               <Globe className="size-4" />
-              <span>سایت</span>
             </a>
             <Button variant="ghost" size="icon" onClick={signOut} title="خروج" aria-label="خروج" className="size-9 text-muted-foreground hover:text-destructive">
               <LogOut className="size-4" />
