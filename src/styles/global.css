@@ -1522,12 +1522,12 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 @media (max-width: 640px) {
   .nav-quick {
     display: flex;
-    gap: 0.45rem;
+    gap: 0.35rem;
     align-items: center;
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding: 0.6rem 1rem;
+    padding: 0.6rem 0.75rem;
     border-top: 1px solid var(--border);
   }
   .nav-quick::-webkit-scrollbar { display: none; }
