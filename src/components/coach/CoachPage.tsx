@@ -257,7 +257,7 @@ export function CoachPage() {
   return (
     <div className="min-h-screen">
       <AppHeader isCoach />
-      <main className="mx-auto flex max-w-4xl flex-col gap-5 px-5 pb-20 pt-6">
+      <main className="mx-auto flex max-w-4xl flex-col gap-5 px-5 pb-28 pt-6 sm:pb-20">
 
         {/* HERO — the same material as the student's, so the two halves of the
             product look like one product. */}

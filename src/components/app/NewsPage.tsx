@@ -36,7 +36,7 @@ export function NewsPage() {
   return (
     <div className="min-h-screen">
       <AppHeader isCoach={isCoach} />
-      <main className="mx-auto flex max-w-2xl flex-col gap-5 px-5 pb-20 pt-6">
+      <main className="mx-auto flex max-w-2xl flex-col gap-5 px-5 pb-28 pt-6 sm:pb-20">
         <div className="flex items-center gap-2 px-1">
           <Megaphone className="size-5 text-primary" />
           <h1 className="display text-3xl">اطلاعیه‌ها</h1>

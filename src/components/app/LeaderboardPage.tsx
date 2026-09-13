@@ -87,7 +87,7 @@ export function LeaderboardPage() {
     return (
       <div className="min-h-screen">
         <AppHeader isCoach={isCoach} />
-        <main className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pb-16 pt-6">
+        <main className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pb-28 pt-6 sm:pb-16">
           <div className="h-28 animate-pulse rounded-3xl bg-muted" />
           <div className="h-96 animate-pulse rounded-2xl bg-muted" />
         </main>

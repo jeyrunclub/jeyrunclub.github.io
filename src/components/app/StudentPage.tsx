@@ -115,7 +115,7 @@ export function StudentPage() {
   return (
     <div className="min-h-screen">
       <AppHeader isCoach={false} />
-      <main className="mx-auto flex max-w-2xl flex-col gap-5 px-5 pb-20 pt-6">
+      <main className="mx-auto flex max-w-2xl flex-col gap-5 px-5 pb-28 pt-6 sm:pb-20">
         {/* HERO */}
         <section className="rise nib relative overflow-hidden bg-gradient-to-bl from-brand-500 via-brand-500 to-brand-700 p-6 text-white shadow-lg shadow-brand-600/25">
           <span aria-hidden className="strokes pointer-events-none absolute inset-0" />
