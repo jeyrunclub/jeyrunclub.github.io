@@ -13,8 +13,12 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  // The nav links opt in with data-astro-prefetch; on a phone "tap" fires on
-  // touchstart, which buys the whole press-and-release for the fetch.
+  // The nav links opt in with data-astro-prefetch. They ask for "viewport":
+  // the bar holding them is on screen the whole time, so all four destinations
+  // are fetched while the member is reading the page they are already on, and
+  // a tap then has nothing left to wait for. "tap" started the fetch on press,
+  // which is better than nothing and still a wait. Four documents of about 7KB
+  // is a cheap thing to spend to make the app feel instant.
   prefetch: { defaultStrategy: 'tap' },
 
   // Astro's HTML minifier collapses the newline between an inline element and
