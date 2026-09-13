@@ -17,6 +17,7 @@ import {
   loadDoneDays, recentWeeks, weekStreak,
   today, faNum, faDateShort, DAYS_FA,
 } from '../../lib/plan.js';
+import { swr } from '../../lib/cache.js';
 import { Card } from '../ui/card';
 import { cn } from '../../lib/utils';
 
@@ -30,7 +31,11 @@ export function TrainingHistory({ studentId }: { studentId: string }) {
     const weeks = recentWeeks(WEEKS);
     const from = weeks[weeks.length - 1].weekStart;
     const to = weeks[0].days[6];
-    loadDoneDays(supabase, studentId, from, to).then((s) => { if (alive) setDone(s); });
+    // Cached like everything else that survives a page switch. A Set does not
+    // survive JSON, so the cache holds the array and the component rebuilds it.
+    swr(`done:${studentId}`, async () => [...await loadDoneDays(supabase, studentId, from, to)],
+        { maxAge: 60000, onFresh: (days: string[]) => { if (alive) setDone(new Set(days)); } })
+      .then((days: string[]) => { if (alive) setDone(new Set(days)); });
     return () => { alive = false; };
   }, [studentId]);
 

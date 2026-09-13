@@ -17,6 +17,7 @@ import {
   addComment, deleteComment, setLike, faSince, lastSeen, markSeen,
   uploadFeedPhoto, removeFeedPhoto, signedFeedUrls,
 } from '../../lib/feed.js';
+import { swr, drop } from '../../lib/cache.js';
 import { Avatar } from './Avatar';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -75,11 +76,19 @@ export function Feed({ me, isCoach, page }: {
   const [lightbox, setLightbox] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const load = useCallback(async () => {
-    const { posts: rows } = await fetchFeed(supabase, 20);
-    setPosts(rows as Post[]);
+  const apply = useCallback((rows: Post[]) => {
+    setPosts(rows);
     if (rows.length) markSeen(rows[0].created_at);
   }, []);
+
+  // Shown from cache, checked behind the reader. Anything that writes to the
+  // feed drops the entry first, so a new post is never hidden by it.
+  const load = useCallback(async (fresh = false) => {
+    if (fresh) drop('feed');
+    const rows = await swr('feed', async () => (await fetchFeed(supabase, 20)).posts,
+                           { maxAge: 30000, onFresh: apply });
+    apply((rows || []) as Post[]);
+  }, [apply]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -140,7 +149,7 @@ export function Feed({ me, isCoach, page }: {
     }
     setDraft('');
     dropPending();
-    await load();
+    await load(true);
   }
 
   async function saveEdit(id: string) {
@@ -149,7 +158,7 @@ export function Feed({ me, isCoach, page }: {
     setBusy(false);
     if (err) { setError('ذخیره نشد.'); return; }
     setEditing(null);
-    await load();
+    await load(true);
   }
 
   async function removePost(id: string) {
@@ -158,7 +167,7 @@ export function Feed({ me, isCoach, page }: {
     const { error: err } = await deletePost(supabase, id);
     if (err) { setError('حذف نشد.'); return; }
     if (photo) await removeFeedPhoto(supabase, photo);
-    await load();
+    await load(true);
   }
 
   // Editing only ever drops the picture — replacing one is a new post's job.
@@ -167,7 +176,7 @@ export function Feed({ me, isCoach, page }: {
     const { error: err } = await editPost(supabase, p.id, p.body, null);
     if (err) { setError('حذف عکس نشد.'); return; }
     await removeFeedPhoto(supabase, p.photo_path);
-    await load();
+    await load(true);
   }
 
   // The count moves before the network does: a like that waits on a round trip
@@ -177,8 +186,9 @@ export function Feed({ me, isCoach, page }: {
     setPosts((rows) => (rows || []).map((r) => r.id === p.id
       ? { ...r, liked_by_me: on, like_count: Number(r.like_count) + (on ? 1 : -1) }
       : r));
+    drop('feed');
     const { error: err } = await setLike(supabase, p.id, me.id, on);
-    if (err) await load();
+    if (err) await load(true);
   }
 
   async function sendReply(id: string) {
