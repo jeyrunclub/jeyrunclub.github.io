@@ -2,7 +2,7 @@
 // can never drift apart.
 
 import { useEffect, useState } from 'react';
-import { CalendarCheck, Medal, Bell, Users } from 'lucide-react';
+import { CalendarCheck, Medal, Bell, Users, Flame } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { fetchFeed, lastSeen } from '../../lib/feed.js';
 
@@ -22,6 +22,7 @@ export type NavLink = {
 export const LINKS: NavLink[] = [
   { href: '/app',             label: 'برنامه‌ی من', short: 'برنامه',   Icon: CalendarCheck, studentOnly: true },
   { href: '/app/coach',       label: 'پنل مربی',    short: 'مربی',     Icon: Users,         coachOnly: true },
+  { href: '/app/history',     label: 'استمرار',     short: 'استمرار',  Icon: Flame, studentOnly: true },
   { href: '/app/leaderboard', label: 'امتیازات',    short: 'امتیازات', Icon: Medal },
   { href: '/app/news',        label: 'اطلاعیه‌ها',  short: 'اخبار',    Icon: Bell,  feed: true },
 ];

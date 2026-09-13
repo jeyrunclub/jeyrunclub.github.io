@@ -46,7 +46,8 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
                         : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                     )}
                   >
-                    {l.label}
+                    <span className="md:hidden">{l.short}</span>
+                    <span className="hidden md:inline">{l.label}</span>
                     {l.feed && unread && path !== l.href && (
                       <span
                         aria-label="اطلاعیه‌ی جدید"

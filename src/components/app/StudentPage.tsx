@@ -14,7 +14,6 @@ import { PlanText } from './PlanText';
 import { DayCard, WeekList, type Day } from './PlanWeek';
 import { DayLog, type Log } from './DayLog';
 import { RunnerStats } from './RunnerStats';
-import { TrainingHistory } from './TrainingHistory';
 import { Avatar } from './Avatar';
 import { cn } from '../../lib/utils';
 
@@ -323,8 +322,6 @@ export function StudentPage() {
           </Card>
         )}
 
-        {/* The record of what was actually done, under the plan. */}
-        <TrainingHistory studentId={profile.id} />
 
       </main>
     </div>
