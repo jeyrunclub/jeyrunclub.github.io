@@ -9,17 +9,20 @@
 // length here, where the header had to shorten «اطلاعیه‌ها» to «اخبار» to fit
 // a 360px screen.
 
-import { linksFor, useNavState } from './nav';
+import { linksFor, useNavState, useIsPhone } from './nav';
 import { cn } from '../../lib/utils';
 
 export function BottomNav({ isCoach = false }: { isCoach?: boolean }) {
   const { path, unread } = useNavState();
+  const phone = useIsPhone();
   const links = linksFor(isCoach);
+
+  if (!phone) return null;
 
   return (
     <nav
       aria-label="ناوبری"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-background/90 backdrop-blur-xl sm:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-background/90 backdrop-blur-xl"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="mx-auto flex max-w-md items-stretch">

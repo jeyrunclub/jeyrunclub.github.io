@@ -2,7 +2,7 @@
 // Network-first for HTML (so members always get the latest UI),
 // cache-first for immutable static assets.
 
-const CACHE = 'jeyrun-v2';
+const CACHE = 'jeyrun-v3';
 const CORE = ['/', '/app', '/app/login', '/manifest.webmanifest',
               '/icons/icon-192.png', '/icons/icon-512.png'];
 

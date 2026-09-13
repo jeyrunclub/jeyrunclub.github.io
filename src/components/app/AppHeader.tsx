@@ -2,11 +2,12 @@ import { LogOut, Globe } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { Button } from '../ui/button';
 import { BottomNav } from './BottomNav';
-import { linksFor, useNavState } from './nav';
+import { linksFor, useNavState, useIsPhone } from './nav';
 import { cn } from '../../lib/utils';
 
 export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: boolean; hideNav?: boolean }) {
   const { path, unread } = useNavState(!hideNav);
+  const phone = useIsPhone();
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -21,9 +22,9 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
             <span className="nib-sm flex size-9 items-center justify-center bg-primary shadow-sm shadow-brand-600/30">
               <img src="/images/logo.png" alt="" className="h-4.5 w-6 object-contain brightness-0 invert" />
             </span>
-            {/* The wordmark comes back on wide screens; on a phone the mark
-                carries the identity and the row needs the space. */}
-            <span className="display hidden whitespace-nowrap text-lg transition-colors group-hover:text-primary sm:inline">
+            {/* Back at every width: with the destinations in the phone bar,
+                the header has the room again. */}
+            <span className="display whitespace-nowrap text-lg transition-colors group-hover:text-primary">
               پنل جیران
             </span>
           </a>
@@ -32,7 +33,8 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
             <nav className="flex items-center gap-1">
               {/* Below sm these live in the bottom bar, where they are in reach
                   of a thumb and can afford their full labels. */}
-              <span className="hidden items-center gap-1 sm:flex">
+              {!phone && (
+              <span className="flex items-center gap-1">
                 {linksFor(isCoach).map((l) => (
                   <a
                     key={l.href}
@@ -54,6 +56,7 @@ export function AppHeader({ isCoach = false, hideNav = false }: { isCoach?: bool
                   </a>
                 ))}
               </span>
+              )}
 
               {/* Back out to the public site — there was no way across from
                   inside the app except the browser's back button. */}
