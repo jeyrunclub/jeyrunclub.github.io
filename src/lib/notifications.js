@@ -37,3 +37,11 @@ export function watchNotifications(supabase, userId, onInsert) {
     .subscribe();
   return () => { supabase.removeChannel(channel); };
 }
+
+export async function removeNotification(supabase, id) {
+  return await supabase.from('notifications').delete().eq('id', id);
+}
+
+export async function clearNotifications(supabase, userId) {
+  return await supabase.from('notifications').delete().eq('user_id', userId);
+}

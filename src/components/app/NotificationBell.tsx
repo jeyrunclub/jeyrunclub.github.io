@@ -6,12 +6,13 @@
 // that happened since they last looked is in one place, with a count on it.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Bell, BellOff, BellRing, X } from 'lucide-react';
+import { Bell, BellOff, BellRing, X, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { faNum } from '../../lib/plan.js';
 import { faSince, signedFeedUrls } from '../../lib/feed.js';
 import {
   fetchNotifications, unreadCount, markAllRead, watchNotifications,
+  removeNotification, clearNotifications,
 } from '../../lib/notifications.js';
 import {
   pushSupported, currentSubscription, enablePush, disablePush, isIOS, isInstalled,
@@ -118,9 +119,23 @@ export function NotificationBell({ userId }: { userId: string }) {
           <div className="sticky top-0 border-b border-border bg-card px-4 py-2.5">
             <div className="flex items-center gap-2">
               <b className="text-sm">اعلان‌ها</b>
+              {!!notes?.length && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setNotes([]);
+                    setCount(0);
+                    await clearNotifications(supabase, userId);
+                  }}
+                  className="ms-auto inline-flex items-center gap-1 text-[0.68rem] font-bold text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="size-3.5" />
+                  پاک کردن همه
+                </button>
+              )}
               <button
                 type="button" onClick={() => setOpen(false)} aria-label="بستن"
-                className="ms-auto text-muted-foreground hover:text-foreground"
+                className={cn('text-muted-foreground hover:text-foreground', !notes?.length && 'ms-auto')}
               >
                 <X className="size-4" />
               </button>
@@ -183,7 +198,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                         className="nib-sm size-10 shrink-0 border border-border object-cover"
                       />
                     )}
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 pe-4">
                       <p dir="auto" className="line-clamp-2 text-right text-[0.8rem] font-semibold">
                         {lead}
                       </p>
@@ -200,9 +215,27 @@ export function NotificationBell({ userId }: { userId: string }) {
                   'block px-4 py-3 transition-colors',
                   n.read_at ? 'hover:bg-secondary/60' : 'bg-accent/40 hover:bg-accent/60',
                 );
+                const dismiss = (
+                  <button
+                    type="button"
+                    aria-label="حذف این اعلان"
+                    onClick={(e) => {
+                      // Inside a link: do not navigate on the way out.
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setNotes((prev) => (prev || []).filter((x) => x.id !== n.id));
+                      if (!n.read_at) setCount((c) => Math.max(0, c - 1));
+                      removeNotification(supabase, n.id);
+                    }}
+                    className="absolute end-1 top-1 rounded-full p-1 text-muted-foreground/60 hover:bg-secondary hover:text-destructive"
+                  >
+                    <X className="size-3" />
+                  </button>
+                );
+                const row = cn('relative', cls);
                 return n.href
-                  ? <a key={n.id} href={n.href} data-astro-prefetch="tap" className={cls}>{inner}</a>
-                  : <div key={n.id} className={cls}>{inner}</div>;
+                  ? <a key={n.id} href={n.href} data-astro-prefetch="tap" className={row}>{inner}{dismiss}</a>
+                  : <div key={n.id} className={row}>{inner}{dismiss}</div>;
               })}
             </div>
           )}
