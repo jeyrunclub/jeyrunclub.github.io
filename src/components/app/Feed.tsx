@@ -18,6 +18,7 @@ import {
   uploadFeedPhoto, removeFeedPhoto, signedFeedUrls,
 } from '../../lib/feed.js';
 import { swr, drop } from '../../lib/cache.js';
+import { downscaleImage } from '../../lib/images.js';
 import { Avatar } from './Avatar';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -102,10 +103,12 @@ export function Feed({ me, isCoach, page }: {
     return () => { alive = false; };
   }, [posts]);
 
-  function choosePhoto(file: File | undefined) {
-    if (!file) return;
-    if (file.size > MAX_BYTES) { setError('عکس باید کمتر از ۱۰ مگابایت باشد.'); return; }
+  async function choosePhoto(picked: File | undefined) {
+    if (!picked) return;
+    if (picked.size > MAX_BYTES) { setError('عکس باید کمتر از ۱۰ مگابایت باشد.'); return; }
     setError(null);
+    // Resize before it is ever uploaded: what is previewed is what is sent.
+    const file = await downscaleImage(picked);
     setPendingPhoto((prev) => {
       if (prev) URL.revokeObjectURL(prev.url);
       return { file, url: URL.createObjectURL(file) };
@@ -370,6 +373,8 @@ export function Feed({ me, isCoach, page }: {
                           <img
                             src={photoUrls[p.photo_path]}
                             alt=""
+                            loading="lazy"
+                            decoding="async"
                             className="max-h-96 w-full object-cover"
                           />
                         </button>
