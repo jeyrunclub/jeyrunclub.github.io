@@ -167,31 +167,34 @@ export function NotificationBell({ userId }: { userId: string }) {
           ) : (
             <div className="divide-y divide-border">
               {notes.map((n) => {
+                // What was said comes first. The kind of thing it is —
+                // «اطلاعیه‌ی تازه», a name — is context, and a list of ten
+                // rows all led by the same heading tells the reader nothing.
+                const lead = (n.body && n.body.trim()) || n.title;
+                const under = lead === n.title ? '' : n.title;
                 const inner = (
-                  <>
-                    <div className="flex items-start gap-2">
-                      <b className="text-[0.8rem]">{n.title}</b>
-                      <span className="ms-auto shrink-0 text-[0.65rem] text-muted-foreground">
-                        {faSince(n.created_at)}
-                      </span>
+                  <div className="flex items-start gap-2.5">
+                    {n.image_path && thumbs[n.image_path] && (
+                      <img
+                        src={thumbs[n.image_path]}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="nib-sm size-10 shrink-0 border border-border object-cover"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p dir="auto" className="line-clamp-2 text-right text-[0.8rem] font-semibold">
+                        {lead}
+                      </p>
+                      <div className="mt-0.5 flex items-center gap-1.5 text-[0.65rem] text-muted-foreground">
+                        {under && <span className="truncate">{under}</span>}
+                        <span className={cn('shrink-0', under && 'ms-auto')}>
+                          {faSince(n.created_at)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="mt-0.5 flex items-start gap-2">
-                      {n.image_path && thumbs[n.image_path] && (
-                        <img
-                          src={thumbs[n.image_path]}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          className="nib-sm size-10 shrink-0 border border-border object-cover"
-                        />
-                      )}
-                      {n.body && (
-                        <p dir="auto" className="line-clamp-2 flex-1 text-right text-xs text-muted-foreground">
-                          {n.body}
-                        </p>
-                      )}
-                    </div>
-                  </>
+                  </div>
                 );
                 const cls = cn(
                   'block px-4 py-3 transition-colors',
