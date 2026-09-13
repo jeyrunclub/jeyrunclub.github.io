@@ -71,7 +71,9 @@ export function RunnerStats({ studentId, goal, pr, onSave }: {
             {/* Two plain number fields instead of one "46:20" box: a phone's
                 numeric keypad has no colon, and hunting for one in the symbol
                 layer is not something to ask of anyone. */}
-            <div className="flex items-center gap-2">
+            {/* ltr so the minutes sit to the left of the seconds, the way a
+                time is read; the page around them stays rtl. */}
+            <div dir="ltr" className="flex items-center gap-2">
               <TimePart
                 value={mins} onChange={setMins} onEnter={save}
                 label="دقیقه" placeholder="46" max={3}

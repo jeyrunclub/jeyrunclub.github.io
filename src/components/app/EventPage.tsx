@@ -7,7 +7,7 @@
 // every event, and this day is meant to be about each runner against their
 // own past.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Timer, MapPin, CalendarDays, Trophy, Target, Check, Loader2, Plus, Trash2, Pencil, X,
 } from 'lucide-react';
@@ -42,31 +42,64 @@ type Row = {
 
 // Minutes and seconds as two plain numbers — no keyboard has to make a colon,
 // and a half marathon's minutes go past ninety.
+//
+// The digits are this component's own state, not something derived from the
+// formatted value: deriving them meant every keystroke was rewritten into
+// "m:ss" and read back, so clearing a field produced a 0 instead of an empty
+// box and backspace appeared not to work at all.
+//
+// The row is dir="ltr" and each box is labelled. Inside an RTL page the first
+// field lands on the right, which put minutes to the right of seconds and read
+// a time backwards — 48 typed as minutes was stored as forty-eight seconds.
 function TimeFields({ value, onChange, label }: {
   value: string; onChange: (v: string) => void; label: string;
 }) {
-  const total = secs(value);
-  const mm = total === null ? '' : String(Math.floor(total / 60));
-  const ss = total === null ? '' : String(total % 60).padStart(2, '0');
-  const set = (m: string, s: string) => {
-    if (!m && !s) { onChange(''); return; }
-    onChange(`${Number(m || 0)}:${String(Math.min(59, Number(s || 0))).padStart(2, '0')}`);
-  };
+  const [mm, setMm] = useState('');
+  const [ss, setSs] = useState('');
+  const mine = useRef<string | null>(null);
+
+  // Re-seed only when the value changed somewhere else.
+  useEffect(() => {
+    if (value === mine.current) return;
+    const t = secs(value);
+    if (t === null) { setMm(''); setSs(''); return; }
+    setMm(String(Math.floor(t / 60)));
+    setSs(String(t % 60).padStart(2, '0'));
+  }, [value]);
+
+  function emit(m: string, s: string) {
+    setMm(m);
+    setSs(s);
+    const next = (!m && !s)
+      ? ''
+      : `${Number(m || 0)}:${String(Math.min(59, Number(s || 0))).padStart(2, '0')}`;
+    mine.current = next;
+    onChange(next);
+  }
+
   return (
     <div>
       <Label className="mb-1.5 block">{label}</Label>
-      <div className="flex items-center gap-1.5">
-        <Input
-          value={mm} onChange={(e) => set(e.target.value.replace(/\D/g, '').slice(0, 3), ss)}
-          dir="ltr" inputMode="numeric" placeholder="46" aria-label="دقیقه"
-          className="figures w-16 text-center"
-        />
-        <span className="figures text-lg font-bold text-muted-foreground">:</span>
-        <Input
-          value={ss} onChange={(e) => set(mm, e.target.value.replace(/\D/g, '').slice(0, 2))}
-          dir="ltr" inputMode="numeric" placeholder="20" aria-label="ثانیه"
-          className="figures w-16 text-center"
-        />
+      <div dir="ltr" className="flex items-center gap-1.5">
+        <label className="text-center">
+          <span className="mb-1 block text-[0.6rem] text-muted-foreground">دقیقه</span>
+          <Input
+            value={mm}
+            onChange={(e) => emit(e.target.value.replace(/\D/g, '').slice(0, 3), ss)}
+            dir="ltr" inputMode="numeric" placeholder="46" aria-label="دقیقه"
+            className="figures w-16 text-center"
+          />
+        </label>
+        <span className="figures pt-5 text-lg font-bold text-muted-foreground">:</span>
+        <label className="text-center">
+          <span className="mb-1 block text-[0.6rem] text-muted-foreground">ثانیه</span>
+          <Input
+            value={ss}
+            onChange={(e) => emit(mm, e.target.value.replace(/\D/g, '').slice(0, 2))}
+            dir="ltr" inputMode="numeric" placeholder="20" aria-label="ثانیه"
+            className="figures w-16 text-center"
+          />
+        </label>
       </div>
     </div>
   );

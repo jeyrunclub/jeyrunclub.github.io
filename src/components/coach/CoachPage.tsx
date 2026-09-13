@@ -507,8 +507,9 @@ export function CoachPage() {
                 </div>
                 <div className="min-w-36">
                   <Label className="mb-1.5 block">رکورد ۱۰ کیلومتر</Label>
-                  {/* Minutes and seconds separately — a numeric keypad has no colon. */}
-                  <div className="flex items-center gap-1.5">
+                  {/* Minutes and seconds separately — a numeric keypad has no
+                      colon — and ltr so they read in that order. */}
+                  <div dir="ltr" className="flex items-center gap-1.5">
                     <Input
                       value={prMins}
                       onChange={(e) => setPrMins(e.target.value.replace(/[^\d]/g, '').slice(0, 3))}
