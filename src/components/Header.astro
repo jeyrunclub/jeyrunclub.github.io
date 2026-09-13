@@ -46,11 +46,12 @@ const p = lang === 'fa'
     Four items, not six. All six needed 469px and a 320px phone gave them 320,
     so the two on the end — the member login and the join button, the only ones
     that ask the visitor to do something — were scrolled off the edge where
-    nobody would find them. Races and the gallery are a page away in the menu;
-    the calendar is what the club is, and joining is what the page is for.
+    nobody would find them. The gallery earns its place: photographs of a real
+    club running together are what persuade someone to join. The calendar and
+    the races are one tap away in the menu.
   */}
   <nav class="nav-quick" aria-label={t.menuLabel}>
-    <a href={p.calendar} class:list={[isActive(p.calendar) && 'active']}>{t.calendar}</a>
+    <a href={p.gallery} class:list={[isActive(p.gallery) && 'active']}>{t.gallery}</a>
     <a href={p.services} class:list={[isActive(p.services) && 'active']}>{t.services}</a>
     <a href="/app" class:list={[path.startsWith('/app') && 'active']}>{t.app}</a>
     <a href={p.join} class="nav-cta">{t.join}</a>
