@@ -4,7 +4,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = 'https://uddcfcacobobsbswzkev.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable__d1biZ5rju3S7f38RYx4gA_aDz0xN7r';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_NydJZM0fPP4uh7bcWG7PfQ_lHplNTs_';
 
 // Implicit flow: tokens land directly in the URL fragment on the callback.
 // Works across devices / webviews (iPhone Mail → Safari, desktop → phone, etc.)
