@@ -40,6 +40,12 @@ pnpm-debug.log*
 /team/
 
 
-# migration credentials — never committed
+# migration credentials — never committed.
+# Every .env variant, not just the exact name: a .env.bak made by hand while
+# editing slipped past a rule that only listed .env, and a service-role key
+# reached a public repository.
 scripts/migrate/.env
+scripts/migrate/.env.*
+!scripts/migrate/.env.example
 scripts/migrate/out/
+*.env.bak
