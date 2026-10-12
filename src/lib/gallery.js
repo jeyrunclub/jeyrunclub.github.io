@@ -74,3 +74,28 @@ export const CARD_WIDTH = 900;
 export const CARD_QUALITY = 68;
 
 export const GRID_SIZES = '(max-width: 640px) 92vw, (max-width: 1100px) 45vw, 290px';
+
+/**
+ * One photograph by its file name, for pages that want a specific frame rather
+ * than the whole set — a service card, a section band. Returns the gallery
+ * entry (image metadata, id, title, story), so the caller can also link it
+ * back to its own photo page.
+ *
+ * Loud at build time on a typo, for the same reason the gallery itself is:
+ * a silent undefined here is an <Image> that throws halfway down a page.
+ */
+export function byFile(file) {
+  const p = photos.find((x) => x.file === file);
+  if (!p) throw new Error(`[gallery] byFile: no photo named "${file}"`);
+  return p;
+}
+
+// Service and section cards show a photo about half a card wide — 520 CSS px at
+// the widest, less on a phone where the card is one column.
+export const CARD_WIDTHS = [520, 1040];
+export const CARD_SIZES = '(max-width: 900px) 92vw, 420px';
+
+// A full-bleed band is as wide as the viewport but only ~320px tall, so it is
+// cropped hard; it never needs the full source width.
+export const BAND_WIDTHS = [900, 1500, 2000];
+export const BAND_QUALITY = 66;

@@ -1,24 +1,31 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Icon from '../../components/Icon.astro';
+import PhotoBand from '../../components/PhotoBand.astro';
+import { Image } from 'astro:assets';
+import { byFile, CARD_WIDTHS, CARD_SIZES, CARD_QUALITY } from '../../lib/gallery.js';
 
+// Same frames as the Persian page — see src/pages/services.astro for why the
+// photographs are here rather than shut inside the gallery.
 const services = [
-  { id: 'private', icon: 'stopwatch', title: 'Private coaching',
+  { id: 'private', photo: 'new-img_7072.jpg', icon: 'stopwatch', title: 'Private coaching',
     desc: 'One-to-one sessions with Salar. Best for runners who want the fastest progress or are targeting a specific race.',
     bullets: ['Custom weekly plan', 'Real-time technique feedback', 'Watch & Strava data analysis'] },
-  { id: 'group', icon: 'group', title: 'Group class',
+  { id: 'group', photo: 'team-group.jpg', icon: 'group', title: 'Group class',
     desc: 'Every day at 6 AM across different points of Tehran and the surrounding mountains. Train in a group, stay motivated, lower cost.',
     bullets: ['Keshvari, Enghelab, Lavasan, Darakeh, Qouchak, Velayat, Yas Fatemi', 'All levels welcome', 'Grouped by pace'] },
-  { id: 'online', icon: 'screen', title: 'Online program',
+  { id: 'online', photo: '3.jpg', icon: 'screen', title: 'Online program',
     desc: 'Outside Tehran or outside Iran? Get a personalized weekly training plan delivered remotely.',
     bullets: ['Weekly updates', 'WhatsApp support', 'Built around your target race'] },
-  { id: 'mountain', icon: 'peak', title: 'Mountain & Damavand camps',
+  { id: 'mountain', photo: 'new-img_6975.jpg', icon: 'peak', title: 'Mountain & Damavand camps',
     desc: 'Trail and summit programs — from Lavasan and Qouchak trails to a full Damavand ascent.',
     bullets: ['Altitude camps', 'High-altitude training', 'Different routes year-round'] },
-  { id: 'race-prep', icon: 'flag', title: 'Race preparation',
+  { id: 'race-prep', photo: 'new-img_8128.jpg', icon: 'flag', title: 'Race preparation',
     desc: 'Focused programs for your target race — from a first 5K to a first marathon or a new PB.',
     bullets: ['5K, 10K, half & marathon', '8–16 week programs', 'Race-day strategy'] },
-];
+].map((x) => ({ ...x, frame: byFile(x.photo) }));
+
+const band = byFile('moment-a.jpg');
 ---
 <Base
   lang="en"
@@ -41,8 +48,18 @@ const services = [
       <div class="service-detail-grid">
         {services.map((s) => (
           <article id={s.id} class="service-detail">
-            <div class="sd-icon"><Icon name={s.icon} size={30} /></div>
+            <a href={`/en/photo/${s.frame.id}`} class="sd-photo" aria-label={s.frame.title_en || s.frame.title}>
+              <Image
+                src={s.frame.image}
+                alt={s.frame.title_en || s.frame.title}
+                widths={CARD_WIDTHS}
+                sizes={CARD_SIZES}
+                quality={CARD_QUALITY}
+                loading="lazy"
+              />
+            </a>
             <div class="sd-body">
+              <div class="sd-icon"><Icon name={s.icon} size={26} /></div>
               <h2>{s.title}</h2>
               <p>{s.desc}</p>
               <ul>{s.bullets.map((b) => <li>{b}</li>)}</ul>
@@ -50,6 +67,26 @@ const services = [
             </div>
           </article>
         ))}
+      </div>
+    </div>
+  </section>
+
+  <PhotoBand
+    photo={band}
+    quote="Every runner gets a plan of their own."
+    by="Salar Piri"
+    role="Coach and founder of Jeyrun"
+  />
+
+  <section class="section join">
+    <div class="container join-inner">
+      <div>
+        <p class="section-eyebrow">Start</p>
+        <h2>Which one is yours?</h2>
+        <p>If you are not sure, tell us your goal and where you train — Salar will suggest the right route.</p>
+      </div>
+      <div class="join-actions">
+        <a class="btn btn-whatsapp" href="https://wa.me/989128889975" target="_blank" rel="noopener">Message on WhatsApp</a>
       </div>
     </div>
   </section>

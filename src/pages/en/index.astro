@@ -2,8 +2,9 @@
 import Base from '../../layouts/Base.astro';
 import Icon from '../../components/Icon.astro';
 import RunnersBand from '../../components/RunnersBand.astro';
+import PhotoBand from '../../components/PhotoBand.astro';
 import { Image } from 'astro:assets';
-import { photos as galleryPhotos, featured as groupShots, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../../lib/gallery.js';
+import { byFile, photos as galleryPhotos, featured as groupShots, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../../lib/gallery.js';
 import heroPhoto from '../../assets/gallery/group-b.jpg';
 import gallery from '../../data/gallery.json';
 import targetRaces from '../../data/target-races.json';
@@ -25,6 +26,9 @@ const why = [
 ];
 
 const results = memberResults.results;
+
+// Last light, the largest team frame there is.
+const quoteBand = byFile('new-img_7752.jpg');
 
 const partnerRoutes = [
   { icon: 'handshake', title: 'Athlete sponsorship', desc: 'Long-term partnerships with sports, nutrition, apparel and gear brands.', href: '/en/partners#sponsorship' },
@@ -224,6 +228,16 @@ const partnerRoutes = [
       <p style="margin-top: 28px;"><a href="/en/races" class="learn-more">All races and camps →</a></p>
     </div>
   </section>
+
+  {/* The Persian homepage carries this quote; the English one had no member
+      voice at all. Translated, and said over the club at full strength. */}
+  <PhotoBand
+    photo={quoteBand}
+    quote="Jeyrun means family. I run, I set personal bests, and I have a great time doing it."
+    by="Afsaneh Valizadeh"
+    role="Jeyrun team member"
+    size="tall"
+  />
 
   <!-- MEDIA -->
   <section id="media" class="section media">

@@ -655,12 +655,20 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 /* ---------- Join ---------- */
 .join { background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%); }
+/* A 1.4fr/1fr split put one WhatsApp button alone in a column a third of the
+   page wide, which on a 1400px screen is a button adrift in an empty field.
+   The block is centred and capped instead: the invitation and the button read
+   as one thing. */
 .join-inner {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 40px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 28px;
+  text-align: center;
+  max-width: 48rem;
+  margin-inline: auto;
 }
+.join-inner p { margin-inline: auto; }
 .join-inner p { color: var(--text-dim); max-width: 52ch; }
 .join-actions { text-align: center; }
 .join-note { color: var(--muted); font-size: 0.85rem; margin-top: 12px; }
@@ -830,24 +838,68 @@ ul { margin: 0; padding: 0; list-style: none; }
   flex-direction: column;
   gap: 24px;
 }
+/* Photograph on one side, the offer on the other. The icon moved inside the
+   body: with a photograph carrying the card there is no reason for a 3.4rem
+   tinted square to be the first thing in it, and the old `auto 1fr` left two
+   thirds of a 1400px card empty. */
 .service-detail {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 24px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 30px 28px;
-  align-items: flex-start;
+  overflow: hidden;
+  align-items: stretch;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
-.sd-icon { font-size: 2.8rem; line-height: 1; }
-.sd-body h2 { margin: 0 0 12px; font-size: 1.4rem; }
+.service-detail:hover { border-color: var(--crimson); box-shadow: var(--shadow); transform: translateY(-2px); }
+.sd-photo {
+  display: block;
+  position: relative;
+  min-height: 15rem;
+  background: var(--sand-3);
+  overflow: hidden;
+}
+.sd-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.service-detail:hover .sd-photo img { transform: scale(1.04); }
+.sd-body { padding: 32px 30px; align-self: center; }
+
+/* Alternate the photograph side down the column, so five cards read as a
+   rhythm rather than five copies of one card. */
+.service-detail-grid > :nth-child(even) .sd-photo { order: 2; }
+
+.sd-body h2 { margin: 0 0 12px; font-size: 1.5rem; }
 .sd-body p  { color: var(--text-dim); margin: 0 0 16px; }
-.sd-body ul { margin: 0 0 20px; padding-right: 1.4em; color: var(--text-dim); }
-.sd-body li { margin-bottom: 6px; }
+/* The global reset strips markers, which left these reading as three loose
+   lines of prose rather than a list. A small crimson rule in the gutter the
+   list already reserves — logical side, so it works in both directions. */
+.sd-body ul { margin: 0 0 22px; padding-inline-start: 1.1em; color: var(--text-dim); }
+.sd-body li { margin-bottom: 7px; position: relative; }
+.sd-body li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: -1.1em;
+  top: 0.72em;
+  width: 0.6em;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--crimson);
+  opacity: 0.75;
+}
 
 @media (max-width: 640px) {
-  .service-detail { grid-template-columns: 1fr; gap: 16px; }
+  .service-detail { grid-template-columns: 1fr; }
+  .service-detail-grid > :nth-child(even) .sd-photo { order: 0; }
+  .sd-photo { min-height: 12rem; }
+  .sd-body { padding: 24px 22px; }
   .sd-icon { font-size: 2rem; }
 }
 
@@ -1247,8 +1299,9 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3.4rem;
-  height: 3.4rem;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 14px;
   font-size: 1.6rem;
   border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) var(--nib);
   background: var(--crimson-tint);
@@ -1816,3 +1869,114 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
   color: var(--crimson);
 }
 .result-note { margin: 4px 0 0; color: var(--muted); font-size: 0.82rem; }
+
+/* ===================================================================
+   Photo band — a full-bleed photograph breaking the column of sections
+   =================================================================== */
+
+.photo-band {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(18rem, 34vw, 26rem);
+  overflow: hidden;
+  border-block: 1.5px solid var(--border);
+  background: var(--sand-3);
+}
+.photo-band.is-tall { min-height: clamp(24rem, 46vw, 36rem); }
+.photo-band-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+}
+/* Two gradients, not one. The bottom one gives the words a ground; the second
+   runs in from the side the text is set on, because a quote three lines deep
+   climbs out of the bottom third and lands on people's faces. Logical
+   direction, so it comes from the right in Persian and the left in English. */
+.photo-band-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to top,
+      rgba(23, 19, 15, 0.88) 0%,
+      rgba(23, 19, 15, 0.58) 30%,
+      rgba(23, 19, 15, 0.14) 62%,
+      rgba(23, 19, 15, 0.04) 100%
+    ),
+    linear-gradient(
+      to var(--band-side, left),
+      rgba(23, 19, 15, 0.62) 0%,
+      rgba(23, 19, 15, 0.34) 38%,
+      transparent 72%
+    );
+}
+[dir='ltr'] .photo-band-scrim { --band-side: right; }
+.photo-band-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding-block: 40px;
+}
+.photo-band figure { margin: 0; max-width: 34ch; }
+.photo-band blockquote { margin: 0; border: 0; padding: 0; background: none; }
+.photo-band blockquote p {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+  line-height: 1.5;
+  color: #fff;
+  text-shadow: 0 2px 20px rgba(23, 19, 15, 0.5);
+}
+body.lang-en .photo-band blockquote p { line-height: 1.25; }
+.photo-band blockquote p::before { content: '« '; color: var(--crimson); }
+.photo-band blockquote p::after { content: ' »'; color: var(--crimson); }
+.photo-band figcaption { margin-top: 14px; display: flex; flex-direction: column; gap: 2px; }
+.photo-band figcaption strong { color: #fff; font-size: 1rem; }
+.photo-band figcaption span { color: rgba(255, 255, 255, 0.72); font-size: 0.87rem; }
+
+/* ---------- Trip cards: a camp or a home race, with the place it happens --- */
+.trip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 22px;
+  margin-top: 28px;
+}
+.trip-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) var(--radius) var(--nib);
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.trip-card:hover { border-color: var(--crimson); box-shadow: var(--shadow); transform: translateY(-2px); }
+.trip-photo { display: block; height: 13rem; background: var(--sand-3); overflow: hidden; }
+.trip-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.trip-card:hover .trip-photo img { transform: scale(1.04); }
+.trip-body { padding: 24px 24px 26px; }
+.trip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-bottom: 12px;
+  border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) var(--nib);
+  background: var(--turquoise-tint);
+  color: var(--turquoise-deep);
+}
+.trip-grid > :nth-child(2) .trip-icon { background: var(--saffron-tint); color: #b57c00; }
+.trip-body h3 { margin: 0 0 6px; font-size: 1.3rem; }
+.trip-where { margin: 0 0 10px; color: var(--muted); font-size: 0.88rem; }
+.trip-body p { margin: 0; color: var(--text-dim); }

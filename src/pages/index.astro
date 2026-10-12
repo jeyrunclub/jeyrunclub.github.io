@@ -2,8 +2,9 @@
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import RunnersBand from '../components/RunnersBand.astro';
+import PhotoBand from '../components/PhotoBand.astro';
 import { Image } from 'astro:assets';
-import { photos as galleryPhotos, featured as groupShots, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
+import { byFile, photos as galleryPhotos, featured as groupShots, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
 import heroPhoto from '../assets/gallery/group-b.jpg';
 import gallery from '../data/gallery.json';
 import targetRaces from '../data/target-races.json';
@@ -33,6 +34,9 @@ const why = [
 ];
 
 const results = memberResults.results;
+
+// Last light, the largest team frame there is — the photograph the quote needs.
+const quoteBand = byFile('new-img_7752.jpg');
 const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
 
 const partnerRoutes = [
@@ -234,20 +238,17 @@ const partnerRoutes = [
     </div>
   </section>
 
-  <!-- TESTIMONIAL -->
-  <section id="team" class="section testimonials">
-    <div class="container">
-      <p class="section-eyebrow">اعضای تیم</p>
-      <h2>حرف اعضای جیران</h2>
-      <div class="testimonial-grid">
-        <figure class="testimonial-card">
-          <img src="/images/team/afsaneh.jpg" alt="افسانه ولیزاده" class="testimonial-avatar" />
-          <blockquote><p>جیران یعنی خانواده. هم می‌دوام، هم رکورد می‌زنم، هم کلی بهم خوش می‌گذره 😆🤝😍</p></blockquote>
-          <figcaption><strong>افسانه ولیزاده</strong><span>عضو تیم جیران</span></figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
+  {/* One member quote used to sit as a lone card in a three-column grid, in a
+      section of its own — a single tile adrift in a band of empty paper. Said
+      across a photograph of the team it is at full strength, it carries the
+      section on its own and breaks the column of card grids at the same time. */}
+  <PhotoBand
+    photo={quoteBand}
+    quote="جیران یعنی خانواده. هم می‌دوام، هم رکورد می‌زنم، هم کلی بهم خوش می‌گذره 😆🤝😍"
+    by="افسانه ولیزاده"
+    role="عضو تیم جیران"
+    size="tall"
+  />
 
   <!-- MEDIA -->
   <section id="media" class="section media">

@@ -1,0 +1,57 @@
+---
+// A full-bleed photograph with words over it.
+//
+// The page is otherwise built from one move repeated: amber eyebrow, display
+// heading, a row of white cards inside the container. Eleven of those in a
+// column read as a list rather than a composition, and the club's own
+// photographs — the one thing no competitor can copy — were shut inside the
+// gallery. This band breaks the column and puts them back on the page.
+//
+// The scrim is a gradient from the bottom rather than a flat wash: the faces
+// in these frames are in the upper half, and a flat overlay greys them out to
+// make room for text that only occupies the lower third.
+
+import { Image } from 'astro:assets';
+import { BAND_WIDTHS, BAND_QUALITY } from '../lib/gallery.js';
+
+export interface Props {
+  /** A gallery entry from byFile(). */
+  photo: any;
+  /** Overlaid quote or line. Omit for a plain photographic break. */
+  quote?: string;
+  /** Who said it. */
+  by?: string;
+  role?: string;
+  /** Band height preset. */
+  size?: 'band' | 'tall';
+  /** Alt text; falls back to the photo's own title. */
+  alt?: string;
+}
+
+const { photo, quote, by, role, size = 'band', alt } = Astro.props;
+---
+<section class:list={['photo-band', `is-${size}`]}>
+  <Image
+    src={photo.image}
+    alt={alt ?? photo.title ?? ''}
+    class="photo-band-img"
+    widths={BAND_WIDTHS}
+    sizes="100vw"
+    quality={BAND_QUALITY}
+    loading="lazy"
+  />
+  <div class="photo-band-scrim" aria-hidden="true"></div>
+  {quote && (
+    <div class="container photo-band-inner">
+      <figure>
+        <blockquote><p>{quote}</p></blockquote>
+        {by && (
+          <figcaption>
+            <strong>{by}</strong>
+            {role && <span>{role}</span>}
+          </figcaption>
+        )}
+      </figure>
+    </div>
+  )}
+</section>

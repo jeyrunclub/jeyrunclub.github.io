@@ -1,6 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
+import PhotoBand from '../components/PhotoBand.astro';
+import { Image } from 'astro:assets';
+import { byFile, CARD_WIDTHS, CARD_SIZES, CARD_QUALITY } from '../lib/gallery.js';
 import targetRaces from '../data/target-races.json';
 
 // The marathons the team is training for and travels to as a group.
@@ -8,9 +11,16 @@ const targets = targetRaces.races;
 
 // Other things on the calendar — camps and home races.
 const upcoming = [
-  { name: 'ماهان کرمان', date: '', city: 'کرمان، ایران', note: 'مسابقه‌ی کویری — تجربه‌ی متفاوت دویدن در دل کویر.' },
-  { name: 'صعود دماوند', date: '', city: 'مازندران، ایران', note: 'اردوی سالانه‌ی صعود بلندترین قله‌ی خاورمیانه.' },
-];
+  { name: 'صعود دماوند', date: '', city: 'مازندران، ایران',
+    photo: 'new-img_6742.jpg',
+    note: 'اردوی سالانه‌ی صعود بلندترین قله‌ی خاورمیانه.' },
+  { name: 'ماهان کرمان', date: '', city: 'کرمان، ایران',
+    photo: 'new-img_9128.jpg',
+    note: 'مسابقه‌ی کویری — تجربه‌ی متفاوت دویدن در دل کویر.' },
+].map((r) => ({ ...r, frame: byFile(r.photo) }));
+
+// The team under Damavand, the whole reason the travel races exist.
+const heroBand = byFile('group-b.jpg');
 ---
 <Base
   title="مسابقات جیران — ماراتن استانبول، والنسیا، دبی"
@@ -53,19 +63,38 @@ const upcoming = [
     </div>
   </section>
 
+  <PhotoBand
+    photo={heroBand}
+    quote="هر سال، گروهی به خط استارت می‌رسیم."
+    size="band"
+  />
+
   <section class="section">
     <div class="container">
       <h2>دیگر برنامه‌های تیم</h2>
-      <div class="race-list">
+      {/* Two entries in the narrow .race-list left most of the row empty, so
+          these use the photo card the services page uses: at two across they
+          fill the width, and each one shows the place it is talking about. */}
+      <div class="trip-grid">
         {upcoming.map((r) => (
-          <div class="race-card">
-            <div class="race-medal finish"><Icon name="route" size={22} /></div>
-            <div class="race-info">
+          <article class="trip-card">
+            <a href={`/photo/${r.frame.id}`} class="trip-photo" aria-label={r.frame.title}>
+              <Image
+                src={r.frame.image}
+                alt={r.frame.title}
+                widths={CARD_WIDTHS}
+                sizes={CARD_SIZES}
+                quality={CARD_QUALITY}
+                loading="lazy"
+              />
+            </a>
+            <div class="trip-body">
+              <div class="trip-icon"><Icon name="route" size={22} /></div>
               <h3>{r.name}</h3>
-              <p>{[r.date, r.city].filter(Boolean).join(' · ') || 'تاریخ اعلام خواهد شد'}</p>
+              <p class="trip-where">{[r.date, r.city].filter(Boolean).join(' · ') || 'تاریخ اعلام خواهد شد'}</p>
               <p>{r.note}</p>
             </div>
-          </div>
+          </article>
         ))}
       </div>
 
