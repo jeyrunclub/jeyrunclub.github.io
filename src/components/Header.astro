@@ -12,8 +12,8 @@ const alt = altLangUrl(lang, path);
 
 // Build paths per lang
 const p = lang === 'fa'
-  ? { home: '/', coach: '/coach', services: '/services', races: '/races', calendar: '/calendar', gallery: '/gallery', blog: '/blog', join: '/#join' }
-  : { home: '/en', coach: '/en/coach', services: '/en/services', races: '/en/races', calendar: '/en/calendar', gallery: '/en/gallery', blog: '/blog', join: '/en#join' };
+  ? { home: '/', coach: '/coach', services: '/services', races: '/races', calendar: '/calendar', partners: '/partners', gallery: '/gallery', blog: '/blog', join: '/#join' }
+  : { home: '/en', coach: '/en/coach', services: '/en/services', races: '/en/races', calendar: '/en/calendar', partners: '/en/partners', gallery: '/en/gallery', blog: '/blog', join: '/en#join' };
 ---
 <header class="site-header">
   <div class="container header-inner">
@@ -27,6 +27,7 @@ const p = lang === 'fa'
       <a href={p.services} class:list={[isActive(p.services) && 'active']}>{t.services}</a>
       <a href={p.races} class:list={[isActive(p.races) && 'active']}>{t.races}</a>
       <a href={p.calendar} class:list={[isActive(p.calendar) && 'active']}>{t.calendar}</a>
+      <a href={p.partners} class:list={[isActive(p.partners) && 'active']}>{t.partners}</a>
       <a href={p.gallery} class:list={[isActive(p.gallery) && 'active']}>{t.gallery}</a>
       {lang === 'fa' && <a href={p.blog} class:list={[path.startsWith('/blog') && 'active']}>{t.blog}</a>}
       <a href="/app" class:list={[path.startsWith('/app') && 'active']}>{t.app}</a>

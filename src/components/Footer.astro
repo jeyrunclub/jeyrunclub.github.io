@@ -7,6 +7,7 @@ export interface Props {
 const { lang = 'fa' } = Astro.props;
 const t = footer[lang];
 const homeHref = lang === 'fa' ? '/' : '/en';
+const partnersHref = lang === 'fa' ? '/partners' : '/en/partners';
 ---
 <footer class="site-footer">
   <div class="container footer-inner">
@@ -17,6 +18,7 @@ const homeHref = lang === 'fa' ? '/' : '/en';
     <ul class="social">
       <li><a href={homeHref}>{t.home}</a></li>
       <li><a href="/blog">{t.blog}</a></li>
+      <li><a href={partnersHref}>{t.partners}</a></li>
       <li><a href="https://www.instagram.com/salar.piri" target="_blank" rel="noopener">{t.igSalar}</a></li>
       <li><a href="https://www.instagram.com/jeyrun_club" target="_blank" rel="noopener">{t.igClub}</a></li>
       <li><a href="https://www.strava.com/athletes/33620923" target="_blank" rel="noopener">{t.strava}</a></li>

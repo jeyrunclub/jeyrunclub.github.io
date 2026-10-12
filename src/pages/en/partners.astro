@@ -1,0 +1,182 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { Image } from 'astro:assets';
+import { photos as galleryPhotos, featured as groupShots, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../../lib/gallery.js';
+import pacing from '../../data/pacing.json';
+
+const wa = (text) => `https://wa.me/989128889975?text=${encodeURIComponent(text)}`;
+const waSponsor = wa("Hi Salar, I'd like to talk about a sponsorship partnership.");
+const waPacing = wa("Hi Salar, I'd like to book you as a pacer. My race and target time:");
+const waEvent = wa("Hi Salar, I'd like to talk about producing an event for our brand.");
+
+const sponsorPackage = [
+  'Brand logo on race kit',
+  'Product introduced to the Jeyrun running community',
+  'Instagram content — stories and posts',
+  'Brand presence at domestic and international races',
+  'Field testing and product reviews under real race conditions',
+  'Performance and race reporting after every cycle',
+];
+
+const pacingValue = [
+  { icon: 'pace', title: 'A steady pace', desc: 'On the target number kilometre by kilometre — no fast start and no late collapse.' },
+  { icon: 'stopwatch', title: 'Time control', desc: 'Splits, aid stations and climbs worked out before the gun goes.' },
+  { icon: 'group', title: 'Rhythm management', desc: 'I run beside you and set the rhythm of the race for you.' },
+  { icon: 'flag', title: 'Race experience', desc: 'Dozens of road and ultra races, put to work managing race-day pressure.' },
+];
+
+const eventFlow = ['Idea', 'Design', 'Production', 'Content', 'Final report'];
+
+const eventBullets = [
+  'Custom event designed around your brand — city, trail or mountain',
+  'Full production: route, permits, registration, bibs, medals, prizes',
+  'Brand presence at every visible touch-point, plus media coverage (photo, video, Instagram)',
+  'Post-event report: participant numbers, media reach, content assets',
+];
+---
+<Base
+  lang="en"
+  title="Partner with Salar and Jeyrun — Sponsorship, Pacing & Brand Events"
+  description="Brand partnerships with Salar Piri and Jeyrun Running Club: athlete sponsorship, race pacing to your target time, and running, trail and mountain events designed and produced for your brand."
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-eyebrow">Sponsorship &amp; Partnerships</p>
+      <h1>Partner with Salar and Jeyrun</h1>
+      <p class="lead">
+        Three routes: sponsoring an endurance runner and coach, pacing you to your target time,
+        and designing and producing a real event for your brand — with a real running community.
+      </p>
+      <nav class="partner-jump" aria-label="Partnership routes">
+        <a href="#sponsorship"><Icon name="handshake" size={20} /><span>Athlete sponsorship</span></a>
+        <a href="#pacing"><Icon name="pace" size={20} /><span>Race pacing</span></a>
+        <a href="#events"><Icon name="route" size={20} /><span>Brand events</span></a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- 1 — ATHLETE SPONSORSHIP -->
+  <section id="sponsorship" class="section partner-block">
+    <div class="container">
+      <p class="section-eyebrow">1 — Sponsorship</p>
+      <h2>Partner with an endurance runner and coach</h2>
+      <div class="partner-grid">
+        <div class="partner-text">
+          <p>
+            Salar Piri is an endurance and ultra coach and runner, with a racing history across road,
+            trail and ultra distances. Marathon PR <strong>2:34:53</strong>, ranked <strong>#9 in Iran
+            by ITRA</strong>, and a podium record in the <strong>UTMB World Series</strong>.
+          </p>
+          <p>
+            Open to long-term partnerships with sports, nutrition, apparel, gear and active-lifestyle
+            brands. A partnership here is more than a logo on a vest — content, race presence, product
+            testing and reporting are all part of it.
+          </p>
+          <div class="partner-pack">
+            <p class="pack-title">Athlete Sponsorship</p>
+            <ul class="sponsor-list">
+              {sponsorPackage.map((b) => <li>{b}</li>)}
+            </ul>
+          </div>
+          <a class="btn btn-whatsapp" href={waSponsor} target="_blank" rel="noopener">Talk about sponsorship</a>
+        </div>
+        <aside class="about-highlights">
+          <div class="highlight"><span class="hl-num">2:34:53</span><span class="hl-label">Marathon PR</span></div>
+          <div class="highlight"><span class="hl-num">#9</span><span class="hl-label">ITRA Iran ranking</span></div>
+          <div class="highlight"><span class="hl-num">UTMB 739</span><span class="hl-label">Best score · 2 podiums</span></div>
+          <div class="highlight"><span class="hl-num">33,459 km</span><span class="hl-label">Lifetime distance</span></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 — RACE PACING -->
+  <section id="pacing" class="section partner-block">
+    <div class="container">
+      <p class="section-eyebrow">2 — Pacing</p>
+      <h2>Race Pacing by Salar Piri</h2>
+      <p class="section-sub">
+        Start the race with a plan, and finish on your number. Pacing for 5K, 10K, half marathon
+        and marathon.
+      </p>
+
+      <div class="service-grid">
+        {pacingValue.map((v) => (
+          <div class="service-card as-static">
+            <span class="service-emoji"><Icon name={v.icon} size={28} /></span>
+            <h3>{v.title}</h3>
+            <p>{v.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <h3 class="pace-heading">What's your target?</h3>
+      <div class="pace-grid">
+        {pacing.groups.map((g) => (
+          <div class="pace-group">
+            <p class="pace-dist">{g.distance_en}</p>
+            <ul>
+              {g.targets_en.map((t) => (
+                <li><a href={wa(`Hi Salar, I'd like to talk about pacing a ${g.distance_en} at ${t}.`)} target="_blank" rel="noopener" dir="ltr">{t}</a></li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <p class="pace-note">
+        Pacing is available at any race whose organiser officially permits pacers.
+      </p>
+      <a class="btn btn-whatsapp" href={waPacing} target="_blank" rel="noopener">Book a pacer</a>
+    </div>
+  </section>
+
+  <!-- 3 — BRAND EVENTS -->
+  <section id="events" class="section partner-block">
+    <div class="container">
+      <p class="section-eyebrow">3 — Brand events</p>
+      <h2>Bring your brand into running</h2>
+      <p class="section-sub">
+        A real event, with a real running community. From a private morning session to a city race,
+        a trail event or a mountain programme.
+      </p>
+
+      <ol class="event-flow">
+        {eventFlow.map((step, i) => (
+          <li><span class="flow-num">{i + 1}</span>{step}</li>
+        ))}
+      </ol>
+
+      <div class="partner-grid">
+        <div class="partner-text">
+          <p>
+            Your brand lands in front of one of Tehran's most engaged running and mountain
+            communities: an audience that shows up at 6 AM and lives online.
+          </p>
+          <ul class="sponsor-list">
+            {eventBullets.map((b) => <li>{b}</li>)}
+          </ul>
+          <a class="btn btn-whatsapp" href={waEvent} target="_blank" rel="noopener">Design a brand event</a>
+          <p class="join-note">Tell us about your brand and event idea on WhatsApp — Salar replies personally.</p>
+        </div>
+        <div class="partner-proof">
+          <div class="gallery-grid partner-gallery">
+            {groupShots.slice(0, 4).map((p) => (
+              <a href={`/en/photo/${p.id}`} class="gal-item is-square">
+                <Image
+                  src={p.image}
+                  alt={p.title_en || p.title || `Photo ${p.id}`}
+                  widths={THUMB_WIDTHS}
+                  sizes={GRID_SIZES}
+                  quality={THUMB_QUALITY}
+                  loading="lazy"
+                />
+              </a>
+            ))}
+          </div>
+          <p class="ig-follow"><a href="/en/gallery">{galleryPhotos.length} photos from training, racing and the mountains →</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

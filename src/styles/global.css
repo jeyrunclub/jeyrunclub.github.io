@@ -679,7 +679,20 @@ ul { margin: 0; padding: 0; list-style: none; }
   color: var(--text-dim);
   line-height: 1.9;
 }
-.sponsor-list li { margin-bottom: 4px; }
+.sponsor-list li { margin-bottom: 4px; position: relative; }
+
+/* The global reset strips markers, which is right for navigation lists but
+   wrong here: these are the deliverables of an offer, and a brand reads them
+   as a checklist. A tick in the brand crimson, set in the gutter the list
+   already reserves. */
+.sponsor-list { list-style: none; }
+.sponsor-list li::before {
+  content: '✓';
+  position: absolute;
+  inset-inline-start: -20px;
+  color: var(--crimson);
+  font-weight: 700;
+}
 
 /* ---------- Blog listing ---------- */
 .blog-hero {
@@ -958,7 +971,9 @@ blockquote.values {
   .site-nav a { padding: 8px 4px; }
   .about-highlights { grid-template-columns: 1fr 1fr; }
   h1 { font-size: 2.1rem; }
-  .hero-facts { gap: 20px; }
+  .hero-facts { gap: 14px 20px; }
+  .hero-facts li { font-size: 0.85rem; }
+  .hero-facts strong { font-size: 1.2rem; }
 }
 
 /* ---------- Target races (the races the team travels to together) ---------- */
@@ -1553,3 +1568,251 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
     color: #fff;
   }
 }
+
+/* ===================================================================
+   Partnerships — همکاری با سالار و جیران
+   Three routes on one page: sponsoring the athlete, pacing a race,
+   building a brand event. Each block keeps the poster furniture that
+   the rest of the site uses; what is new here is the jump nav, the
+   pace board and the five-step event flow.
+   =================================================================== */
+
+.partner-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 28px;
+}
+.partner-jump a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: var(--line) solid var(--border-strong);
+  border-radius: 999px 999px 999px var(--nib);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.partner-jump a:hover {
+  border-color: var(--crimson);
+  color: var(--crimson);
+  background: var(--crimson-tint);
+}
+
+.partner-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 0.9fr;
+  gap: 48px;
+  align-items: start;
+  margin-top: 32px;
+}
+.partner-text p { color: var(--text-dim); font-size: 1.05rem; max-width: 58ch; }
+.partner-text strong { color: var(--text); }
+.partner-text .btn { margin-top: 20px; }
+
+/* The package itself reads as a card, so it is clearly an offer and not
+   another paragraph of prose. */
+.partner-pack {
+  margin-top: 24px;
+  padding: 22px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) var(--radius) var(--nib);
+  box-shadow: var(--shadow);
+}
+.pack-title {
+  margin: 0 0 12px;
+  font-family: var(--font-figure);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: var(--crimson);
+  text-transform: uppercase;
+}
+.partner-pack .sponsor-list { margin: 0; }
+
+/* A card in a grid that is otherwise links; it must not pretend to be one. */
+.service-card.as-static { cursor: default; }
+.service-card.as-static:hover { transform: none; border-color: var(--border); }
+
+.pace-heading { margin: 48px 0 18px; font-size: 1.5rem; }
+.pace-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+.pace-group {
+  padding: 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) var(--radius) var(--nib);
+}
+.pace-dist {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.2rem;
+  color: var(--text);
+}
+.pace-group ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.pace-group a {
+  display: inline-block;
+  padding: 7px 14px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 999px 999px 999px var(--nib);
+  font-family: var(--font-figure);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.pace-group a:hover { background: var(--crimson); border-color: var(--crimson); color: #fff; }
+.pace-group:nth-child(2) .pace-dist { color: var(--turquoise); }
+.pace-group:nth-child(3) .pace-dist { color: var(--lapis); }
+.pace-note { color: var(--muted); font-size: 0.9rem; margin-top: 18px; max-width: 60ch; }
+
+/* Idea → design → delivery → content → report. A numbered strip, so a brand
+   can see the whole job at a glance rather than reading for it. */
+.event-flow {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.event-flow li {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) var(--nib);
+  font-weight: 600;
+}
+.flow-num {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--crimson-tint);
+  color: var(--crimson);
+  font-family: var(--font-figure);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.event-flow li:nth-child(2) .flow-num { background: var(--turquoise-tint); color: var(--turquoise-deep); }
+.event-flow li:nth-child(3) .flow-num { background: var(--saffron-tint); color: #b57c00; }
+.event-flow li:nth-child(4) .flow-num { background: var(--lapis-tint); color: var(--lapis); }
+
+.partner-gallery {
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 140px;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.partner-proof .ig-follow { text-align: start; }
+.partner-proof .ig-follow a { font-size: 0.9rem; }
+
+@media (max-width: 900px) {
+  .partner-grid { grid-template-columns: 1fr; gap: 32px; }
+}
+
+/* ===================================================================
+   Why Jeyrun — the five things a member actually gets
+   =================================================================== */
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 18px;
+  margin-top: 28px;
+}
+.why-card {
+  display: block;
+  padding: 24px 22px;
+  color: inherit;
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) var(--radius) var(--nib);
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.why-card:hover { border-color: var(--crimson); transform: translateY(-2px); box-shadow: var(--shadow); color: inherit; }
+.why-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 14px;
+  border-radius: 50% 50% 50% var(--nib);
+  background: var(--crimson-tint);
+  color: var(--crimson);
+}
+.why-grid > :nth-child(2) .why-icon { background: var(--turquoise-tint); color: var(--turquoise-deep); }
+.why-grid > :nth-child(3) .why-icon { background: var(--saffron-tint); color: #b57c00; }
+.why-grid > :nth-child(4) .why-icon { background: var(--lapis-tint); color: var(--lapis); }
+.why-grid > :nth-child(5) .why-icon { background: var(--crimson-tint); color: var(--crimson); }
+.why-card h3 { margin: 0 0 8px; font-size: 1.15rem; }
+.why-card p { margin: 0; color: var(--text-dim); font-size: 0.92rem; }
+
+/* ===================================================================
+   Member results — the club's own proof, and the strongest thing on the
+   page for selling coaching. A result tile is a name, a race and a time;
+   the time carries the figure face so it reads as a number, not a word.
+   =================================================================== */
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin-top: 32px;
+}
+.result-card {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) var(--radius) var(--nib);
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.result-card:hover { border-color: var(--crimson); transform: translateY(-2px); box-shadow: var(--shadow); }
+.result-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+.result-initial {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--crimson-tint);
+  color: var(--crimson);
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+}
+.result-name { margin: 0 0 2px; font-size: 1.05rem; }
+.result-race { margin: 0; color: var(--text-dim); font-size: 0.88rem; }
+.result-time {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--font-figure);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--crimson);
+}
+.result-note { margin: 4px 0 0; color: var(--muted); font-size: 0.82rem; }

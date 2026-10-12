@@ -1,0 +1,183 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { Image } from 'astro:assets';
+import { featured as groupShots, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
+import { photos as galleryPhotos } from '../lib/gallery.js';
+import pacing from '../data/pacing.json';
+
+const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+
+const wa = (text) => `https://wa.me/989128889975?text=${encodeURIComponent(text)}`;
+const waSponsor = wa('سلام سالار، برای همکاری و اسپانسرینگ می‌خواستم صحبت کنم.');
+const waPacing = wa('سلام سالار، برای پیسینگ مسابقه می‌خواستم صحبت کنم. مسابقه و هدف زمانی‌ام:');
+const waEvent = wa('سلام سالار، برای برگزاری یک ایونت برای برندمان می‌خواستم صحبت کنم.');
+
+const sponsorPackage = [
+  'لوگوی برند روی لباس مسابقه',
+  'معرفی محصول به جامعه‌ی دوندگان جیران',
+  'تولید محتوای اینستاگرام — استوری و پست',
+  'حضور با برند در مسابقات داخلی و بین‌المللی',
+  'تست میدانی و معرفی محصول در شرایط واقعی مسابقه',
+  'گزارش عملکرد و مسابقه پس از هر دوره',
+];
+
+const pacingValue = [
+  { icon: 'pace', title: 'Pace ثابت', desc: 'کیلومتر به کیلومتر روی عدد هدف — بدون شروع تند و افت انتهای مسابقه.' },
+  { icon: 'stopwatch', title: 'کنترل زمان', desc: 'زمان‌بندی اسپلیت‌ها، ایستگاه آب و شیب‌ها از قبل حساب‌شده.' },
+  { icon: 'group', title: 'مدیریت ریتم', desc: 'کنار تو می‌دوم و ریتم مسابقه را برایت می‌چینم.' },
+  { icon: 'flag', title: 'تجربه‌ی مسابقه', desc: 'تجربه‌ی ده‌ها مسابقه‌ی جاده و اولترا، برای مدیریت فشار روز مسابقه.' },
+];
+
+const eventFlow = ['ایده', 'طراحی', 'اجرا', 'تولید محتوا', 'گزارش نهایی'];
+
+const eventBullets = [
+  'طراحی رویداد اختصاصی متناسب با هویت برند — شهری، تریل یا کوهستان',
+  'اجرای کامل: مسیر، مجوز، ثبت‌نام، شماره‌ی دوندگان، مدال و جوایز',
+  'حضور برند در نقاط دیداری رویداد و پوشش رسانه‌ای (عکس، ویدیو، اینستاگرام)',
+  'گزارش پس از رویداد: تعداد شرکت‌کنندگان، بازتاب رسانه‌ای، محتوای تولیدشده',
+];
+---
+<Base
+  title="همکاری با سالار و جیران — اسپانسرینگ، پیسینگ و ایونت برند"
+  description="همکاری برندها با سالار پیری و باشگاه جیران: اسپانسرینگ ورزشکار، پیسینگ مسابقه برای رسیدن به رکورد، و طراحی و اجرای ایونت دو، تریل و کوهستان برای برند شما."
+>
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-eyebrow">Sponsorship &amp; Partnerships</p>
+      <h1>همکاری با سالار و جیران</h1>
+      <p class="lead">
+        سه مسیر همکاری: اسپانسرینگ یک دونده و مربی استقامت، پیسینگ مسابقه برای رسیدن به رکوردت،
+        و طراحی و اجرای یک ایونت واقعی برای برند — با یک جامعه‌ی واقعی از دوندگان.
+      </p>
+      <nav class="partner-jump" aria-label="مسیرهای همکاری">
+        <a href="#sponsorship"><Icon name="handshake" size={20} /><span>اسپانسرینگ سالار</span></a>
+        <a href="#pacing"><Icon name="pace" size={20} /><span>پیسر مسابقات</span></a>
+        <a href="#events"><Icon name="route" size={20} /><span>ایونت برای برندها</span></a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- 1 — ATHLETE SPONSORSHIP -->
+  <section id="sponsorship" class="section partner-block">
+    <div class="container">
+      <p class="section-eyebrow">۱ — اسپانسرینگ</p>
+      <h2>همکاری با یک دونده و مربی استقامت</h2>
+      <div class="partner-grid">
+        <div class="partner-text">
+          <p>
+            سالار پیری، مربی و دونده‌ی استقامت و اولترا، با سابقه‌ی حضور در مسابقات جاده، تریل و اولترا.
+            رکورد ماراتن <strong>۲:۳۴:۵۳</strong>، رتبه‌ی <strong>#۹ ایران در ITRA</strong> و سابقه‌ی سکو در
+            مسابقات <strong>UTMB World Series</strong>.
+          </p>
+          <p>
+            برای همکاری بلندمدت با برندهای ورزشی، تغذیه، پوشاک، تجهیزات و سبک زندگی فعال آماده‌ایم.
+            همکاری فقط لوگو روی لباس نیست — محتوا، حضور مسابقه، تست محصول و گزارش هم بخشی از آن است.
+          </p>
+          <div class="partner-pack">
+            <p class="pack-title"><span dir="ltr">Athlete Sponsorship</span></p>
+            <ul class="sponsor-list">
+              {sponsorPackage.map((b) => <li>{b}</li>)}
+            </ul>
+          </div>
+          <a class="btn btn-whatsapp" href={waSponsor} target="_blank" rel="noopener">گفت‌وگو درباره‌ی اسپانسرینگ</a>
+        </div>
+        <aside class="about-highlights">
+          <div class="highlight"><span class="hl-num">۲:۳۴:۵۳</span><span class="hl-label">رکورد ماراتن</span></div>
+          <div class="highlight"><span class="hl-num">#۹</span><span class="hl-label">رتبه ITRA ایران</span></div>
+          <div class="highlight"><span class="hl-num">UTMB ۷۳۹</span><span class="hl-label">بهترین امتیاز · ۲ سکو</span></div>
+          <div class="highlight"><span class="hl-num">۳۳٬۴۵۹ km</span><span class="hl-label">دویده‌شده در کل</span></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 — RACE PACING -->
+  <section id="pacing" class="section partner-block">
+    <div class="container">
+      <p class="section-eyebrow">۲ — پیسینگ</p>
+      <h2><span dir="ltr">Race Pacing by Salar Piri</span></h2>
+      <p class="section-sub">
+        برای رسیدن به رکوردت، مسابقه را با یک برنامه‌ی مشخص شروع کن. ارائه‌ی خدمات پیسینگ برای
+        مسابقات ۵، ۱۰، نیمه‌ماراتن و ماراتن.
+      </p>
+
+      <div class="service-grid">
+        {pacingValue.map((v) => (
+          <div class="service-card as-static">
+            <span class="service-emoji"><Icon name={v.icon} size={28} /></span>
+            <h3>{v.title}</h3>
+            <p>{v.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <h3 class="pace-heading">هدفت کدام است؟</h3>
+      <div class="pace-grid">
+        {pacing.groups.map((g) => (
+          <div class="pace-group">
+            <p class="pace-dist">{g.distance}</p>
+            <ul>
+              {g.targets.map((t) => (
+                <li><a href={wa(`سلام سالار، برای پیسینگ ${g.distance} با هدف ${t} می‌خواستم صحبت کنم.`)} target="_blank" rel="noopener" dir="ltr">{t}</a></li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <p class="pace-note">
+        پیسینگ در هر مسابقه‌ای ممکن است که برگزارکننده‌اش اجازه‌ی رسمی حضور پیسر داشته باشد.
+      </p>
+      <a class="btn btn-whatsapp" href={waPacing} target="_blank" rel="noopener">رزرو پیسر</a>
+    </div>
+  </section>
+
+  <!-- 3 — BRAND EVENTS -->
+  <section id="events" class="section partner-block">
+    <div class="container">
+      <p class="section-eyebrow">۳ — ایونت برند</p>
+      <h2>برندت را وارد دنیای دویدن کن</h2>
+      <p class="section-sub">
+        یک ایونت واقعی، با جامعه‌ی واقعی دوندگان. از یک تمرین صبحگاهی اختصاصی تا مسابقه‌ی شهری،
+        تریل و برنامه‌های کوهستانی.
+      </p>
+
+      <ol class="event-flow">
+        {eventFlow.map((step, i) => (
+          <li><span class="flow-num">{fa(i + 1)}</span>{step}</li>
+        ))}
+      </ol>
+
+      <div class="partner-grid">
+        <div class="partner-text">
+          <p>
+            برند شما در برابر فعال‌ترین جامعه‌ی دوندگان و کوهنوردان تهران قرار می‌گیرد؛ مخاطبی که هر روز
+            ۶ صبح در حرکت است و در فضای مجازی هم دیده می‌شود.
+          </p>
+          <ul class="sponsor-list">
+            {eventBullets.map((b) => <li>{b}</li>)}
+          </ul>
+          <a class="btn btn-whatsapp" href={waEvent} target="_blank" rel="noopener">طراحی ایونت برند</a>
+          <p class="join-note">درباره‌ی برند و ایده‌ی رویداد در واتس‌اپ بنویس — سالار شخصاً پاسخ می‌دهد.</p>
+        </div>
+        <div class="partner-proof">
+          <div class="gallery-grid partner-gallery">
+            {groupShots.slice(0, 4).map((p) => (
+              <a href={`/photo/${p.id}`} class="gal-item is-square">
+                <Image
+                  src={p.image}
+                  alt={p.title || `عکس شماره ${p.id}`}
+                  widths={THUMB_WIDTHS}
+                  sizes={GRID_SIZES}
+                  quality={THUMB_QUALITY}
+                  loading="lazy"
+                />
+              </a>
+            ))}
+          </div>
+          <p class="ig-follow"><a href="/gallery">{fa(galleryPhotos.length)} عکس از تمرین، مسابقه و کوهستان ←</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

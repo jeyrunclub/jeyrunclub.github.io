@@ -7,6 +7,7 @@ import { photos as galleryPhotos, featured as groupShots, THUMB_WIDTHS, THUMB_QU
 import heroPhoto from '../../assets/gallery/group-b.jpg';
 import gallery from '../../data/gallery.json';
 import targetRaces from '../../data/target-races.json';
+import memberResults from '../../data/member-results.json';
 
 const featured = groupShots.map((p) => ({
   ...p,
@@ -15,8 +16,21 @@ const featured = groupShots.map((p) => ({
 }));
 const targets = targetRaces.races;
 
-const sponsorMsg = encodeURIComponent("Hi Salar, I'd like to talk about introducing our brand with a custom Jeyrun event.");
-const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
+const why = [
+  { icon: 'group', title: 'Group training', desc: 'Every day at 6 AM, at seven points across Tehran and the hills around it.' },
+  { icon: 'stopwatch', title: 'A plan of your own', desc: 'A weekly plan written for your goal, your fitness and your week — not a template.' },
+  { icon: 'flag', title: 'Race preparation', desc: 'From a first 5K to a marathon — an 8-to-16 week build and a race-day strategy.' },
+  { icon: 'peak', title: 'Trail & mountain', desc: 'The Lavasan and Qouchak trails, altitude camps and the Damavand summit.' },
+  { icon: 'globe', title: 'Camps & races abroad', desc: 'Travelling as a team to marathons and trail races outside Iran, coached throughout.' },
+];
+
+const results = memberResults.results;
+
+const partnerRoutes = [
+  { icon: 'handshake', title: 'Athlete sponsorship', desc: 'Long-term partnerships with sports, nutrition, apparel and gear brands.', href: '/en/partners#sponsorship' },
+  { icon: 'pace', title: 'Race pacing', desc: 'Hit your target time behind a steady, planned pace.', href: '/en/partners#pacing' },
+  { icon: 'route', title: 'Brand events', desc: 'Idea to final report — a real event with a real running community.', href: '/en/partners#events' },
+];
 ---
 <Base
   lang="en"
@@ -66,6 +80,8 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
           <li><strong>2:34:53</strong>Marathon PR</li>
           <li><strong>1:14:50</strong>Half PR</li>
           <li><strong>34:39</strong>10K PR</li>
+          <li><strong>UTMB 739</strong>Best score</li>
+          <li><strong>#9</strong>ITRA Iran</li>
         </ul>
         <div class="hero-ctas">
           <a href="/en#join" class="btn btn-primary">Join the team</a>
@@ -76,6 +92,53 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
   </section>
 
 
+
+  <!-- WHY JEYRUN -->
+  <section id="why" class="section why">
+    <div class="container">
+      <p class="section-eyebrow">Why Jeyrun?</p>
+      <h2>Five things you get here</h2>
+      <div class="why-grid">
+        {why.map((w) => (
+          <article class="why-card">
+            <span class="why-icon"><Icon name={w.icon} size={26} /></span>
+            <h3>{w.title}</h3>
+            <p>{w.desc}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* Members' results — see the Persian homepage for why this block earns its
+      place. Renders only once src/data/member-results.json has entries. */}
+  {results.length > 0 && (
+    <section id="results" class="section results">
+      <div class="container">
+        <p class="section-eyebrow">Members' results</p>
+        <h2>What Jeyrun runners have done</h2>
+        <p class="section-sub">Personal bests and race results from runners training on a Jeyrun plan.</p>
+        <div class="results-grid">
+          {results.map((r) => {
+            const name = r.name_en || r.name;
+            return (
+              <article class="result-card">
+                {r.photo
+                  ? <img src={r.photo} alt={name} class="result-photo" />
+                  : <span class="result-initial" aria-hidden="true">{name.trim().charAt(0)}</span>}
+                <div>
+                  <h3 class="result-name">{name}</h3>
+                  <p class="result-race">{[r.race_en || r.race, r.year_en || r.year].filter(Boolean).join(' · ')}</p>
+                  {(r.time_en || r.time) && <span class="result-time" dir="ltr">{r.time_en || r.time}</span>}
+                  {(r.note_en || r.note) && <p class="result-note">{r.note_en || r.note}</p>}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  )}
 
   <!-- ABOUT -->
   <section id="about" class="section about">
@@ -208,31 +271,25 @@ const sponsorWa = `https://wa.me/989128889975?text=${sponsorMsg}`;
     </div>
   </section>
 
-  <!-- SPONSORSHIP -->
+  <!-- PARTNERSHIPS -->
   <section id="sponsor" class="section sponsor">
-    <div class="container sponsor-inner">
-      <div>
-        <p class="section-eyebrow">Brand partnerships</p>
-        <h2>Introduce your brand with a bespoke Jeyrun event</h2>
-        <p>
-          We design and produce a running or mountain event built around your brand — from concept
-          to finish line. Your name lands in front of one of Tehran's most engaged running and
-          mountain communities: an audience that shows up at 6 AM and lives online.
-        </p>
-        <ul class="sponsor-list">
-          <li>Custom event designed around your brand (city, trail, mountain)</li>
-          <li>Full production: route, permits, registration, bibs, medals, prizes</li>
-          <li>Brand presence at every visible touch-point + full media coverage (photo, video, Instagram)</li>
-          <li>Post-event report: participant numbers, media reach, content assets</li>
-        </ul>
+    <div class="container">
+      <p class="section-eyebrow">Sponsorship &amp; Partnerships</p>
+      <h2>Partner with Salar and Jeyrun</h2>
+      <p class="section-sub">
+        Jeyrun builds audience, content, events, race presence and sporting credibility for brands.
+        Three routes to work together:
+      </p>
+      <div class="why-grid">
+        {partnerRoutes.map((r) => (
+          <a href={r.href} class="why-card">
+            <span class="why-icon"><Icon name={r.icon} size={26} /></span>
+            <h3>{r.title}</h3>
+            <p>{r.desc}</p>
+          </a>
+        ))}
       </div>
-      <div class="join-actions">
-        <a class="btn btn-whatsapp" href={sponsorWa} target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.198.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.05 21.785h-.004a9.87 9.87 0 01-5.03-1.378l-.36-.214-3.741.982.999-3.648-.235-.374a9.86 9.86 0 01-1.511-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.892 6.994c-.003 5.45-4.437 9.884-9.885 9.884zm8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          <span>Message Salar on WhatsApp</span>
-        </a>
-        <p class="join-note">Tell us about your brand and event idea on WhatsApp — Salar replies personally.</p>
-      </div>
+      <p style="margin-top: 28px;"><a href="/en/partners" class="learn-more">See all three routes →</a></p>
     </div>
   </section>
 
