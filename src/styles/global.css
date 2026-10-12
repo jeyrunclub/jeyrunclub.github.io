@@ -594,21 +594,34 @@ ul { margin: 0; padding: 0; list-style: none; }
   border-radius: 999px;
   font-weight: 600;
 }
+/* A stage of constant height, not a box that fits each photograph.
+   Clicking through the gallery one photo at a time, every frame has its own
+   aspect ratio, so the figure's height changed on every navigation — which
+   moved the caption, the story and the prev/next buttons down or up the page
+   each time. You had to find the Next button again after every click. Fixing
+   the stage pins the whole layout: the buttons stay exactly where your cursor
+   already is, and only the photograph inside changes. */
 .photo-hero {
   margin: 0 0 24px;
+  height: min(68vh, 620px);
+  display: grid;
+  place-items: center;
   border-radius: var(--radius);
   overflow: hidden;
-  background: var(--surface);
+  background: var(--ink);
   border: 1px solid var(--border);
 }
 .photo-hero img {
   display: block;
   width: 100%;
-  height: auto;
-  max-height: 80vh;
+  height: 100%;
   object-fit: contain;
-  background: #000;
 }
+
+/* The story is one line for some photographs and five for others, which moves
+   the nav under it. A floor under the block keeps the buttons still for all
+   but the longest stories. */
+.photo-meta { min-height: 9rem; }
 .photo-meta h1 {
   font-size: clamp(1.4rem, 3vw, 1.9rem);
   margin: 0 0 12px;
@@ -640,6 +653,8 @@ ul { margin: 0; padding: 0; list-style: none; }
 @media (max-width: 520px) {
   .photo-nav { flex-wrap: wrap; }
   .photo-nav .btn { flex: 1 1 auto; text-align: center; }
+  .photo-hero { height: min(58vh, 420px); }
+  .photo-meta { min-height: 0; }
 }
 .gal-item.placeholder {
   aspect-ratio: 4 / 3;
@@ -1336,6 +1351,35 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 .section.join .eyebrow, .section.sponsor .eyebrow,
 .section.join .section-eyebrow, .section.sponsor .section-eyebrow { background: var(--saffron); color: var(--ink); }
 
+/* Cards standing ON the ink band.
+   The band sets `color: var(--sand)` for everything inside it, and
+   `.section.sponsor p` (0,2,1) outranks `.why-card p` (0,1,1) — so a paper
+   card dropped in here printed near-white headings and near-white body text
+   on a near-white background: invisible. On ink the cards are ink too, a
+   lifted translucent surface with light type, which is what the rest of the
+   band already looks like. */
+.section.join .why-card,
+.section.sponsor .why-card {
+  background: rgba(247, 242, 232, 0.07);
+  border-color: rgba(247, 242, 232, 0.18);
+}
+.section.join .why-card h3,
+.section.sponsor .why-card h3 { color: var(--sand); }
+.section.join .why-card p,
+.section.sponsor .why-card p { color: rgba(247, 242, 232, 0.74); }
+.section.join .why-card:hover,
+.section.sponsor .why-card:hover {
+  background: rgba(247, 242, 232, 0.12);
+  border-color: var(--crimson);
+  box-shadow: none;
+}
+/* Crimson on ink is too dark to read as a link; the band's other accent is
+   saffron, which is what the eyebrow already uses here. */
+.section.join .learn-more,
+.section.sponsor .learn-more { color: var(--saffron); }
+.section.join .learn-more:hover,
+.section.sponsor .learn-more:hover { color: #ffc83d; }
+
 /* ---- Footer ---------------------------------------------------------- */
 .site-footer {
   background: var(--ink);
@@ -1980,3 +2024,26 @@ body.lang-en .photo-band blockquote p { line-height: 1.25; }
 .trip-body h3 { margin: 0 0 6px; font-size: 1.3rem; }
 .trip-where { margin: 0 0 10px; color: var(--muted); font-size: 0.88rem; }
 .trip-body p { margin: 0; color: var(--text-dim); }
+
+/* The arrow-key hint under the gallery's prev/next row. Quiet — it tells you
+   the shortcut exists without competing with the photograph above it. */
+.photo-keyhint {
+  margin: 14px 0 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.photo-keyhint kbd {
+  display: inline-block;
+  min-width: 1.5em;
+  padding: 1px 6px;
+  margin: 0 2px;
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-family: var(--font-figure);
+  font-size: 0.85em;
+  line-height: 1.6;
+}

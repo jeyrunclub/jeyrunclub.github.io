@@ -65,15 +65,35 @@ const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDT
         )}
       </div>
 
+      {/* See src/pages/photo/[id].astro — same prefetch and key handling. */}
       <nav class="photo-nav">
         {prev ? (
-          <a href={`/en/photo/${prev}`} class="btn btn-ghost">← Prev (#{prev})</a>
+          <a href={`/en/photo/${prev}`} class="btn btn-ghost" data-photo-prev data-astro-prefetch="viewport">← Prev (#{prev})</a>
         ) : <span></span>}
         <a href="/en/gallery" class="btn btn-ghost">All photos</a>
         {next ? (
-          <a href={`/en/photo/${next}`} class="btn btn-ghost">Next (#{next}) →</a>
+          <a href={`/en/photo/${next}`} class="btn btn-ghost" data-photo-next data-astro-prefetch="viewport">Next (#{next}) →</a>
         ) : <span></span>}
       </nav>
+
+      <p class="photo-keyhint">You can also step through with <kbd>←</kbd> and <kbd>→</kbd>.</p>
     </div>
   </section>
+
+  <script>
+    {
+      const go = (sel) => {
+        const a = document.querySelector(sel);
+        if (a instanceof HTMLAnchorElement) window.location.href = a.href;
+      };
+      document.addEventListener('keydown', (e) => {
+        if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+        const t = e.target as HTMLElement | null;
+        if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+        const rtl = document.documentElement.dir === 'rtl';
+        if (e.key === 'ArrowLeft') { e.preventDefault(); go(rtl ? '[data-photo-next]' : '[data-photo-prev]'); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); go(rtl ? '[data-photo-prev]' : '[data-photo-next]'); }
+      });
+    }
+  </script>
 </Base>

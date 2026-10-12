@@ -61,15 +61,41 @@ const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDT
         )}
       </div>
 
+      {/* data-astro-prefetch: the next frame is fetched while this one is on
+          screen, so stepping through the gallery does not wait on the network
+          each time. data-photo-prev/next are what the key handler below reads. */}
       <nav class="photo-nav">
         {prev ? (
-          <a href={`/photo/${prev}`} class="btn btn-ghost">→ قبلی (#{fa(prev)})</a>
+          <a href={`/photo/${prev}`} class="btn btn-ghost" data-photo-prev data-astro-prefetch="viewport">→ قبلی (#{fa(prev)})</a>
         ) : <span></span>}
         <a href="/gallery" class="btn btn-ghost">همه‌ی عکس‌ها</a>
         {next ? (
-          <a href={`/photo/${next}`} class="btn btn-ghost">بعدی (#{fa(next)}) ←</a>
+          <a href={`/photo/${next}`} class="btn btn-ghost" data-photo-next data-astro-prefetch="viewport">بعدی (#{fa(next)}) ←</a>
         ) : <span></span>}
       </nav>
+
+      <p class="photo-keyhint">با کلیدهای <kbd>←</kbd> و <kbd>→</kbd> هم می‌توانی عکس‌ها را ورق بزنی.</p>
     </div>
   </section>
+
+  <script>
+    // Arrow keys step through the gallery. The mapping follows reading order,
+    // not the key's name: in Persian the gallery runs right to left, so Left
+    // is "next" here and Right is "next" on the English pages. document.dir is
+    // what the layout already sets, so this file needs no flag of its own.
+    {
+      const go = (sel) => {
+        const a = document.querySelector(sel);
+        if (a instanceof HTMLAnchorElement) window.location.href = a.href;
+      };
+      document.addEventListener('keydown', (e) => {
+        if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+        const t = e.target as HTMLElement | null;
+        if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+        const rtl = document.documentElement.dir === 'rtl';
+        if (e.key === 'ArrowLeft') { e.preventDefault(); go(rtl ? '[data-photo-next]' : '[data-photo-prev]'); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); go(rtl ? '[data-photo-prev]' : '[data-photo-next]'); }
+      });
+    }
+  </script>
 </Base>
