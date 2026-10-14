@@ -1,32 +1,17 @@
 ---
 import Base from '../layouts/Base.astro';
-import { Image, getImage } from 'astro:assets';
-import { photos, ordered, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
+import { Image } from 'astro:assets';
+import { ordered, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
 
-const PAGE_SIZE = 24;
-// Group shots first — see `ordered` in lib/gallery.js.
-const firstPage = ordered.slice(0, PAGE_SIZE);
-const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
-
-// The load-more button builds its markup in the browser, so the optimised URLs
-// have to be worked out here and handed over — otherwise everything past the
-// first page would quietly fall back to the unprocessed original.
-const rest = await Promise.all(
-  ordered.slice(PAGE_SIZE).map(async (p) => {
-    const [small, large] = await Promise.all(
-      THUMB_WIDTHS.map((w) => getImage({ src: p.image, width: w, format: 'webp', quality: THUMB_QUALITY })),
-    );
-    return {
-      id: p.id,
-      title: p.title,
-      story: p.story,
-      src: large.src,
-      srcset: `${small.src} ${THUMB_WIDTHS[0]}w, ${large.src} ${THUMB_WIDTHS[1]}w`,
-      w: p.image.width,
-      h: p.image.height,
-    };
-  }),
-);
+// Every photo, in one masonry, group shots first.
+//
+// This used to render 24 and append the rest on a button. In a column
+// masonry an append is the one thing you cannot do quietly: the columns
+// rebalance, so the photographs already on screen jump to new positions and
+// the new ones land wherever the balancing puts them rather than at the
+// bottom. Rendering the lot removes the problem rather than managing it —
+// and costs nothing, because every image below the fold is lazy.
+const photos = ordered;
 ---
 <Base
   title="گالری جیران — عکس‌های تمرین، مسابقه و کوهستان"
@@ -44,16 +29,16 @@ const rest = await Promise.all(
 
   <section class="section">
     <div class="container">
-      <div class="gallery-grid" id="gallery-grid" data-page-size={PAGE_SIZE}>
-        {firstPage.map((p) => (
+      <div class="gallery-grid">
+        {photos.map((p, i) => (
           <a href={`/photo/${p.id}`} class="gal-item">
             <Image
               src={p.image}
-              alt={p.title || `عکس شماره ${p.id}`}
+              alt={p.title || 'عکسی از گالری جیران'}
               widths={THUMB_WIDTHS}
               sizes={GRID_SIZES}
               quality={THUMB_QUALITY}
-              loading="lazy"
+              loading={i < 8 ? 'eager' : 'lazy'}
             />
             <span class="gal-caption">
               {p.title && <strong>{p.title}</strong>}
@@ -62,42 +47,6 @@ const rest = await Promise.all(
           </a>
         ))}
       </div>
-
-      {photos.length > PAGE_SIZE && (
-        <div class="load-more-wrap">
-          <button id="load-more" class="btn btn-ghost" type="button">
-            نمایش عکس‌های بیشتر
-          </button>
-        </div>
-      )}
     </div>
   </section>
-
-  <script define:vars={{ rest, PAGE_SIZE, total: photos.length }}>
-    const btn = document.getElementById('load-more');
-    const grid = document.getElementById('gallery-grid');
-    const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
-    const SIZES = '(max-width: 640px) 92vw, (max-width: 1100px) 45vw, 290px';
-    let shown = PAGE_SIZE;
-    btn?.addEventListener('click', () => {
-      const next = rest.slice(shown - PAGE_SIZE, shown - PAGE_SIZE + PAGE_SIZE);
-      const html = next.map((p) => `
-        <a href="/photo/${p.id}" class="gal-item">
-          <img src="${p.src}" srcset="${p.srcset}" sizes="${SIZES}"
-               width="${p.w}" height="${p.h}"
-               alt="${p.title || 'عکس شماره ' + p.id}" loading="lazy" decoding="async" />
-          <span class="gal-caption">
-            ${p.title ? `<strong>${p.title}</strong>` : ''}
-            ${p.story ? `<span>${p.story}</span>` : ''}
-          </span>
-        </a>`).join('');
-      grid.insertAdjacentHTML('beforeend', html);
-      shown += PAGE_SIZE;
-      if (shown >= total) {
-        btn.remove();
-      } else {
-        btn.textContent = 'نمایش عکس‌های بیشتر';
-      }
-    });
-  </script>
 </Base>

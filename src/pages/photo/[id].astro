@@ -1,17 +1,17 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { ClientRouter } from 'astro:transitions';
 import { Image, getImage } from 'astro:assets';
 import { photos, ordered, FULL_WIDTHS, FULL_QUALITY, CARD_WIDTH, CARD_QUALITY } from '../../lib/gallery.js';
+import { viewerData } from '../../lib/photo-viewer.js';
 
 export function getStaticPaths() {
   // One page per photo, keyed by photo.id — the id comes from the position in
   // `photos`, not from `ordered`, so these URLs stay put however the gallery
   // chooses to arrange itself.
   //
-  // Prev and next, though, walk `ordered`: stepping through has to match the
-  // sequence you just saw in the grid, or the next photo is one you have no
-  // reason to expect. Position is counted in that same order.
+  // Prev and next walk `ordered`: stepping through has to match the sequence
+  // you just saw in the grid, or the next photo is one you have no reason to
+  // expect.
   return photos.map((photo) => {
     const i = ordered.findIndex((p) => p.id === photo.id);
     return {
@@ -21,37 +21,34 @@ export function getStaticPaths() {
         position: i + 1,
         prev: i > 0 ? ordered[i - 1].id : null,
         next: i < ordered.length - 1 ? ordered[i + 1].id : null,
-        total: ordered.length,
       },
     };
   });
 }
 
-const { photo, position, prev, next, total } = Astro.props;
-const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+const { photo, position, prev, next } = Astro.props;
 
 // Each photo gets its own social card, as a JPEG for crawler compatibility.
 const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDTH, quality: CARD_QUALITY });
+
+const frames = await viewerData('fa');
+const EMPTY_STORY = 'هنوز داستانی برای این عکس نوشته نشده.';
+const SUFFIX = ' — عکس‌های جیران';
 ---
 <Base
-  title={`${photo.title || 'گالری جیران'} — عکس‌های جیران`}
+  title={`${photo.title || 'گالری جیران'}${SUFFIX}`}
   description={photo.story || photo.title || 'عکسی از گالری باشگاه جیران'}
   ogImage={card.src}
 >
-  {/* Only the photo pages opt into the client router, so stepping from one
-      frame to the next swaps the page in place instead of reloading the whole
-      document. Leaving the gallery, or any other page, is still an ordinary
-      navigation — Astro falls back to one automatically. */}
-  <ClientRouter slot="head" />
-
   <section class="photo-page">
     <div class="container photo-inner">
       <p class="photo-crumb">
         <a href="/gallery">← بازگشت به گالری</a>
       </p>
 
-      <figure class="photo-hero" transition:name="photo-stage" transition:animate="fade">
+      <figure class="photo-hero">
         <Image
+          id="photo-img"
           src={photo.image}
           alt={photo.title || `عکس شماره ${position}`}
           widths={FULL_WIDTHS}
@@ -63,29 +60,26 @@ const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDT
       </figure>
 
       <div class="photo-meta">
-        {photo.title && <h1>{photo.title}</h1>}
-        {photo.story ? (
-          <p class="photo-story">{photo.story}</p>
-        ) : (
-          <p class="photo-story photo-story-empty">
-            هنوز داستانی برای این عکس نوشته نشده.
-            <br />
-            <em>اگر می‌خواهی داستان این لحظه را ثبت کنی، به سالار بگو کدام عکس است.</em>
-          </p>
-        )}
+        <h1 id="photo-title">{photo.title}</h1>
+        <p id="photo-story" class:list={['photo-story', !photo.story && 'photo-story-empty']}>
+          {photo.story || EMPTY_STORY}
+        </p>
       </div>
 
-      {/* data-astro-prefetch: the next frame is fetched while this one is on
-          screen, so stepping through the gallery does not wait on the network
-          each time. data-photo-prev/next are what the key handler below reads. */}
       <nav class="photo-nav">
-        {prev ? (
-          <a href={`/photo/${prev}`} class="btn btn-ghost" data-photo-prev data-astro-prefetch="viewport">→ قبلی</a>
-        ) : <span></span>}
+        <a
+          href={prev ? `/photo/${prev}` : '#'}
+          class="btn btn-ghost"
+          data-photo-prev
+          hidden={!prev}
+        >→ قبلی</a>
         <a href="/gallery" class="btn btn-ghost">همه‌ی عکس‌ها</a>
-        {next ? (
-          <a href={`/photo/${next}`} class="btn btn-ghost" data-photo-next data-astro-prefetch="viewport">بعدی ←</a>
-        ) : <span></span>}
+        <a
+          href={next ? `/photo/${next}` : '#'}
+          class="btn btn-ghost"
+          data-photo-next
+          hidden={!next}
+        >بعدی ←</a>
       </nav>
 
       <p class="photo-keyhint">
@@ -95,56 +89,125 @@ const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDT
     </div>
   </section>
 
-  <script>
-    // Stepping through the gallery, by key or by thumb.
-    //
-    // Both listeners live on `document`, which survives a view transition, and
-    // both look the links up fresh each time — so this registers once and
-    // keeps working however many photos you walk through. The guard is there
-    // because a bundled module can be re-evaluated, and two listeners would
-    // skip two photos per gesture.
-    import { navigate } from 'astro:transitions/client';
+  <script define:vars={{ frames, startId: photo.id, emptyStory: EMPTY_STORY, suffix: SUFFIX }}>
+    // An in-page viewer: clicking, swiping or pressing an arrow changes the
+    // photograph, the caption and the two links, and pushes the new URL. The
+    // document is never replaced, so the header does not flicker and there is
+    // nothing to re-download but the image itself.
+    (() => {
+      const img = document.getElementById('photo-img');
+      const titleEl = document.getElementById('photo-title');
+      const storyEl = document.getElementById('photo-story');
+      const prevEl = document.querySelector('[data-photo-prev]');
+      const nextEl = document.querySelector('[data-photo-next]');
+      if (!img || !frames.length) return;
 
-    if (!window.__jeyrunPhotoNav) {
-      window.__jeyrunPhotoNav = true;
+      let at = Math.max(0, frames.findIndex((f) => f.i === startId));
 
-      const rtl = () => document.documentElement.dir === 'rtl';
-      const go = (which) => {
-        const a = document.querySelector(`[data-photo-${which}]`);
-        if (a instanceof HTMLAnchorElement) navigate(a.href);
+      // Warm the neighbours so a tap has nothing left to wait for.
+      const warm = (i) => {
+        const f = frames[i];
+        if (!f) return;
+        const im = new Image();
+        im.srcset = f.r;
+        im.sizes = img.sizes;
+        im.src = f.u;
       };
 
+      const paint = (i, push) => {
+        const f = frames[i];
+        if (!f) return;
+        at = i;
+
+        // Fade only the photograph. The caption and buttons swap underneath
+        // it, which keeps the layout still — the stage is a fixed height, so
+        // nothing below the image moves.
+        img.classList.add('is-swapping');
+        const show = () => {
+          img.srcset = f.r;
+          img.src = f.u;
+          img.alt = f.t || 'عکسی از گالری جیران';
+          img.classList.remove('is-swapping');
+        };
+        const pre = new Image();
+        pre.onload = show;
+        pre.onerror = show;
+        pre.srcset = f.r;
+        pre.sizes = img.sizes;
+        pre.src = f.u;
+        if (pre.complete) show();
+
+        titleEl.textContent = f.t;
+        storyEl.textContent = f.s || emptyStory;
+        storyEl.classList.toggle('photo-story-empty', !f.s);
+
+        const p = frames[i - 1];
+        const n = frames[i + 1];
+        prevEl.hidden = !p;
+        nextEl.hidden = !n;
+        if (p) prevEl.href = '/photo/' + p.i;
+        if (n) nextEl.href = '/photo/' + n.i;
+
+        document.title = (f.t || 'گالری جیران') + suffix;
+        if (push) history.pushState({ at: i }, '', '/photo/' + f.i);
+
+        warm(i + 1);
+        warm(i - 1);
+      };
+
+      const step = (d) => {
+        const i = at + d;
+        if (i < 0 || i >= frames.length) return;
+        paint(i, true);
+      };
+
+      for (const [el, d] of [[prevEl, -1], [nextEl, 1]]) {
+        el.addEventListener('click', (e) => {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+          e.preventDefault();
+          step(d);
+        });
+      }
+
+      // Back and forward keep working, because each step pushed a real URL.
+      window.addEventListener('popstate', () => {
+        const id = Number((location.pathname.match(/\/photo\/(\d+)/) || [])[1]);
+        const i = frames.findIndex((f) => f.i === id);
+        if (i >= 0) paint(i, false);
+      });
+
       // Keys follow reading order rather than the key's name: Persian runs
-      // right to left, so Left is forwards here and backwards in English.
+      // right to left, so Left is forwards here.
+      const rtl = () => document.documentElement.dir === 'rtl';
       document.addEventListener('keydown', (e) => {
         if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
         const t = e.target;
         if (t instanceof HTMLElement &&
             (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
-        if (e.key === 'ArrowLeft') { e.preventDefault(); go(rtl() ? 'next' : 'prev'); }
-        else if (e.key === 'ArrowRight') { e.preventDefault(); go(rtl() ? 'prev' : 'next'); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); step(rtl() ? 1 : -1); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); step(rtl() ? -1 : 1); }
       });
 
       // Swipe. The next photo sits on the side its button's arrow points to —
-      // left in Persian, right in English — so the gesture that brings it in
-      // is a drag the other way. Vertical movement is let through so the
-      // gesture never fights an ordinary scroll.
+      // left in Persian — so the drag that brings it in goes the other way.
+      // Vertical movement is let through so this never fights a scroll.
       let x0 = null, y0 = null;
-      document.addEventListener('touchstart', (e) => {
-        if (!e.target || !(e.target instanceof Element)) return;
-        if (!e.target.closest('.photo-hero')) { x0 = null; return; }
+      const stage = img.closest('.photo-hero');
+      stage.addEventListener('touchstart', (e) => {
         x0 = e.changedTouches[0].clientX;
         y0 = e.changedTouches[0].clientY;
       }, { passive: true });
-
-      document.addEventListener('touchend', (e) => {
+      stage.addEventListener('touchend', (e) => {
         if (x0 === null) return;
         const dx = e.changedTouches[0].clientX - x0;
         const dy = e.changedTouches[0].clientY - y0;
         x0 = null;
         if (Math.abs(dx) < 45 || Math.abs(dy) > Math.abs(dx)) return;
-        go((rtl() ? dx > 0 : dx < 0) ? 'next' : 'prev');
+        step((rtl() ? dx > 0 : dx < 0) ? 1 : -1);
       }, { passive: true });
-    }
+
+      warm(at + 1);
+      warm(at - 1);
+    })();
   </script>
 </Base>

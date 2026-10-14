@@ -2079,3 +2079,18 @@ body.lang-en .photo-band blockquote p { line-height: 1.25; }
   .photo-keyhint .hint-keys { display: none; }
   .photo-keyhint .hint-swipe { display: inline; }
 }
+
+/* The photograph crossfades while the frame around it stays put. Short, and
+   only on the image — the stage is a fixed height, so nothing below it moves
+   and there is no reason to animate anything else. */
+.photo-hero img { transition: opacity 0.18s ease; }
+.photo-hero img.is-swapping { opacity: 0.25; }
+@media (prefers-reduced-motion: reduce) {
+  .photo-hero img { transition: none; }
+  .photo-hero img.is-swapping { opacity: 1; }
+}
+
+/* The hero frame is 9:16 and the hero is wide, so only a band of it survives
+   the crop. Centre puts that band on the road; the gate and the runners are
+   higher up. */
+.hero-photo-img { object-position: center 42%; }

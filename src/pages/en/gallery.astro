@@ -1,41 +1,27 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { Image, getImage } from 'astro:assets';
-import { ordered as all, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../../lib/gallery.js';
+import { Image } from 'astro:assets';
+import { ordered, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../../lib/gallery.js';
 
-const photos = all.map((p) => ({
-  ...p,
-  title: p.title_en || p.title,
-  story: p.story_en || p.story,
-}));
-const PAGE_SIZE = 24;
-const firstPage = photos.slice(0, PAGE_SIZE);
-
-// The load-more button builds its markup in the browser, so the optimised URLs
-// have to be worked out here and handed over.
-const rest = await Promise.all(
-  photos.slice(PAGE_SIZE).map(async (p) => {
-    const [small, large] = await Promise.all(
-      THUMB_WIDTHS.map((w) => getImage({ src: p.image, width: w, format: 'webp', quality: THUMB_QUALITY })),
-    );
-    return {
-      id: p.id, title: p.title, story: p.story,
-      src: large.src,
-      srcset: `${small.src} ${THUMB_WIDTHS[0]}w, ${large.src} ${THUMB_WIDTHS[1]}w`,
-      w: p.image.width, h: p.image.height,
-    };
-  }),
-);
+// Every photo, in one masonry, group shots first.
+//
+// This used to render 24 and append the rest on a button. In a column
+// masonry an append is the one thing you cannot do quietly: the columns
+// rebalance, so the photographs already on screen jump to new positions and
+// the new ones land wherever the balancing puts them rather than at the
+// bottom. Rendering the lot removes the problem rather than managing it —
+// and costs nothing, because every image below the fold is lazy.
+const photos = ordered.map((p) => ({ ...p, title: p.title_en || p.title, story: p.story_en || p.story }));
 ---
 <Base
   lang="en"
-  title="Gallery — Jeyrun | Training, Racing, Mountains"
-  description="The Jeyrun photo gallery — moments from training, races, mountain camps and summits."
+  title="Gallery — Jeyrun | Training, Racing and the Mountains"
+  description="Photos from Jeyrun Running Club — training mornings, races, mountain camps and summits."
 >
   <section class="page-hero">
     <div class="container">
       <p class="section-eyebrow">Gallery</p>
-      <h1>Moments from Jeyrun</h1>
+      <h1>Moments of Jeyrun</h1>
       <p class="lead">
         Photos from training, races, mountain camps and everyday team moments. Tap a photo to see its story.
       </p>
@@ -44,16 +30,16 @@ const rest = await Promise.all(
 
   <section class="section">
     <div class="container">
-      <div class="gallery-grid" id="gallery-grid" data-page-size={PAGE_SIZE}>
-        {firstPage.map((p) => (
+      <div class="gallery-grid">
+        {photos.map((p, i) => (
           <a href={`/en/photo/${p.id}`} class="gal-item">
             <Image
               src={p.image}
-              alt={p.title || `Photo ${p.id}`}
+              alt={p.title || 'A photo from the Jeyrun gallery'}
               widths={THUMB_WIDTHS}
               sizes={GRID_SIZES}
               quality={THUMB_QUALITY}
-              loading="lazy"
+              loading={i < 8 ? 'eager' : 'lazy'}
             />
             <span class="gal-caption">
               {p.title && <strong>{p.title}</strong>}
@@ -62,41 +48,6 @@ const rest = await Promise.all(
           </a>
         ))}
       </div>
-
-      {photos.length > PAGE_SIZE && (
-        <div class="load-more-wrap">
-          <button id="load-more" class="btn btn-ghost" type="button">
-            Show more photos
-          </button>
-        </div>
-      )}
     </div>
   </section>
-
-  <script define:vars={{ rest, PAGE_SIZE, total: photos.length }}>
-    const btn = document.getElementById('load-more');
-    const grid = document.getElementById('gallery-grid');
-    const SIZES = '(max-width: 640px) 92vw, (max-width: 1100px) 45vw, 290px';
-    let shown = PAGE_SIZE;
-    btn?.addEventListener('click', () => {
-      const next = rest.slice(shown - PAGE_SIZE, shown - PAGE_SIZE + PAGE_SIZE);
-      const html = next.map((p) => `
-        <a href="/en/photo/${p.id}" class="gal-item">
-          <img src="${p.src}" srcset="${p.srcset}" sizes="${SIZES}"
-               width="${p.w}" height="${p.h}"
-               alt="${p.title || 'Photo ' + p.id}" loading="lazy" decoding="async" />
-          <span class="gal-caption">
-            ${p.title ? `<strong>${p.title}</strong>` : ''}
-            ${p.story ? `<span>${p.story}</span>` : ''}
-          </span>
-        </a>`).join('');
-      grid.insertAdjacentHTML('beforeend', html);
-      shown += PAGE_SIZE;
-      if (shown >= total) {
-        btn.remove();
-      } else {
-        btn.textContent = 'Show more photos';
-      }
-    });
-  </script>
 </Base>

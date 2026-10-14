@@ -5,10 +5,10 @@ import RunnersBand from '../components/RunnersBand.astro';
 import PhotoBand from '../components/PhotoBand.astro';
 import { Image } from 'astro:assets';
 import { byFile, photos as galleryPhotos, featured as groupShots, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
-// A speed session in progress rather than the team posed under Damavand:
-// the sky across the top is where the headline and the records go, so the
-// type no longer sits over anybody's face.
-import heroPhoto from '../assets/gallery/new-img_2412.jpg';
+// Chosen by hand. It is a 9:16 frame in a wide hero, so most of its height
+// is cropped away: object-position holds the band with the gate and the
+// runners in it rather than the default centre, which cut their legs off.
+import heroPhoto from '../assets/gallery/new-img_8227.jpg';
 import gallery from '../data/gallery.json';
 import targetRaces from '../data/target-races.json';
 import stats from '../data/stats.json';
@@ -79,7 +79,7 @@ const partnerRoutes = [
   <section class="hero hero-photo">
     <Image
       src={heroPhoto}
-      alt="تمرین سرعت تیم جیران، صبح زود"
+      alt="تیم جیران مقابل دروازه‌ی آجری، صبح زود"
       class="hero-photo-img"
       widths={[900, 1400, 1900]}
       sizes="100vw"
