@@ -39,22 +39,29 @@ const p = lang === 'fa'
     </button>
   </div>
 
-  {/* On a phone the whole menu used to be behind the burger, so nothing but
-      the logo was reachable without opening it. These are the pages people
-      actually come for; the burger still holds the rest and the language
-      toggle. Hidden on wide screens, where the full nav is already visible. */}
-  {/*
-    Four items, not six. All six needed 469px and a 320px phone gave them 320,
-    so the two on the end — the member login and the join button, the only ones
-    that ask the visitor to do something — were scrolled off the edge where
-    nobody would find them. The gallery earns its place: photographs of a real
-    club running together are what persuade someone to join. The calendar and
-    the races are one tap away in the menu.
-  */}
+  {/* The phone nav: every link, in wrapped rows, rather than four of them in
+      a sideways scroller with the other six behind a burger. A burger on a
+      site this size hides the whole site: nobody taps it to discover that
+      there is a partnerships page. Ten pills wrap to two rows at ordinary
+      phone widths and three on the narrowest, which costs a little header
+      height and makes every page one tap away.
+
+      It is a separate list from .site-nav rather than a restyling of it
+      because the two want different orders: the desktop bar reads left to
+      right as a sentence, and here the two links that ask the visitor to do
+      something — member login and join — belong at the end of the last row,
+      under the thumb. */}
   <nav class="nav-quick" aria-label={t.menuLabel}>
-    <a href={p.gallery} class:list={[isActive(p.gallery) && 'active']}>{t.gallery}</a>
+    <a href={p.home} class:list={[isActive(p.home) && 'active']}>{t.home}</a>
+    <a href={p.coach} class:list={[isActive(p.coach) && 'active']}>{t.coach}</a>
     <a href={p.services} class:list={[isActive(p.services) && 'active']}>{t.services}</a>
+    <a href={p.races} class:list={[isActive(p.races) && 'active']}>{t.races}</a>
+    <a href={p.calendar} class:list={[isActive(p.calendar) && 'active']}>{t.calendar}</a>
+    <a href={p.partners} class:list={[isActive(p.partners) && 'active']}>{t.partners}</a>
+    <a href={p.gallery} class:list={[isActive(p.gallery) && 'active']}>{t.gallery}</a>
+    {lang === 'fa' && <a href={p.blog} class:list={[path.startsWith('/blog') && 'active']}>{t.blog}</a>}
     <a href="/app" class:list={[path.startsWith('/app') && 'active']}>{t.app}</a>
     <a href={p.join} class="nav-cta">{t.join}</a>
+    <a href={alt} class="nav-quick-lang" title={t.langToggleLabel} aria-label={t.langToggleLabel}>{t.langToggleTo}</a>
   </nav>
 </header>

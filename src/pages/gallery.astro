@@ -37,7 +37,7 @@ const rest = await Promise.all(
       <p class="section-eyebrow">گالری</p>
       <h1>لحظه‌های جیران</h1>
       <p class="lead">
-        {fa(photos.length)} عکس از تمرین، مسابقه، اردوهای کوهستان و لحظات صمیمی تیم. روی هر عکس بزن تا داستانش را ببینی.
+        عکس‌هایی از تمرین، مسابقه، اردوهای کوهستان و لحظات صمیمی تیم. روی هر عکس بزن تا داستانش را ببینی.
       </p>
     </div>
   </section>
@@ -66,7 +66,7 @@ const rest = await Promise.all(
       {photos.length > PAGE_SIZE && (
         <div class="load-more-wrap">
           <button id="load-more" class="btn btn-ghost" type="button">
-            نمایش عکس‌های بیشتر ({fa(photos.length - PAGE_SIZE)} باقی‌مانده)
+            نمایش عکس‌های بیشتر
           </button>
         </div>
       )}
@@ -96,7 +96,7 @@ const rest = await Promise.all(
       if (shown >= total) {
         btn.remove();
       } else {
-        btn.textContent = `نمایش عکس‌های بیشتر (${fa(total - shown)} باقی‌مانده)`;
+        btn.textContent = 'نمایش عکس‌های بیشتر';
       }
     });
   </script>

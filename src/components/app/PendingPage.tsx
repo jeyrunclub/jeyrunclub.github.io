@@ -75,7 +75,7 @@ export function PendingPage() {
             <h2 className="display text-3xl">درخواست پذیرفته نشد</h2>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               متأسفانه درخواست عضویت شما در جیران پذیرفته نشد. اگر فکر می‌کنی
-              اشتباهی رخ داده، از طریق واتس‌اپ با سالار در تماس باش.
+              اشتباهی رخ داده، از طریق واتساپ با سالار در تماس باش.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button asChild>

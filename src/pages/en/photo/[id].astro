@@ -1,5 +1,6 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import { ClientRouter } from 'astro:transitions';
 import { Image, getImage } from 'astro:assets';
 import { photos, ordered, FULL_WIDTHS, FULL_QUALITY, CARD_WIDTH, CARD_QUALITY } from '../../../lib/gallery.js';
 
@@ -38,14 +39,16 @@ const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDT
   description={photo.story || photo.title || 'A photo from the Jeyrun club gallery'}
   ogImage={card.src}
 >
+  {/* See src/pages/photo/[id].astro. */}
+  <ClientRouter slot="head" />
+
   <section class="photo-page">
     <div class="container photo-inner">
       <p class="photo-crumb">
         <a href="/en/gallery">← Back to gallery</a>
-        <span class="photo-num">Photo {position} of {total}</span>
       </p>
 
-      <figure class="photo-hero">
+      <figure class="photo-hero" transition:name="photo-stage" transition:animate="fade">
         <Image
           src={photo.image}
           alt={photo.title || `Photo ${position}`}
@@ -81,24 +84,63 @@ const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDT
         ) : <span></span>}
       </nav>
 
-      <p class="photo-keyhint">You can also step through with <kbd>←</kbd> and <kbd>→</kbd>.</p>
+      <p class="photo-keyhint">
+        <span class="hint-keys">You can also step through with <kbd>←</kbd> and <kbd>→</kbd>.</span>
+        <span class="hint-swipe">Swipe across the photo for the next one.</span>
+      </p>
     </div>
   </section>
 
   <script>
-    {
-      const go = (sel) => {
-        const a = document.querySelector(sel);
-        if (a instanceof HTMLAnchorElement) window.location.href = a.href;
+    // Stepping through the gallery, by key or by thumb.
+    //
+    // Both listeners live on `document`, which survives a view transition, and
+    // both look the links up fresh each time — so this registers once and
+    // keeps working however many photos you walk through. The guard is there
+    // because a bundled module can be re-evaluated, and two listeners would
+    // skip two photos per gesture.
+    import { navigate } from 'astro:transitions/client';
+
+    if (!window.__jeyrunPhotoNav) {
+      window.__jeyrunPhotoNav = true;
+
+      const rtl = () => document.documentElement.dir === 'rtl';
+      const go = (which) => {
+        const a = document.querySelector(`[data-photo-${which}]`);
+        if (a instanceof HTMLAnchorElement) navigate(a.href);
       };
+
+      // Keys follow reading order rather than the key's name: Persian runs
+      // right to left, so Left is forwards here and backwards in English.
       document.addEventListener('keydown', (e) => {
         if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
-        const t = e.target as HTMLElement | null;
-        if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
-        const rtl = document.documentElement.dir === 'rtl';
-        if (e.key === 'ArrowLeft') { e.preventDefault(); go(rtl ? '[data-photo-next]' : '[data-photo-prev]'); }
-        else if (e.key === 'ArrowRight') { e.preventDefault(); go(rtl ? '[data-photo-prev]' : '[data-photo-next]'); }
+        const t = e.target;
+        if (t instanceof HTMLElement &&
+            (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+        if (e.key === 'ArrowLeft') { e.preventDefault(); go(rtl() ? 'next' : 'prev'); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); go(rtl() ? 'prev' : 'next'); }
       });
+
+      // Swipe. The next photo sits on the side its button's arrow points to —
+      // left in Persian, right in English — so the gesture that brings it in
+      // is a drag the other way. Vertical movement is let through so the
+      // gesture never fights an ordinary scroll.
+      let x0 = null, y0 = null;
+      document.addEventListener('touchstart', (e) => {
+        if (!e.target || !(e.target instanceof Element)) return;
+        if (!e.target.closest('.photo-hero')) { x0 = null; return; }
+        x0 = e.changedTouches[0].clientX;
+        y0 = e.changedTouches[0].clientY;
+      }, { passive: true });
+
+      document.addEventListener('touchend', (e) => {
+        if (x0 === null) return;
+        const dx = e.changedTouches[0].clientX - x0;
+        const dy = e.changedTouches[0].clientY - y0;
+        x0 = null;
+        if (Math.abs(dx) < 45 || Math.abs(dy) > Math.abs(dx)) return;
+        go((rtl() ? dx > 0 : dx < 0) ? 'next' : 'prev');
+      }, { passive: true });
     }
   </script>
 </Base>

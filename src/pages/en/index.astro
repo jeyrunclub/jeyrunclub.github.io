@@ -5,7 +5,8 @@ import RunnersBand from '../../components/RunnersBand.astro';
 import PhotoBand from '../../components/PhotoBand.astro';
 import { Image } from 'astro:assets';
 import { byFile, photos as galleryPhotos, featured as groupShots, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../../lib/gallery.js';
-import heroPhoto from '../../assets/gallery/group-b.jpg';
+// See src/pages/index.astro.
+import heroPhoto from '../../assets/gallery/new-img_2412.jpg';
 import gallery from '../../data/gallery.json';
 import targetRaces from '../../data/target-races.json';
 import memberResults from '../../data/member-results.json';
@@ -66,7 +67,7 @@ const partnerRoutes = [
   <section class="hero hero-photo">
     <Image
       src={heroPhoto}
-      alt="Team Jeyrun below Damavand"
+      alt="Team Jeyrun on a morning speed session"
       class="hero-photo-img"
       widths={[900, 1400, 1900]}
       sizes="100vw"
@@ -101,7 +102,7 @@ const partnerRoutes = [
   <section id="why" class="section why">
     <div class="container">
       <p class="section-eyebrow">Why Jeyrun?</p>
-      <h2>Five things you get here</h2>
+      <h2>Jeyrun services</h2>
       <div class="why-grid">
         {why.map((w) => (
           <article class="why-card">
@@ -280,7 +281,7 @@ const partnerRoutes = [
           </a>
         ))}
       </div>
-      <p class="ig-follow"><a href="/en/gallery">See all {galleryPhotos.length} photos →</a></p>
+      <p class="ig-follow"><a href="/en/gallery">See all photos →</a></p>
     </div>
   </section>
 

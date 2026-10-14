@@ -37,7 +37,7 @@ const rest = await Promise.all(
       <p class="section-eyebrow">Gallery</p>
       <h1>Moments from Jeyrun</h1>
       <p class="lead">
-        {photos.length} photos from training, races, mountain camps and everyday team moments. Tap a photo to see its story.
+        Photos from training, races, mountain camps and everyday team moments. Tap a photo to see its story.
       </p>
     </div>
   </section>
@@ -66,7 +66,7 @@ const rest = await Promise.all(
       {photos.length > PAGE_SIZE && (
         <div class="load-more-wrap">
           <button id="load-more" class="btn btn-ghost" type="button">
-            Show more photos ({photos.length - PAGE_SIZE} remaining)
+            Show more photos
           </button>
         </div>
       )}
@@ -95,7 +95,7 @@ const rest = await Promise.all(
       if (shown >= total) {
         btn.remove();
       } else {
-        btn.textContent = `Show more photos (${total - shown} remaining)`;
+        btn.textContent = 'Show more photos';
       }
     });
   </script>

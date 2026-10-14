@@ -5,7 +5,10 @@ import RunnersBand from '../components/RunnersBand.astro';
 import PhotoBand from '../components/PhotoBand.astro';
 import { Image } from 'astro:assets';
 import { byFile, photos as galleryPhotos, featured as groupShots, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
-import heroPhoto from '../assets/gallery/group-b.jpg';
+// A speed session in progress rather than the team posed under Damavand:
+// the sky across the top is where the headline and the records go, so the
+// type no longer sits over anybody's face.
+import heroPhoto from '../assets/gallery/new-img_2412.jpg';
 import gallery from '../data/gallery.json';
 import targetRaces from '../data/target-races.json';
 import stats from '../data/stats.json';
@@ -76,7 +79,7 @@ const partnerRoutes = [
   <section class="hero hero-photo">
     <Image
       src={heroPhoto}
-      alt="تیم جیران زیر قله‌ی دماوند"
+      alt="تمرین سرعت تیم جیران، صبح زود"
       class="hero-photo-img"
       widths={[900, 1400, 1900]}
       sizes="100vw"
@@ -109,7 +112,7 @@ const partnerRoutes = [
   <section id="why" class="section why">
     <div class="container">
       <p class="section-eyebrow">چرا جیران؟</p>
-      <h2>پنج چیزی که از جیران می‌گیری</h2>
+      <h2>خدمات جیران</h2>
       <div class="why-grid">
         {why.map((w) => (
           <article class="why-card">
@@ -219,7 +222,7 @@ const partnerRoutes = [
   <section id="target-races" class="section target-races">
     <div class="container">
       <p class="section-eyebrow">مسابقات هدف</p>
-      <h2>برای این‌ها تمرین می‌کنیم</h2>
+      <h2>برای این مسابقات تمرین می‌کنیم</h2>
       <p class="section-sub">
         سه ماراتنی که تیم جیران برای‌شان برنامه می‌چیند و گروهی به آن‌ها سفر می‌کند.
       </p>
@@ -291,7 +294,7 @@ const partnerRoutes = [
           </a>
         ))}
       </div>
-      <p class="ig-follow"><a href="/gallery">دیدن همه‌ی عکس‌ها ({fa(galleryPhotos.length)}) ←</a></p>
+      <p class="ig-follow"><a href="/gallery">دیدن همه‌ی عکس‌ها ←</a></p>
     </div>
   </section>
 
@@ -324,14 +327,14 @@ const partnerRoutes = [
         <p class="section-eyebrow">عضویت</p>
         <h2>به جیران بپیوند</h2>
         <p>
-          چه تازه شروع کرده‌ای، چه دنبال اولین ماراتن یا صعود دماوند هستی — با یک پیام واتس‌اپ، شروع کن.
+          چه تازه شروع کرده‌ای، چه دنبال اولین ماراتن یا صعود دماوند هستی — با یک پیام واتساپ، شروع کن.
           سالار برای شرایط، هدف و برنامه‌ی روزانه‌ات، تمرین اختصاصی می‌نویسد.
         </p>
       </div>
       <div class="join-actions">
         <a class="btn btn-whatsapp" href="https://wa.me/989128889975?text=%D8%B3%D9%84%D8%A7%D9%85%20%D8%B3%D8%A7%D9%84%D8%A7%D8%B1%D8%8C%20%D8%A8%D8%B1%D8%A7%DB%8C%20%D8%B9%D8%B6%D9%88%DB%8C%D8%AA%20%D8%AF%D8%B1%20%D8%AC%DB%8C%D8%B1%D8%A7%D9%86%20%D9%BE%DB%8C%D8%A7%D9%85%20%D9%85%DB%8C%E2%80%8C%D8%AF%D9%87%D9%85." target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.198.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.05 21.785h-.004a9.87 9.87 0 01-5.03-1.378l-.36-.214-3.741.982.999-3.648-.235-.374a9.86 9.86 0 01-1.511-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.892 6.994c-.003 5.45-4.437 9.884-9.885 9.884zm8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          <span>پیام در واتس‌اپ</span>
+          <span>پیام در واتساپ</span>
         </a>
         <p class="join-note">پاسخ معمولاً در کمتر از ۲۴ ساعت.<br /><span dir="ltr" style="unicode-bidi: isolate;">+98 912 888 9975</span></p>
       </div>
