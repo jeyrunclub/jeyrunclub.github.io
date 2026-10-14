@@ -1,17 +1,18 @@
 ---
 import Base from '../layouts/Base.astro';
 import { Image, getImage } from 'astro:assets';
-import { photos, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
+import { photos, ordered, THUMB_WIDTHS, THUMB_QUALITY, GRID_SIZES } from '../lib/gallery.js';
 
 const PAGE_SIZE = 24;
-const firstPage = photos.slice(0, PAGE_SIZE);
+// Group shots first — see `ordered` in lib/gallery.js.
+const firstPage = ordered.slice(0, PAGE_SIZE);
 const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
 
 // The load-more button builds its markup in the browser, so the optimised URLs
 // have to be worked out here and handed over — otherwise everything past the
 // first page would quietly fall back to the unprocessed original.
 const rest = await Promise.all(
-  photos.slice(PAGE_SIZE).map(async (p) => {
+  ordered.slice(PAGE_SIZE).map(async (p) => {
     const [small, large] = await Promise.all(
       THUMB_WIDTHS.map((w) => getImage({ src: p.image, width: w, format: 'webp', quality: THUMB_QUALITY })),
     );
@@ -19,7 +20,6 @@ const rest = await Promise.all(
       id: p.id,
       title: p.title,
       story: p.story,
-      shape: p.shape,
       src: large.src,
       srcset: `${small.src} ${THUMB_WIDTHS[0]}w, ${large.src} ${THUMB_WIDTHS[1]}w`,
       w: p.image.width,
@@ -46,8 +46,7 @@ const rest = await Promise.all(
     <div class="container">
       <div class="gallery-grid" id="gallery-grid" data-page-size={PAGE_SIZE}>
         {firstPage.map((p) => (
-          <a href={`/photo/${p.id}`} class={`gal-item is-${p.shape}`}>
-            <span class="gal-badge">#{fa(p.id)}</span>
+          <a href={`/photo/${p.id}`} class="gal-item">
             <Image
               src={p.image}
               alt={p.title || `عکس شماره ${p.id}`}
@@ -83,8 +82,7 @@ const rest = await Promise.all(
     btn?.addEventListener('click', () => {
       const next = rest.slice(shown - PAGE_SIZE, shown - PAGE_SIZE + PAGE_SIZE);
       const html = next.map((p) => `
-        <a href="/photo/${p.id}" class="gal-item is-${p.shape}">
-          <span class="gal-badge">#${fa(p.id)}</span>
+        <a href="/photo/${p.id}" class="gal-item">
           <img src="${p.src}" srcset="${p.srcset}" sizes="${SIZES}"
                width="${p.w}" height="${p.h}"
                alt="${p.title || 'عکس شماره ' + p.id}" loading="lazy" decoding="async" />

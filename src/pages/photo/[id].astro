@@ -1,45 +1,53 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { Image, getImage } from 'astro:assets';
-import { photos, FULL_WIDTHS, FULL_QUALITY, CARD_WIDTH, CARD_QUALITY } from '../../lib/gallery.js';
+import { photos, ordered, FULL_WIDTHS, FULL_QUALITY, CARD_WIDTH, CARD_QUALITY } from '../../lib/gallery.js';
 
 export function getStaticPaths() {
-  // params come from photo.id, not the array position — gallery.json has an
-  // entry whose file is missing, so the two diverge after it.
-  return photos.map((photo, i) => ({
-    params: { id: String(photo.id) },
-    props: {
-      photo,
-      number: photo.id,
-      prev: i > 0 ? photos[i - 1].id : null,
-      next: i < photos.length - 1 ? photos[i + 1].id : null,
-      total: photos.length,
-    },
-  }));
+  // One page per photo, keyed by photo.id — the id comes from the position in
+  // `photos`, not from `ordered`, so these URLs stay put however the gallery
+  // chooses to arrange itself.
+  //
+  // Prev and next, though, walk `ordered`: stepping through has to match the
+  // sequence you just saw in the grid, or the next photo is one you have no
+  // reason to expect. Position is counted in that same order.
+  return photos.map((photo) => {
+    const i = ordered.findIndex((p) => p.id === photo.id);
+    return {
+      params: { id: String(photo.id) },
+      props: {
+        photo,
+        position: i + 1,
+        prev: i > 0 ? ordered[i - 1].id : null,
+        next: i < ordered.length - 1 ? ordered[i + 1].id : null,
+        total: ordered.length,
+      },
+    };
+  });
 }
 
-const { photo, number, prev, next, total } = Astro.props;
+const { photo, position, prev, next, total } = Astro.props;
 const fa = (n) => String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d]);
 
 // Each photo gets its own social card, as a JPEG for crawler compatibility.
 const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDTH, quality: CARD_QUALITY });
 ---
 <Base
-  title={`عکس #${fa(number)} — ${photo.title || 'گالری جیران'}`}
-  description={photo.story || photo.title || `عکس شماره ${fa(number)} از گالری جیران`}
+  title={`${photo.title || 'گالری جیران'} — عکس‌های جیران`}
+  description={photo.story || photo.title || 'عکسی از گالری باشگاه جیران'}
   ogImage={card.src}
 >
   <section class="photo-page">
     <div class="container photo-inner">
       <p class="photo-crumb">
         <a href="/gallery">← بازگشت به گالری</a>
-        <span class="photo-num">عکس #{fa(number)} از {fa(total)}</span>
+        <span class="photo-num">عکس {fa(position)} از {fa(total)}</span>
       </p>
 
       <figure class="photo-hero">
         <Image
           src={photo.image}
-          alt={photo.title || `عکس شماره ${number}`}
+          alt={photo.title || `عکس شماره ${position}`}
           widths={FULL_WIDTHS}
           sizes="(max-width: 900px) 94vw, 860px"
           quality={FULL_QUALITY}
@@ -56,7 +64,7 @@ const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDT
           <p class="photo-story photo-story-empty">
             هنوز داستانی برای این عکس نوشته نشده.
             <br />
-            <em>اگر می‌خواهی داستان این لحظه را ثبت کنی، به سالار بگو: «داستان عکس #{fa(number)} …»</em>
+            <em>اگر می‌خواهی داستان این لحظه را ثبت کنی، به سالار بگو کدام عکس است.</em>
           </p>
         )}
       </div>
@@ -66,11 +74,11 @@ const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDT
           each time. data-photo-prev/next are what the key handler below reads. */}
       <nav class="photo-nav">
         {prev ? (
-          <a href={`/photo/${prev}`} class="btn btn-ghost" data-photo-prev data-astro-prefetch="viewport">→ قبلی (#{fa(prev)})</a>
+          <a href={`/photo/${prev}`} class="btn btn-ghost" data-photo-prev data-astro-prefetch="viewport">→ قبلی</a>
         ) : <span></span>}
         <a href="/gallery" class="btn btn-ghost">همه‌ی عکس‌ها</a>
         {next ? (
-          <a href={`/photo/${next}`} class="btn btn-ghost" data-photo-next data-astro-prefetch="viewport">بعدی (#{fa(next)}) ←</a>
+          <a href={`/photo/${next}`} class="btn btn-ghost" data-photo-next data-astro-prefetch="viewport">بعدی ←</a>
         ) : <span></span>}
       </nav>
 

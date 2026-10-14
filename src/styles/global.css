@@ -532,21 +532,6 @@ ul { margin: 0; padding: 0; list-style: none; }
   transition: transform 0.4s;
 }
 .gal-item:hover img { transform: scale(1.03); }
-.gal-badge {
-  position: absolute;
-  top: 10px;
-  inset-inline-end: 10px;
-  z-index: 2;
-  padding: 4px 9px;
-  border-radius: 999px;
-  background: rgba(0,0,0,0.55);
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  backdrop-filter: blur(6px);
-  pointer-events: none;
-}
 .gal-caption {
   padding: 14px 16px 16px;
   display: flex;
@@ -1395,7 +1380,6 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
   overflow: hidden;
   border: 1.5px solid var(--border);
 }
-.gal-item .gal-badge { background: var(--crimson); color: #fff; }
 
 /* ---- Reveal on scroll, progressively enhanced ------------------------ */
 @supports (animation-timeline: view()) {
@@ -1485,13 +1469,20 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 .hero-photo .btn-ghost { color: #fff; border-color: rgba(255, 255, 255, 0.85); }
 .hero-photo .btn-ghost:hover { background: #fff; color: var(--ink); }
 
-/* ---------- Gallery mosaic ---------- */
+/* ---------- Gallery: true masonry, nothing cropped ----------
+   This was a row grid — 190px columns, fixed 175px rows, tiles spanning one
+   or two of them, and `object-fit: cover` to make each photograph fit the
+   cell it landed in. A portrait frame in a 190x175 cell is showing about a
+   fifth of itself, which is why the gallery looked zoomed in: you were seeing
+   the middle of every photograph and none of the edges. The fixed rows also
+   left holes wherever a span did not fit.
+
+   Columns fix both at once. Each photograph keeps its own aspect ratio and is
+   shown whole, and the column flow packs them with no gaps. */
 .gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  grid-auto-rows: 175px;
-  grid-auto-flow: dense;
-  gap: 12px;
+  display: block;
+  columns: 4 240px;
+  column-gap: 14px;
   margin: 0 0 28px;
 }
 .gal-item {
@@ -1507,15 +1498,22 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 .gal-item:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--crimson); }
 .gal-item img {
   width: 100%;
-  height: 100%;
+  height: auto;
   aspect-ratio: auto;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .gal-item:hover img { transform: scale(1.05); }
-.gal-item.is-wide { grid-column: span 2; }
-.gal-item.is-tall { grid-row: span 2; }
+/* break-inside is what keeps a photograph from being sliced down the middle
+   at a column boundary. inline-block is belt and braces for the same thing. */
+.gal-item {
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 14px;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+}
 
 /* The caption rides on the photo now; the full story lives on its own page. */
 .gal-caption {
@@ -1538,7 +1536,8 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 .gal-caption span { display: none; }
 
 @media (max-width: 640px) {
-  .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 132px; gap: 9px; }
+  .gallery-grid { columns: 2 140px; column-gap: 9px; }
+  .gal-item { margin-bottom: 9px; }
   .gal-caption { padding: 1.6rem 0.6rem 0.55rem; }
   .gal-caption strong { font-size: 0.78rem; }
 }
@@ -1809,12 +1808,14 @@ body.lang-en .target-when { letter-spacing: 0.12em; }
 .event-flow li:nth-child(3) .flow-num { background: var(--saffron-tint); color: #b57c00; }
 .event-flow li:nth-child(4) .flow-num { background: var(--lapis-tint); color: var(--lapis); }
 
+/* .gallery-grid is a column masonry now, so this one just asks for two
+   columns instead of four — the grid properties it used to set are dead. */
 .partner-gallery {
-  grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: 140px;
-  gap: 10px;
+  columns: 2 120px;
+  column-gap: 10px;
   margin-bottom: 14px;
 }
+.partner-gallery .gal-item { margin-bottom: 10px; }
 .partner-proof .ig-follow { text-align: start; }
 .partner-proof .ig-follow a { font-size: 0.9rem; }
 

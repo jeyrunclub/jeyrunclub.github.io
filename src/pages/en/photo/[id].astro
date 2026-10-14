@@ -1,49 +1,54 @@
 ---
 import Base from '../../../layouts/Base.astro';
 import { Image, getImage } from 'astro:assets';
-import { photos, FULL_WIDTHS, FULL_QUALITY, CARD_WIDTH, CARD_QUALITY } from '../../../lib/gallery.js';
+import { photos, ordered, FULL_WIDTHS, FULL_QUALITY, CARD_WIDTH, CARD_QUALITY } from '../../../lib/gallery.js';
 
 export function getStaticPaths() {
   // params come from photo.id, not the array position — gallery.json has an
   // entry whose file is missing, so the two diverge after it.
-  return photos.map((photo, i) => ({
-    params: { id: String(photo.id) },
-    props: {
-      photo: {
-        ...photo,
-        title: photo.title_en || photo.title,
-        story: photo.story_en || photo.story,
+  // URLs key off photo.id; prev/next and the position walk `ordered`, so
+  // stepping through matches the grid. See src/pages/photo/[id].astro.
+  return photos.map((photo) => {
+    const i = ordered.findIndex((p) => p.id === photo.id);
+    return {
+      params: { id: String(photo.id) },
+      props: {
+        photo: {
+          ...photo,
+          title: photo.title_en || photo.title,
+          story: photo.story_en || photo.story,
+        },
+        position: i + 1,
+        prev: i > 0 ? ordered[i - 1].id : null,
+        next: i < ordered.length - 1 ? ordered[i + 1].id : null,
+        total: ordered.length,
       },
-      number: photo.id,
-      prev: i > 0 ? photos[i - 1].id : null,
-      next: i < photos.length - 1 ? photos[i + 1].id : null,
-      total: photos.length,
-    },
-  }));
+    };
+  });
 }
 
-const { photo, number, prev, next, total } = Astro.props;
+const { photo, position, prev, next, total } = Astro.props;
 
 // Each photo gets its own social card, as a JPEG for crawler compatibility.
 const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDTH, quality: CARD_QUALITY });
 ---
 <Base
   lang="en"
-  title={`Photo #${number} — ${photo.title || 'Jeyrun gallery'}`}
-  description={photo.story || photo.title || `Photo ${number} from the Jeyrun gallery`}
+  title={`${photo.title || 'Jeyrun gallery'} — Jeyrun photos`}
+  description={photo.story || photo.title || 'A photo from the Jeyrun club gallery'}
   ogImage={card.src}
 >
   <section class="photo-page">
     <div class="container photo-inner">
       <p class="photo-crumb">
         <a href="/en/gallery">← Back to gallery</a>
-        <span class="photo-num">Photo #{number} of {total}</span>
+        <span class="photo-num">Photo {position} of {total}</span>
       </p>
 
       <figure class="photo-hero">
         <Image
           src={photo.image}
-          alt={photo.title || `Photo ${number}`}
+          alt={photo.title || `Photo ${position}`}
           widths={FULL_WIDTHS}
           sizes="(max-width: 900px) 94vw, 860px"
           quality={FULL_QUALITY}
@@ -60,7 +65,7 @@ const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDT
           <p class="photo-story photo-story-empty">
             No story yet for this photo.
             <br />
-            <em>Want to add one? Tell Salar: "story for photo #{number} …"</em>
+            <em>Want to add one? Tell Salar which photo it is.</em>
           </p>
         )}
       </div>
@@ -68,11 +73,11 @@ const card = await getImage({ src: photo.image, format: 'jpeg', width: CARD_WIDT
       {/* See src/pages/photo/[id].astro — same prefetch and key handling. */}
       <nav class="photo-nav">
         {prev ? (
-          <a href={`/en/photo/${prev}`} class="btn btn-ghost" data-photo-prev data-astro-prefetch="viewport">← Prev (#{prev})</a>
+          <a href={`/en/photo/${prev}`} class="btn btn-ghost" data-photo-prev data-astro-prefetch="viewport">← Prev</a>
         ) : <span></span>}
         <a href="/en/gallery" class="btn btn-ghost">All photos</a>
         {next ? (
-          <a href={`/en/photo/${next}`} class="btn btn-ghost" data-photo-next data-astro-prefetch="viewport">Next (#{next}) →</a>
+          <a href={`/en/photo/${next}`} class="btn btn-ghost" data-photo-next data-astro-prefetch="viewport">Next →</a>
         ) : <span></span>}
       </nav>
 

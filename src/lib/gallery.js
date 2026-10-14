@@ -56,6 +56,55 @@ export const featured = HOME_FILES
   .map((f) => photos.find((p) => p.file === f))
   .filter(Boolean);
 
+// ---------------------------------------------------------------------------
+// Display order: the club before the scenery.
+//
+// gallery.json is roughly chronological, which opened the gallery on mountains
+// and single runners. What persuades someone to join is seeing a crowd of
+// people who turn up together, so the frames with the group in them come
+// first, strongest first, and everything else keeps its existing order behind
+// them.
+//
+// This changes only what the gallery renders and the order you step through on
+// a photo page. It deliberately does NOT reorder `photos`: ids come from that
+// array's position and they are in the URLs, so shuffling it would break every
+// /photo/N link that already exists.
+const GROUP_FILES = [
+  'new-img_7752.jpg',   // the largest team frame there is
+  'team-group.jpg',     // the group class, everybody
+  'new-img_6699.jpg',   // the road, whole squad
+  'group-b.jpg',        // camp day, Damavand behind
+  'group-c.jpg',        // under the plane trees
+  'new-img_8227.jpg',   // the brick gate, arms up
+  'new-img_9688.jpg',   // under the willows, autumn
+  'new-img_4122.jpg',   // the big willow
+  'new-img_3918.jpg',   // Damavand over the team
+  'new-img_2334.jpg',   // the park, a sunny morning
+  'new-img_8760.jpg',   // the red brick wall
+  'new-img_8052.jpg',   // autumn, before Istanbul
+  'team-trees.jpg',     // 6 AM, before the start
+  'new-img_3294.jpg',   // the car park, gathering
+  'new-img_5841.jpg',   // Chitgar forest
+  'new-img_6986.jpg',   // the summit, arms round each other
+  'moment-a.jpg',       // warm-up lunges, the whole line
+  'new-img_3232.jpg',   // under the planes
+  'new-img_5813.jpg',   // winter training on snow
+  'new-img_0400.jpg',   // cold morning, wrapped up
+  'new-img_2988.jpg',   // watermelon after the mountain
+  'new-img_6975.jpg',   // six in full kit at altitude
+  'new-img_2412.jpg',   // the cone session
+  'new-img_9223.jpg',   // on the stadium grass
+];
+
+const groupFirst = GROUP_FILES
+  .map((f) => photos.find((p) => p.file === f))
+  .filter(Boolean);
+
+const groupSet = new Set(groupFirst.map((p) => p.file));
+
+/** Every photo, the group shots first. What the gallery and prev/next use. */
+export const ordered = [...groupFirst, ...photos.filter((p) => !groupSet.has(p.file))];
+
 // These are grainy outdoor photographs — mountains, foliage, gravel — and they
 // barely respond to quality: the same frame is 543KB at q68 and 597KB at q76.
 // Width is the lever that actually moves the number, so each set is cut to what

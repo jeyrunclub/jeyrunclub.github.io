@@ -265,7 +265,6 @@ const partnerRoutes = [
       <div class="gallery-grid">
         {featured.map((p) => (
           <a href={`/en/photo/${p.id}`} class={`gal-item is-${p.shape}`}>
-            <span class="gal-badge">#{p.id}</span>
             <Image
               src={p.image}
               alt={p.title || `Photo ${p.id}`}
